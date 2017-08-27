@@ -1,0 +1,247 @@
+﻿/****** Object:  Table [dbo].[Access]    Script Date: 04.05.2017 0:19:40 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TABLE [dbo].[Access](
+	[Id] [int] IDENTITY(1,1) NOT NULL,
+	[PC] [nvarchar](15) NOT NULL,
+	[UserName] [nvarchar](20) NOT NULL,
+	[Department] [int] NOT NULL,
+	[Notes] [bit] NOT NULL,
+	[Schedule] [bit] NOT NULL,
+	[Phone] [bit] NOT NULL,
+	[Config] [bit] NOT NULL,
+ CONSTRAINT [PK_Access] PRIMARY KEY CLUSTERED 
+(
+	[Id] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
+) ON [PRIMARY]
+
+GO
+/****** Object:  Table [dbo].[Department]    Script Date: 04.05.2017 0:19:40 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TABLE [dbo].[Department](
+	[Id] [int] NOT NULL,
+	[Name] [nvarchar](50) NULL,
+ CONSTRAINT [PK_Department] PRIMARY KEY CLUSTERED 
+(
+	[Id] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
+) ON [PRIMARY]
+
+GO
+/****** Object:  Table [dbo].[Note]    Script Date: 04.05.2017 0:19:40 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TABLE [dbo].[Note](
+	[Id] [int] IDENTITY(1,1) NOT NULL,
+	[Number] [int] NOT NULL,
+	[RegNumber] [nvarchar](25) NULL,
+	[DateCreate] [datetime] NULL,
+	[DepartmentId] [int] NULL,
+	[NoteTemplateId] [int] NULL,
+	[AgreedCEO] [bit] NOT NULL,
+	[AgreedCFO] [bit] NOT NULL,
+	[Text] [nvarchar](3500) NULL,
+ CONSTRAINT [PK_FlyDoc] PRIMARY KEY CLUSTERED 
+(
+	[Id] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
+) ON [PRIMARY]
+
+GO
+/****** Object:  Table [dbo].[NoteTemplate]    Script Date: 04.05.2017 0:19:40 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TABLE [dbo].[NoteTemplate](
+	[Id] [int] NOT NULL,
+	[Name] [nvarchar](50) NOT NULL,
+	[Text] [nvarchar](3500) NOT NULL,
+ CONSTRAINT [PK_NoteTemplate] PRIMARY KEY CLUSTERED 
+(
+	[Id] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
+) ON [PRIMARY]
+
+GO
+/****** Object:  Table [dbo].[Phonebook]    Script Date: 04.05.2017 0:19:40 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TABLE [dbo].[Phonebook](
+	[Id] [int] IDENTITY(1,1) NOT NULL,
+	[Department] [int] NULL,
+	[Positions] [nvarchar](50) NULL,
+	[Name] [nvarchar](50) NULL,
+	[Dect] [nvarchar](5) NULL,
+	[Phone] [nvarchar](5) NULL,
+	[Mobile] [nvarchar](13) NULL,
+	[Mail] [nvarchar](50) NULL,
+ CONSTRAINT [PK_Phone_book] PRIMARY KEY CLUSTERED 
+(
+	[Id] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
+) ON [PRIMARY]
+
+GO
+/****** Object:  Table [dbo].[Schedule]    Script Date: 04.05.2017 0:19:40 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TABLE [dbo].[Schedule](
+	[Id] [int] IDENTITY(1,1) NOT NULL,
+	[Month] [int] NOT NULL,
+	[Year] [int] NOT NULL,
+	[Department] [int] NOT NULL,
+	[Name] [nvarchar](100) NOT NULL,
+	[Position] [nvarchar](50) NOT NULL,
+	[1] [nvarchar](2) NULL,
+	[2] [nvarchar](2) NULL,
+	[3] [nvarchar](2) NULL,
+	[4] [nvarchar](2) NULL,
+	[5] [nvarchar](2) NULL,
+	[6] [nvarchar](2) NULL,
+	[7] [nvarchar](2) NULL,
+	[8] [nvarchar](2) NULL,
+	[9] [nvarchar](2) NULL,
+	[10] [nvarchar](2) NULL,
+	[11] [nvarchar](2) NULL,
+	[12] [nvarchar](2) NULL,
+	[13] [nvarchar](2) NULL,
+	[14] [nvarchar](2) NULL,
+	[15] [nvarchar](2) NULL,
+	[16] [nvarchar](2) NULL,
+	[17] [nvarchar](2) NULL,
+	[18] [nvarchar](2) NULL,
+	[19] [nvarchar](2) NULL,
+	[20] [nvarchar](2) NULL,
+	[21] [nvarchar](2) NULL,
+	[22] [nvarchar](2) NULL,
+	[23] [nvarchar](2) NULL,
+	[24] [nvarchar](2) NULL,
+	[25] [nvarchar](2) NULL,
+	[26] [nvarchar](2) NULL,
+	[27] [nvarchar](2) NULL,
+	[28] [nvarchar](2) NULL,
+	[29] [nvarchar](2) NULL,
+	[30] [nvarchar](2) NULL,
+	[31] [nvarchar](2) NULL,
+	[Approed] [int] NULL,
+	[Manager] [int] NULL
+) ON [PRIMARY]
+
+GO
+/****** Object:  View [dbo].[vwNotes]    Script Date: 04.05.2017 0:19:40 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE VIEW [dbo].[vwNotes]
+AS
+SELECT        f.Id, f.Number AS Номер, f.DepartmentId AS Відділ, f.RegNumber AS [Реєстраційний номер], f.DateCreate AS [Дата створення], f.AgreedCEO, f.AgreedCFO, 
+                         d.Name AS [назва відділу], t.Name AS шаблон
+FROM            dbo.Note AS f LEFT OUTER JOIN
+                         dbo.NoteTemplate AS t ON f.Id = t.Id LEFT OUTER JOIN
+                         dbo.Department AS d ON d.Id = f.DepartmentId
+
+GO
+/****** Object:  View [dbo].[vwPhoneBook]    Script Date: 04.05.2017 0:19:40 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE VIEW [dbo].[vwPhoneBook]
+AS
+SELECT        dep.Name, pb.Positions, pb.Name AS Expr1, pb.Dect, pb.Phone, pb.Mobile, pb.Mail
+FROM            dbo.Phonebook AS pb LEFT OUTER JOIN
+                         dbo.Department AS dep ON dep.Id = pb.Department
+
+GO
+/****** Object:  View [dbo].[vwUsers]    Script Date: 04.05.2017 0:19:40 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE VIEW [dbo].[vwUsers]
+AS
+SELECT        dbo.Access.Id, dbo.Access.PC, dbo.Access.UserName, dbo.Department.Name AS Відділ, dbo.Access.Notes, dbo.Access.Schedule, dbo.Access.Phone, 
+                         dbo.Access.Config, dbo.Access.Department AS DepartmentId
+FROM            dbo.Access LEFT OUTER JOIN
+                         dbo.Department ON dbo.Access.Department = dbo.Department.Id
+
+GO
+SET IDENTITY_INSERT [dbo].[Access] ON 
+
+GO
+INSERT [dbo].[Access] ([Id], [PC], [UserName], [Department], [Notes], [Schedule], [Phone], [Config]) VALUES (1, N'KC-500-00', N'burun', 500, 1, 1, 1, 1)
+GO
+INSERT [dbo].[Access] ([Id], [PC], [UserName], [Department], [Notes], [Schedule], [Phone], [Config]) VALUES (2, N'KC-500-01', N'bakumenko', 500, 0, 0, 0, 0)
+GO
+INSERT [dbo].[Access] ([Id], [PC], [UserName], [Department], [Notes], [Schedule], [Phone], [Config]) VALUES (5, N'LENOVO-Z710', N'Александр', 20, 1, 0, 0, 1)
+GO
+INSERT [dbo].[Access] ([Id], [PC], [UserName], [Department], [Notes], [Schedule], [Phone], [Config]) VALUES (6, N'qqq', N'www', 10, 1, 1, 0, 0)
+GO
+SET IDENTITY_INSERT [dbo].[Access] OFF
+GO
+INSERT [dbo].[Department] ([Id], [Name]) VALUES (10, N'Сад-Город')
+GO
+INSERT [dbo].[Department] ([Id], [Name]) VALUES (20, N'Інтсрументи')
+GO
+INSERT [dbo].[Department] ([Id], [Name]) VALUES (114, N'Апарат управління')
+GO
+INSERT [dbo].[Department] ([Id], [Name]) VALUES (500, N'АСУ')
+GO
+
+SET IDENTITY_INSERT [dbo].[Note] ON 
+GO
+INSERT [dbo].[Note] ([Id], [Number], [DateCreate], [DepartmentId], [NoteTemplateId], [AgreedCEO], [AgreedCFO], [RegNumber], [Text]) VALUES (10, 123, CAST(0x0000A75E00CBCBE0 AS DateTime), 10, NULL, 0, 0, NULL, NULL)
+GO
+INSERT [dbo].[Note] ([Id], [Number], [DateCreate], [DepartmentId], [NoteTemplateId], [AgreedCEO], [AgreedCFO], [RegNumber], [Text]) VALUES (13, 2, CAST(0x0000A75E00E4E094 AS DateTime), 10, NULL, 0, 0, NULL, NULL)
+GO
+INSERT [dbo].[Note] ([Id], [Number], [DateCreate], [DepartmentId], [NoteTemplateId], [AgreedCEO], [AgreedCFO], [RegNumber], [Text]) VALUES (14, 3, CAST(0x0000A75E00EABEEC AS DateTime), 114, NULL, 0, 0, NULL, NULL)
+GO
+INSERT [dbo].[Note] ([Id], [Number], [DateCreate], [DepartmentId], [NoteTemplateId], [AgreedCEO], [AgreedCFO], [RegNumber], [Text]) VALUES (15, 4, CAST(0x0000A75E00EC0838 AS DateTime), 500, NULL, 0, 0, NULL, NULL)
+GO
+INSERT [dbo].[Note] ([Id], [Number], [DateCreate], [DepartmentId], [NoteTemplateId], [AgreedCEO], [AgreedCFO], [RegNumber], [Text]) VALUES (16, 5, CAST(0x0000A75E00EC43FC AS DateTime), 20, NULL, 0, 0, NULL, NULL)
+GO
+INSERT [dbo].[Note] ([Id], [Number], [DateCreate], [DepartmentId], [NoteTemplateId], [AgreedCEO], [AgreedCFO], [RegNumber], [Text]) VALUES (17, 123, CAST(0x0000A75E00CBCBE0 AS DateTime), 10, NULL, 0, 0, NULL, NULL)
+GO
+INSERT [dbo].[Note] ([Id], [Number], [DateCreate], [DepartmentId], [NoteTemplateId], [AgreedCEO], [AgreedCFO], [RegNumber], [Text]) VALUES (18, 6, CAST(0x0000A75E00F366F0 AS DateTime), 114, NULL, 0, 0, NULL, NULL)
+GO
+SET IDENTITY_INSERT [dbo].[Note] OFF
+GO
+
+SET IDENTITY_INSERT [dbo].[Schedule] ON 
+GO
+INSERT [dbo].[Schedule] ([Id], [Month], [Year], [Department], [Name], [Position], [1], [2], [3], [4], [5], [6], [7], [8], [9], [10], [11], [12], [13], [14], [15], [16], [17], [18], [19], [20], [21], [22], [23], [24], [25], [26], [27], [28], [29], [30], [31], [Approed], [Manager]) VALUES (1, 4, 2017, 500, N'Бурун О.В.', N'начальник відділу', N'В', N'В', N'О', N'О', N'О', N'О', N'О', N'О', N'О', N'О', N'О', N'О', N'С', N'С', N'В', N'В', N'С', N'С', N'С', N'С', N'С', N'С', N'С', N'С', N'В', N'В', N'С', N'С', N'С', N'С', NULL, NULL, NULL)
+GO
+INSERT [dbo].[Schedule] ([Id], [Month], [Year], [Department], [Name], [Position], [1], [2], [3], [4], [5], [6], [7], [8], [9], [10], [11], [12], [13], [14], [15], [16], [17], [18], [19], [20], [21], [22], [23], [24], [25], [26], [27], [28], [29], [30], [31], [Approed], [Manager]) VALUES (2, 4, 2017, 500, N'Бакуменко Р.В.', N'Інженер-програміст', N'П', N'П', N'В', N'В', N'П', N'П', N'В', N'В', N'П', N'П', N'В', N'В', N'П', N'П', N'В', N'В', N'П', N'П', N'В', N'В', N'П', N'П', N'В', N'В', N'П', N'П', N'В', N'В', N'П', N'П', N'В', NULL, NULL)
+GO
+INSERT [dbo].[Schedule] ([Id], [Month], [Year], [Department], [Name], [Position], [1], [2], [3], [4], [5], [6], [7], [8], [9], [10], [11], [12], [13], [14], [15], [16], [17], [18], [19], [20], [21], [22], [23], [24], [25], [26], [27], [28], [29], [30], [31], [Approed], [Manager]) VALUES (8, 4, 2017, 500, N'Чернов Д.О.', N'Інженер-програміст', N'В', N'В', N'П', N'П', N'В', N'В', N'П', N'П', N'В', N'В', N'П', N'П', N'В', N'В', N'П', N'П', N'В', N'В', N'П', N'П', N'В', N'В', N'П', N'П', N'В', N'В', N'П', N'П', N'В', N'В', N'П', NULL, NULL)
+GO
+SET IDENTITY_INSERT [dbo].[Schedule] OFF
+GO
+
+ALTER TABLE [dbo].[Note] ADD  CONSTRAINT [DF_Note_AgreedCEO]  DEFAULT ((0)) FOR [AgreedCEO]
+GO
+ALTER TABLE [dbo].[Note] ADD  CONSTRAINT [DF_Note_AgreedCFO]  DEFAULT ((0)) FOR [AgreedCFO]
+GO
+ALTER TABLE [dbo].[Access]  WITH CHECK ADD  CONSTRAINT [FK_Access_Department] FOREIGN KEY([Department])
+REFERENCES [dbo].[Department] ([Id])
+GO
+ALTER TABLE [dbo].[Note]  WITH CHECK ADD  CONSTRAINT [FK_FlyDoc_Department1] FOREIGN KEY([DepartmentId])
+REFERENCES [dbo].[Department] ([Id])
+GO
+ALTER TABLE [dbo].[Phonebook]  WITH CHECK ADD  CONSTRAINT [FK_Phonebook_Department] FOREIGN KEY([Department])
+REFERENCES [dbo].[Department] ([Id])
+GO
