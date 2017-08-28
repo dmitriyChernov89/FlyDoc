@@ -12,9 +12,7 @@ namespace FlyDoc.Model
 
     public static class DBContext
     {
-
         private static readonly string _configConStringName = "FlyDoc";
-
 
         #region private methods
 
