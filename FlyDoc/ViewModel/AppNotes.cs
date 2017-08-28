@@ -42,6 +42,7 @@ namespace FlyDoc.ViewModel
                     {
                         this.LoadDataToGrid();
                         base.selectGridRowById(editId);
+                        // TODO сообщение об обновлении
                     }
                 }
                 base.EditObject();

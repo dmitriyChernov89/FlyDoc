@@ -304,8 +304,8 @@ namespace FlyDoc.Model
         }
         public static bool InsertNotes(Note note, out int newId)
         {
-            string sqlText = string.Format("INSERT INTO Note ([Name], [Id], [Number], [DataCreate], [DepartmentId], [NoteTemplateId]) VALUES ('{0}', {1}, '{2}', '{3}', {4}, {5}); SELECT @@IDENTITY",
-                 note.Id, note.Date, note.DepartmentId, note.NoteTemplateId);
+            string sqlText = string.Format("INSERT INTO Notes (Templates, IdDepartment, [Date], NameAvtor, BodyUp, BodyDown, HeadNach, HeadDir) VALUES ({0}, {1}, CONVERT(datetime, '{2}', 20), '{3}', '{4}', '{5}', '{6}', '{7}'); SELECT @@IDENTITY",
+                 note.NoteTemplateId, note.DepartmentId, note.Date.ToString("yyyy-MM-dd HH:mm:ss"), note.NameAvtor, note.BodyUp, note.BodyDown, note.HeadNach, note.HeadDir);
             DataTable dt = GetQueryTable(sqlText);
             newId = Convert.ToInt32(dt.Rows[0][0]);
             return (newId > 0);
@@ -313,7 +313,7 @@ namespace FlyDoc.Model
 
         public static bool UpdateNotes(Note note)
         {
-            string sqlText = string.Format("UPDATE Notes SET [Name] = {0}, [Number] = '{2}', [Datecreate] = {3}, [DepartmentId] = {4}, [NoteTemplateId] = {5} WHERE (Id = {1})", note.Id, note.Date, note.DepartmentId, note.NoteTemplateId);
+            string sqlText = string.Format("UPDATE Notes SET {0} WHERE (Id = {1})", note.GetSQLUpdateString(), note.Id);
             return Execute(sqlText);
         }
 

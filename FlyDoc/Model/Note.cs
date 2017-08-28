@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 
 namespace FlyDoc.Model
@@ -91,6 +92,35 @@ namespace FlyDoc.Model
                 HeadNach = dr["HeadNach"].ToString();
                 HeadDir = dr["HeadDir"].ToString();
             }
+        }
+
+        public string GetSQLUpdateString()
+        {
+            string retVal = "", sVal, sName;
+            PropertyInfo[] fields = (typeof(Note)).GetProperties();
+            foreach (PropertyInfo item in fields)
+            {
+                if (item.Name == "Id") continue;
+                if (item.Name.StartsWith("Name") && (item.Name != "NameAvtor")) continue;
+
+                if (retVal.Length > 0) retVal += ", ";
+
+                sName = item.Name;
+                if (sName == "DepartmentId") sName = "IdDepartment";
+                if (sName == "NoteTemplateId") sName = "Templates";
+
+                sVal = item.GetValue(this, null).ToString();
+                if (item.PropertyType.Name == "DateTime")
+                    sVal = string.Format("CONVERT(datetime, '{0}', 20)", Convert.ToDateTime(item.GetValue(this, null)).ToString("yyyy-MM-dd HH:mm:ss"));
+                else if (item.PropertyType.Name == "String")
+                    sVal = "'" + sVal + "'";
+                else if (item.PropertyType.Name == "Boolean")
+                    sVal = (sVal.ToBool() ? "1" : "0");
+
+                retVal += "[" + sName + "] = " + sVal;
+            }
+
+            return retVal;
         }
 
     }  // class

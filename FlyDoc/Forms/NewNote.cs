@@ -82,7 +82,7 @@ namespace FlyDoc.Forms
             // Добавити новий рядок
             else
             {
-                this.Text = "Добавити новий рядок";
+                this.Text = "Додати новий рядок";
                 this.cbNoteTemplate.SelectedIndexChanged += new System.EventHandler(this.cbNoteTemplate_SelectedIndexChanged);
                 cbNoteTemplate.Enabled = true;
                 cbNoteTemplate_SelectedIndexChanged(null, null);
@@ -95,9 +95,8 @@ namespace FlyDoc.Forms
         }
 
         // обработчик кнопки по умолчанию - Ок
-        private void btnOk_Click(object sender, EventArgs e)
+        private void btnSaveToDB_Click(object sender, EventArgs e)
         {
-            #region проверка введенных данных
             // проверка номера служебки
             //if (tbNumber.Text.IsNull() == true)
             //{
@@ -131,22 +130,18 @@ namespace FlyDoc.Forms
                 this.DialogResult = DialogResult.None;
                 return;
             }
-            #endregion
 
-            // собрать строку для добавления новой записи в сл.зап.
-            string sqlText = string.Format("INSERT INTO Notes (Templates, IdDepartment, Date, NameAvtor, BodyUp, BodyDown, HeadNach, HeadDir) VALUES ('{0}', '{1}',CONVERT(datetime, '{2}', 20),'{3}','{4}','{5}','{6}','{7}')", cbNoteTemplate.SelectedValue, cbDepartment.SelectedValue, dtpDateCreate.Value.ToString("yyyy-MM-dd HH:mm:ss"), tbAvtor.Text, tbBodyUp.Text, tbBodyDown.Text, tbHeadNach.Text, tbHeadDir.Text);
+            // новая служебка
+            if (_note == null) _note = new Note();
 
-            if (DBContext.Execute(sqlText) == true)
-            {
-                MessageBox.Show("Запись добавлена успешно","Добавление служебки",MessageBoxButtons.OK);
-                Form f = Application.OpenForms[0];
-                //if (f is MainForm)
-                //{
-                //    MainForm mainForm = (f as MainForm);
-                //    mainForm.ReloadData();
-                //}
-            }
-
+            _note.NoteTemplateId = (int)cbNoteTemplate.SelectedValue;
+            _note.DepartmentId = (int)cbDepartment.SelectedValue;
+            _note.Date = dtpDateCreate.Value;
+            _note.NameAvtor = this.tbAvtor.Text;
+            _note.BodyUp = this.tbBodyUp.Text;
+            _note.BodyDown = this.tbBodyDown.Text;
+            _note.HeadDir = this.tbHeadDir.Text;
+            _note.HeadNach = this.tbHeadNach.Text;
         }  // method
 
         private void cbNoteTemplate_SelectedIndexChanged(object sender, EventArgs e)

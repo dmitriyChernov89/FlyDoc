@@ -32,7 +32,7 @@
             this.label3 = new System.Windows.Forms.Label();
             this.cbDepartment = new System.Windows.Forms.ComboBox();
             this.btnCancel = new System.Windows.Forms.Button();
-            this.btnOk = new System.Windows.Forms.Button();
+            this.btnSaveToDB = new System.Windows.Forms.Button();
             this.label4 = new System.Windows.Forms.Label();
             this.cbNoteTemplate = new System.Windows.Forms.ComboBox();
             this.dtpDateCreate = new System.Windows.Forms.DateTimePicker();
@@ -102,16 +102,16 @@
             this.btnCancel.Text = "Відміна";
             this.btnCancel.UseVisualStyleBackColor = true;
             // 
-            // btnOk
+            // btnSaveToDB
             // 
-            this.btnOk.DialogResult = System.Windows.Forms.DialogResult.OK;
-            this.btnOk.Location = new System.Drawing.Point(15, 123);
-            this.btnOk.Name = "btnOk";
-            this.btnOk.Size = new System.Drawing.Size(75, 23);
-            this.btnOk.TabIndex = 7;
-            this.btnOk.Text = "Записати";
-            this.btnOk.UseVisualStyleBackColor = true;
-            this.btnOk.Click += new System.EventHandler(this.btnOk_Click);
+            this.btnSaveToDB.DialogResult = System.Windows.Forms.DialogResult.OK;
+            this.btnSaveToDB.Location = new System.Drawing.Point(15, 123);
+            this.btnSaveToDB.Name = "btnSaveToDB";
+            this.btnSaveToDB.Size = new System.Drawing.Size(75, 23);
+            this.btnSaveToDB.TabIndex = 7;
+            this.btnSaveToDB.Text = "Записати";
+            this.btnSaveToDB.UseVisualStyleBackColor = true;
+            this.btnSaveToDB.Click += new System.EventHandler(this.btnSaveToDB_Click);
             // 
             // label4
             // 
@@ -124,6 +124,7 @@
             // 
             // cbNoteTemplate
             // 
+            this.cbNoteTemplate.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.cbNoteTemplate.FormattingEnabled = true;
             this.cbNoteTemplate.Location = new System.Drawing.Point(66, 12);
             this.cbNoteTemplate.Name = "cbNoteTemplate";
@@ -415,7 +416,7 @@
             this.Controls.Add(this.dtpDateCreate);
             this.Controls.Add(this.cbNoteTemplate);
             this.Controls.Add(this.label4);
-            this.Controls.Add(this.btnOk);
+            this.Controls.Add(this.btnSaveToDB);
             this.Controls.Add(this.btnCancel);
             this.Controls.Add(this.cbDepartment);
             this.Controls.Add(this.label3);
@@ -435,7 +436,7 @@
         private System.Windows.Forms.Label label3;
         private System.Windows.Forms.ComboBox cbDepartment;
         private System.Windows.Forms.Button btnCancel;
-        private System.Windows.Forms.Button btnOk;
+        private System.Windows.Forms.Button btnSaveToDB;
         private System.Windows.Forms.Label label4;
         private System.Windows.Forms.ComboBox cbNoteTemplate;
         private System.Windows.Forms.DateTimePicker dtpDateCreate;
