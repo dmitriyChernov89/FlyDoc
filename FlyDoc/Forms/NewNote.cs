@@ -78,6 +78,29 @@ namespace FlyDoc.Forms
                 this.tbBodyDown.Text = _note.BodyDown;
                 this.tbHeadDir.Text = _note.HeadDir;
                 this.tbHeadNach.Text = _note.HeadNach;
+
+                // TODO отображение доп.данных из БД
+                // доп.табличные данные
+                if (_note.Include != null)
+                {
+                    // получить коллекцию PropertyInfo для столбцов доп.таблицы
+                    List<System.Reflection.PropertyInfo> props = typeof(NoteInclude).GetProperties().ToList();
+                    List<string> names = getDGVColNames();
+                    props.RemoveAll(p => !names.Contains(p.Name));
+
+                    // Добавить строки
+                    DataGridViewRow row;
+                    dgvTable.Rows.Add(_note.Include.Count);
+                    int i = 0;
+                    foreach (NoteInclude item in _note.Include)
+                    {
+                        row = dgvTable.Rows[i++];
+                        foreach (System.Reflection.PropertyInfo pInfo in props)
+                        {
+                            row.Cells[pInfo.Name].Value = pInfo.GetValue(item, null);
+                        }
+                    }
+                }
             }
             // Добавити новий рядок
             else
@@ -88,6 +111,15 @@ namespace FlyDoc.Forms
                 cbNoteTemplate_SelectedIndexChanged(null, null);
             }
         }
+        private List<string> getDGVColNames()
+        {
+            List<string> names = new List<string>();
+            foreach (DataGridViewColumn item in dgvTable.Columns)
+            {
+                if (item.Name.StartsWith("ColumName") == false) names.Add(item.Name);
+            }
+            return names;
+        }
 
         private void setBtnLime(Button btn)
         {
@@ -97,36 +129,8 @@ namespace FlyDoc.Forms
         // обработчик кнопки по умолчанию - Ок
         private void btnSaveToDB_Click(object sender, EventArgs e)
         {
-            // проверка номера служебки
-            //if (tbNumber.Text.IsNull() == true)
-            //{
-            //    MessageBox.Show("Введите номер служебки", "Ошибка ввода", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-            //    tbNumber.Focus();
-            //    this.DialogResult = DialogResult.None;
-            //    return;
-            //}
-            // проверка даты служебки
-            //DateTime dtCreate = DateTime.MinValue;
-            //if (DateTime.TryParse(tbTimeCreate.Text, out dtCreate) == false)
-            //{
-            //    MessageBox.Show("Дата создания служебной записки должна иметь формат: dd.MM.yyyy HH:mm:ss", "Ошибка ввода", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-            //    tbTimeCreate.Focus();
-            //    this.DialogResult = DialogResult.None;
-            //    return;
-            //}
-            // проверка комбобокса отдела
-            if (cbDepartment.SelectedIndex < 0)
+            if (checkInput() == false)
             {
-                MessageBox.Show("Выберите отдел", "Ошибка ввода", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                cbDepartment.Focus();
-                this.DialogResult = DialogResult.None;
-                return;
-            }
-            // проверка комбобокса шаблона сл.зап.
-            if (cbNoteTemplate.SelectedIndex < 0)
-            {
-                MessageBox.Show("Выберите шаблон служебной записки", "Ошибка ввода", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                cbNoteTemplate.Focus();
                 this.DialogResult = DialogResult.None;
                 return;
             }
@@ -134,6 +138,7 @@ namespace FlyDoc.Forms
             // новая служебка
             if (_note == null) _note = new Note();
 
+            // передать в вызывающий модуль значения полей в объекте Note
             _note.NoteTemplateId = (int)cbNoteTemplate.SelectedValue;
             _note.DepartmentId = (int)cbDepartment.SelectedValue;
             _note.Date = dtpDateCreate.Value;
@@ -142,7 +147,57 @@ namespace FlyDoc.Forms
             _note.BodyDown = this.tbBodyDown.Text;
             _note.HeadDir = this.tbHeadDir.Text;
             _note.HeadNach = this.tbHeadNach.Text;
+
+            // TODO заполнить _note.Include из DGV
+            // доп.табличные данные
+             if (dgvTable.Visible == true)
+            {
+                if (_note.Include == null) _note.Include = new List<NoteInclude>();
+                else _note.Include.Clear();
+
+                foreach (DataGridViewRow item in dgvTable.Rows)
+                {
+
+                }
+            }
         }  // method
+
+        private bool checkInput()
+        {
+            // проверка номера служебки
+            //if (tbNumber.Text.IsNull() == true)
+            //{
+            //    MessageBox.Show("Введите номер служебки", "Ошибка ввода", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+            //    tbNumber.Focus();
+            //    return false;
+            //}
+            // проверка даты служебки
+            //DateTime dtCreate = DateTime.MinValue;
+            //if (DateTime.TryParse(tbTimeCreate.Text, out dtCreate) == false)
+            //{
+            //    MessageBox.Show("Дата создания служебной записки должна иметь формат: dd.MM.yyyy HH:mm:ss", "Ошибка ввода", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+            //    tbTimeCreate.Focus();
+            //    return false;
+            //}
+            // проверка комбобокса отдела
+            if (cbDepartment.SelectedIndex < 0)
+            {
+                MessageBox.Show("Выберите отдел", "Ошибка ввода", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                cbDepartment.Focus();
+                return false;
+            }
+            // проверка комбобокса шаблона сл.зап.
+            if (cbNoteTemplate.SelectedIndex < 0)
+            {
+                MessageBox.Show("Выберите шаблон служебной записки", "Ошибка ввода", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                cbNoteTemplate.Focus();
+                this.DialogResult = DialogResult.None;
+                return false;
+            }
+
+            // все Ок
+            return true;
+        }
 
         private void cbNoteTemplate_SelectedIndexChanged(object sender, EventArgs e)
         {
@@ -169,6 +224,7 @@ namespace FlyDoc.Forms
         {
             this.Help = dr["Help"].ToStringNull();
 
+            // дополнительные табличные данные
             if (dr["TableColums"].ToInt() == 0)
             {
                 dgvTable.Visible = false;
@@ -180,9 +236,15 @@ namespace FlyDoc.Forms
                 tbBodyDown.Visible = true;
                 dgvTable.ColumnCount = dr["TableColums"].ToInt();
                 dgvTable.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
-                for (int i = 0; i < (int)dr["TableColums"]; i++)
+                string colName, colHeader, colTplName;
+                for (int i = 0; i < dgvTable.ColumnCount; i++)
                 {
-                    dgvTable.Columns[i].Name = (string)dr["ColumName" + (i + 1).ToString()];
+                    colTplName = "ColumName" + (i + 1).ToString();
+                    colHeader = (string)dr[colTplName];
+                    colName = NoteInclude.GetNameByHeader(colHeader);
+                    dgvTable.Columns[i].Name = (colName.IsNull() ? colTplName : colName);
+                    dgvTable.Columns[i].HeaderText = colHeader;
+
                     //DataGridViewColumn dgvColumn = dgvTable.Columns[i];
                     //dgvColumn.AutoSizeMode = DataGridViewAutoSizeColumnMode.DisplayedCells;
                 }

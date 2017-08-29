@@ -46,11 +46,15 @@ namespace FlyDoc.Model
         public string HeadNach { get; set; }
         public string HeadDir { get; set; }
 
+        public List<NoteInclude> Include { get; set; }
+
+
         public Note()
         {
 
         }
 
+        // объект, заполненный данными из БД
         public Note(int dbId)
         {
             DataRow dr = DBContext.GetNoteInclude(dbId);
@@ -92,6 +96,8 @@ namespace FlyDoc.Model
                 HeadNach = dr["HeadNach"].ToString();
                 HeadDir = dr["HeadDir"].ToString();
             }
+
+            // TODO заполнить из БД Include
         }
 
         public string GetSQLUpdateString()
@@ -123,5 +129,5 @@ namespace FlyDoc.Model
             return retVal;
         }
 
-    }  // class
+    }  // class Note
 }

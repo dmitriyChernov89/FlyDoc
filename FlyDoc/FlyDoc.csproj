@@ -98,6 +98,7 @@
     </Compile>
     <Compile Include="Model\Department.cs" />
     <Compile Include="Model\Note.cs" />
+    <Compile Include="Model\NoteInclude.cs" />
     <Compile Include="Model\Phone.cs" />
     <Compile Include="Model\Schedule.cs" />
     <Compile Include="Model\User.cs" />

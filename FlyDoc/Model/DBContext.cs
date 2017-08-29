@@ -286,10 +286,12 @@ namespace FlyDoc.Model
         #endregion
 
         #region Notes
+        // TODO получить из БД служебку по Id
         public static DataTable GetNote()
         {
             return GetQueryTable("SELECT * From vwNote");
         }
+        // TODO получить из БД доп.таблицу для служебки
         public static DataRow GetNoteInclude(int Id)
         {
             string sqlText = string.Format("SELECT * FROM Notes WHERE (Id='{0}')", Id);
@@ -302,6 +304,8 @@ namespace FlyDoc.Model
             //MessageBox.Show(sqlText);
             return Execute(sqlText);
         }
+
+        // TODO добавление в [NoteIncludeTable] данных из Note.Include
         public static bool InsertNotes(Note note, out int newId)
         {
             string sqlText = string.Format("INSERT INTO Notes (Templates, IdDepartment, [Date], NameAvtor, BodyUp, BodyDown, HeadNach, HeadDir) VALUES ({0}, {1}, CONVERT(datetime, '{2}', 20), '{3}', '{4}', '{5}', '{6}', '{7}'); SELECT @@IDENTITY",
@@ -311,6 +315,7 @@ namespace FlyDoc.Model
             return (newId > 0);
         }
 
+        // TODO сохранение в [NoteIncludeTable] данных из Note.Include
         public static bool UpdateNotes(Note note)
         {
             string sqlText = string.Format("UPDATE Notes SET {0} WHERE (Id = {1})", note.GetSQLUpdateString(), note.Id);
