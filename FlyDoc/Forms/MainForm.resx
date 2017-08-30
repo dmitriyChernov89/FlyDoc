@@ -133,7 +133,7 @@
         AAEAAAD/////AQAAAAAAAAAMAgAAAFdTeXN0ZW0uV2luZG93cy5Gb3JtcywgVmVyc2lvbj0yLjAuMC4w
         LCBDdWx0dXJlPW5ldXRyYWwsIFB1YmxpY0tleVRva2VuPWI3N2E1YzU2MTkzNGUwODkFAQAAACZTeXN0
         ZW0uV2luZG93cy5Gb3Jtcy5JbWFnZUxpc3RTdHJlYW1lcgEAAAAERGF0YQcCAgAAAAkDAAAADwMAAABk
-        RwAAAk1TRnQBSQFMAgEBCgEAAWABAAFgAQABMgEAATIBAAT/AQkBAAj/AUIBTQE2AQQGAAE2AQQCAAEo
+        RwAAAk1TRnQBSQFMAgEBCgEAAWgBAAFoAQABMgEAATIBAAT/AQkBAAj/AUIBTQE2AQQGAAE2AQQCAAEo
         AwAByAMAAZYDAAEBAQABCAUAATABdRgAAYACAAGAAwACgAEAAYADAAGAAQABgAEAAoACAAPAAQABwAHc
         AcABAAHwAcoBpgEAATMFAAEzAQABMwEAATMBAAIzAgADFgEAAxwBAAMiAQADKQEAA1UBAANNAQADQgEA
         AzkBAAGAAXwB/wEAAlAB/wEAAZMBAAHWAQAB/wHsAcwBAAHGAdYB7wEAAdYC5wEAAZABqQGtAgAB/wEz
@@ -748,7 +748,7 @@
     <value>3, 67</value>
   </data>
   <data name="dgvSchedule.Size" type="System.Drawing.Size, System.Drawing">
-    <value>1082, 456</value>
+    <value>1232, 456</value>
   </data>
   <data name="dgvSchedule.TabIndex" type="System.Int32, mscorlib">
     <value>4</value>
@@ -874,7 +874,7 @@
     <value>3, 3</value>
   </data>
   <data name="panel1.Size" type="System.Drawing.Size, System.Drawing">
-    <value>1082, 64</value>
+    <value>1232, 64</value>
   </data>
   <data name="panel1.TabIndex" type="System.Int32, mscorlib">
     <value>3</value>
@@ -898,7 +898,7 @@
     <value>3, 3, 3, 3</value>
   </data>
   <data name="tpgSchedule.Size" type="System.Drawing.Size, System.Drawing">
-    <value>1092, 530</value>
+    <value>1242, 530</value>
   </data>
   <data name="tpgSchedule.TabIndex" type="System.Int32, mscorlib">
     <value>1</value>
@@ -925,7 +925,7 @@
     <value>0, 67</value>
   </data>
   <data name="dgvPhonebook.Size" type="System.Drawing.Size, System.Drawing">
-    <value>1088, 459</value>
+    <value>1238, 459</value>
   </data>
   <data name="dgvPhonebook.TabIndex" type="System.Int32, mscorlib">
     <value>5</value>
@@ -1051,7 +1051,7 @@
     <value>0, 0</value>
   </data>
   <data name="panel2.Size" type="System.Drawing.Size, System.Drawing">
-    <value>1088, 67</value>
+    <value>1238, 67</value>
   </data>
   <data name="panel2.TabIndex" type="System.Int32, mscorlib">
     <value>4</value>
@@ -1072,7 +1072,7 @@
     <value>4, 27</value>
   </data>
   <data name="tpgPhoneBook.Size" type="System.Drawing.Size, System.Drawing">
-    <value>1092, 530</value>
+    <value>1242, 530</value>
   </data>
   <data name="tpgPhoneBook.TabIndex" type="System.Int32, mscorlib">
     <value>2</value>
@@ -1201,7 +1201,7 @@
     <value>3, 3</value>
   </data>
   <data name="panel3.Size" type="System.Drawing.Size, System.Drawing">
-    <value>1074, 69</value>
+    <value>1224, 69</value>
   </data>
   <data name="panel3.TabIndex" type="System.Int32, mscorlib">
     <value>0</value>
@@ -1225,7 +1225,7 @@
     <value>3, 67</value>
   </data>
   <data name="dgvUsers.Size" type="System.Drawing.Size, System.Drawing">
-    <value>1074, 430</value>
+    <value>1224, 430</value>
   </data>
   <data name="dgvUsers.TabIndex" type="System.Int32, mscorlib">
     <value>1</value>
@@ -1249,7 +1249,7 @@
     <value>3, 3, 3, 3</value>
   </data>
   <data name="tpgUsers.Size" type="System.Drawing.Size, System.Drawing">
-    <value>1080, 500</value>
+    <value>1230, 500</value>
   </data>
   <data name="tpgUsers.TabIndex" type="System.Int32, mscorlib">
     <value>0</value>
@@ -1375,7 +1375,7 @@
     <value>0, 0</value>
   </data>
   <data name="tabControlConfig.Size" type="System.Drawing.Size, System.Drawing">
-    <value>1088, 526</value>
+    <value>1238, 526</value>
   </data>
   <data name="tabControlConfig.TabIndex" type="System.Int32, mscorlib">
     <value>0</value>
@@ -1396,7 +1396,7 @@
     <value>4, 27</value>
   </data>
   <data name="tpgConfig.Size" type="System.Drawing.Size, System.Drawing">
-    <value>1092, 530</value>
+    <value>1242, 530</value>
   </data>
   <data name="tpgConfig.TabIndex" type="System.Int32, mscorlib">
     <value>3</value>

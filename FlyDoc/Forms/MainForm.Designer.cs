@@ -197,6 +197,7 @@
             // 
             this.dgvNotes.AllowUserToAddRows = false;
             this.dgvNotes.AllowUserToDeleteRows = false;
+            this.dgvNotes.AllowUserToOrderColumns = true;
             this.dgvNotes.AutoSizeColumnsMode = System.Windows.Forms.DataGridViewAutoSizeColumnsMode.Fill;
             this.dgvNotes.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
             this.dgvNotes.ContextMenuStrip = this.contextMenuStrip1;

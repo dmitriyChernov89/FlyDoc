@@ -81,7 +81,7 @@ namespace FlyDoc.Forms
 
                 // TODO отображение доп.данных из БД
                 // доп.табличные данные
-                if (_note.Include != null)
+                if ((_note.Include != null) && (_note.Include.Count > 0))
                 {
                     // получить коллекцию PropertyInfo для столбцов доп.таблицы
                     List<System.Reflection.PropertyInfo> props = typeof(NoteInclude).GetProperties().ToList();

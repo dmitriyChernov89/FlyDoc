@@ -154,35 +154,17 @@ namespace FlyDoc.Model
             return (retVal == null) ? 0 : (int)retVal;
         }
 
-        // статические методы для получения данных 
-        // здесь можно получить как из таблиц, так и из представлений MS SQL, выбирать нужные поля, фильтровать и сортировать записи, короче, все, что можно сделать в SELECT-операторе
-        #region get data
-
-        public static DataTable GetSchInclude()
+        public static List<string> GetColumnsNameList(DataTable dataTable)
         {
-            return GetQueryTable("SELECT * From vwSchInclude");
-        }
+            if (dataTable == null) return null;
 
-        // получить телефонную книгу
-        public static DataTable GetPhonebook()
-        {
-            return GetQueryTable("SELECT * FROM vwPhoneBook");
+            List<string> retVal = new List<string>();
+            foreach (DataColumn item in dataTable.Columns)
+            {
+                retVal.Add(item.ColumnName);
+            }
+            return retVal;
         }
-
-        // получить сл.зап. для отображения в датагриде
-        // сл.зап. отсортированы по убыванию Id, чтобы новые записи отображались вверху таблицы
-        // (сортировать здесь, т.к. SQL-представление не хочет сохранять запрос с ORDER BY (!!!!????)
-        public static DataTable GetNotes()
-        {
-            return GetQueryTable("SELECT * FROM vwNote");// ORDER BY Id DESC");
-        }
-
-        public static DataTable GetNoteTemplates()
-        {
-            return GetQueryTable("SELECT * FROM NoteTemplates");
-        }
-
-        #endregion
 
         #region  Department
         // получить отделы из SQL-таблицы
@@ -259,6 +241,11 @@ namespace FlyDoc.Model
         #endregion
 
         #region Schedule
+        public static DataTable GetSchInclude()
+        {
+            return GetQueryTable("SELECT * From vwSchInclude");
+        }
+
         public static DataTable GetSchedule()
         {
             return GetQueryTable("SELECT * From vwSchedules");
@@ -286,17 +273,31 @@ namespace FlyDoc.Model
         #endregion
 
         #region Notes
-        // TODO получить из БД служебку по Id
-        public static DataTable GetNote()
+        // получить сл.зап. для отображения в датагриде
+        // сл.зап. отсортированы по убыванию Id, чтобы новые записи отображались вверху таблицы
+        // (сортировать здесь, т.к. SQL-представление не хочет сохранять запрос с ORDER BY (!!!!????)
+        public static DataTable GetNotes()
         {
-            return GetQueryTable("SELECT * From vwNote");
+            return GetQueryTable("SELECT * FROM vwNote");// ORDER BY Id DESC");
         }
-        // TODO получить из БД доп.таблицу для служебки
-        public static DataRow GetNoteInclude(int Id)
+
+        public static DataTable GetNoteTemplates()
         {
-            string sqlText = string.Format("SELECT * FROM Notes WHERE (Id='{0}')", Id);
+            return GetQueryTable("SELECT * FROM NoteTemplates");
+        }
+
+        public static DataRow GetNote(int Id)
+        {
+            string sqlText = string.Format("SELECT * FROM Notes WHERE (Id = {0})", Id);
             DataTable dt = GetQueryTable(sqlText);
             return ((dt == null) || (dt.Rows.Count == 0)) ? null : dt.Rows[0];
+        }
+        // TODO получить из БД доп.таблицу для служебки
+        public static DataTable GetNoteInclude(int Id)
+        {
+            string sqlText = string.Format("SELECT * FROM NoteIncludeTable WHERE (IdNotes = {0})", Id);
+            DataTable dt = GetQueryTable(sqlText);
+            return dt;
         }
         public static bool NoteApproved(int Id, string ApprColumn, bool Appr)
         {
@@ -331,7 +332,8 @@ namespace FlyDoc.Model
         #endregion
 
         #region Phone
-        public static DataTable GetPhone()
+        // получить телефонную книгу
+        public static DataTable GetPhones()
         {
             return GetQueryTable("SELECT * From vwPhonebook");
         }

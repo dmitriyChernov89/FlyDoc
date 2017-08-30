@@ -83,7 +83,7 @@ namespace FlyDoc.ViewModel
         }
         public override void LoadDataToGrid()
         {
-            _dataTable = DBContext.GetPhone();  // чтение данных о сл.зап.
+            _dataTable = DBContext.GetPhones();  // чтение данных о сл.зап.
             base.LoadDataToGrid();
 
            // _dataGrid.Columns[5].Visible = false;

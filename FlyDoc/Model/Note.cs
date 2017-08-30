@@ -48,7 +48,6 @@ namespace FlyDoc.Model
 
         public List<NoteInclude> Include { get; set; }
 
-
         public Note()
         {
 
@@ -57,7 +56,7 @@ namespace FlyDoc.Model
         // объект, заполненный данными из БД
         public Note(int dbId)
         {
-            DataRow dr = DBContext.GetNoteInclude(dbId);
+            DataRow dr = DBContext.GetNote(dbId);
             if (dr != null)
             {
                 Id = dbId;
@@ -97,7 +96,31 @@ namespace FlyDoc.Model
                 HeadDir = dr["HeadDir"].ToString();
             }
 
-            // TODO заполнить из БД Include
+            // TODO заполнить из БД Include - ПРОТЕСТИТЬ !!!
+            DataTable dt = DBContext.GetNoteInclude(dbId);
+            if (dt != null)
+            {
+                this.Include = new List<NoteInclude>();
+                NoteInclude noteIncl;
+                // коллекция имен полей таблицы
+                List<string> colNames = DBContext.GetColumnsNameList(dt);
+                // коллекция свойств объекта типа NoteInclude
+                List<PropertyInfo> pInfo = typeof(NoteInclude).GetProperties().ToList();
+                // для каждой строки таблицы создаем объект NoteInclude, заполняем его через рефлексию
+                foreach (DataRow row in dt.Rows)
+                {
+                    noteIncl = new NoteInclude();
+                    foreach (PropertyInfo item in pInfo)
+                    {
+                        if (colNames.Contains(item.Name))
+                        {
+                            item.SetValue(noteIncl, row[item.Name], null);
+                        }
+                    }
+                    // и добавляем в коллекцию Include
+                    this.Include.Add(noteIncl);
+                }
+            }
         }
 
         public string GetSQLUpdateString()
@@ -106,7 +129,7 @@ namespace FlyDoc.Model
             PropertyInfo[] fields = (typeof(Note)).GetProperties();
             foreach (PropertyInfo item in fields)
             {
-                if (item.Name == "Id") continue;
+                if ((item.Name == "Id") || (item.Name == "Include")) continue;
                 if (item.Name.StartsWith("Name") && (item.Name != "NameAvtor")) continue;
 
                 if (retVal.Length > 0) retVal += ", ";
