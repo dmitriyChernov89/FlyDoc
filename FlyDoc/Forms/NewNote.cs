@@ -20,97 +20,99 @@ namespace FlyDoc.Forms
     // форма добавления сл.зап.
     public partial class NewNote : Form
     {
-        private Note _note;
         private string Help;
+
+        private Note _note;
         public Note Note { get { return _note; } }
+
+        private bool _isNew;
 
 
         public NewNote(Note note)
         {
             InitializeComponent();
-            _note = note;
+
+            _isNew = (note == null);
+            if (_isNew) _note = new Note(); else _note = note;
         }
 
         private void NewNote_Load(object sender, EventArgs e)
         {
-            // получить данные и настроить комбобокс отделов
+            // получить данные и настроить комбобокс шаблонов сл.зап.
             FormsHelper.SetNoteTemplatesComboBox(cbNoteTemplate);
+            // получить данные и настроить комбобокс отделов
             FormsHelper.SetDepartmentsComboBox(cbDepartment);
 
-            // получить данные и настроить комбобокс шаблонов сл.зап.
-            //if (MainForm.WhichBtnClick == 1)
-            //{
-            //}
-
-            if (_note != null)
+            // TODO отображение доп.данных из БД
+            dgvTable.Visible = false;
+            BindingList<NoteInclude> dgvSource = new BindingList<NoteInclude>();
+            if (_note.Include != null) _note.Include.ForEach(i => dgvSource.Add(i));
+            dgvTable.DataSource = dgvSource;
+            // заголовки столбцов
+            string sHeader;
+            foreach (DataGridViewColumn col in dgvTable.Columns)
             {
-                this.Text = "Редагувати рядок";
-
-                cbNoteTemplate.Enabled = false;
-                DataRow drTemplate = DBContext.GetNoteTemplatesConfig(_note.NoteTemplateId);
-                if (drTemplate != null) setControlForTemplate(drTemplate);
-
-                this.tbNumber.Text = _note.Id.ToString();
-                cbNoteTemplate.SelectedValue = _note.NoteTemplateId;
-                cbDepartment.SelectedValue = _note.DepartmentId;
-                dtpDateCreate.Value = _note.Date;
-
-                this.tbAvtor.Text = _note.NameAvtor;
-
-                //Имена утвердивших в журнале, тут хз куда лепить и надо ли
-                if (_note.ApprAvtor) setBtnLime(btnApprAvtor);
-                if (_note.ApprDir) setBtnLime(btnApprDir);
-                if (_note.ApprComdir) setBtnLime(btnApprComdir);
-                if (_note.ApprSBNach) setBtnLime(btnApprSBNach);
-                if (_note.ApprSB) setBtnLime(btnApprSB);
-                if (_note.ApprKasa) setBtnLime(btnApprKasa);
-                if (_note.ApprNach) setBtnLime(btnApprNach);
-                if (_note.ApprFin) setBtnLime(btnApprFin);
-                if (_note.ApprDostavka) setBtnLime(btnApprDostavka);
-                if (_note.ApprEnerg) setBtnLime(btnApprEnerg);
-                if (_note.ApprSklad) setBtnLime(btnApprSklad);
-                if (_note.ApprBuh) setBtnLime(btnApprBuh);
-                if (_note.ApprASU) setBtnLime(btnApprASU);
-
-                labelApprAll.Visible = _note.ApprAll;
-
-                this.tbBodyUp.Text = _note.BodyUp;
-                this.tbBodyDown.Text = _note.BodyDown;
-                this.tbHeadDir.Text = _note.HeadDir;
-                this.tbHeadNach.Text = _note.HeadNach;
-
-                // TODO отображение доп.данных из БД
-                // доп.табличные данные
-                if ((_note.Include != null) && (_note.Include.Count > 0))
-                {
-                    // получить коллекцию PropertyInfo для столбцов доп.таблицы
-                    List<System.Reflection.PropertyInfo> props = typeof(NoteInclude).GetProperties().ToList();
-                    List<string> names = getDGVColNames();
-                    props.RemoveAll(p => !names.Contains(p.Name));
-
-                    // Добавить строки
-                    DataGridViewRow row;
-                    dgvTable.Rows.Add(_note.Include.Count);
-                    int i = 0;
-                    foreach (NoteInclude item in _note.Include)
-                    {
-                        row = dgvTable.Rows[i++];
-                        foreach (System.Reflection.PropertyInfo pInfo in props)
-                        {
-                            row.Cells[pInfo.Name].Value = pInfo.GetValue(item, null);
-                        }
-                    }
-                }
+                sHeader = NoteInclude.GetHeaderByName(col.Name);
+                if (sHeader.IsNull() == false) col.HeaderText = sHeader;
             }
-            // Добавити новий рядок
-            else
+            tbBodyDown.Visible = false;
+
+            // режим добавления
+            if (_isNew)
             {
                 this.Text = "Додати новий рядок";
                 this.cbNoteTemplate.SelectedIndexChanged += new System.EventHandler(this.cbNoteTemplate_SelectedIndexChanged);
                 cbNoteTemplate.Enabled = true;
                 cbNoteTemplate_SelectedIndexChanged(null, null);
             }
+            // режим редактирования
+            else
+            {
+                setControlsForEdit();
+            }
         }
+
+        private void setControlsForEdit()
+        {
+            this.Text = "Редагувати рядок";
+
+            // настроить контролы для данного шаблона
+            cbNoteTemplate.Enabled = false;
+            DataRow drTemplate = DBContext.GetNoteTemplatesConfig(_note.NoteTemplateId);
+            if (drTemplate != null) setControlForTemplate(drTemplate);
+
+            this.tbNumber.Text = _note.Id.ToString();
+            cbNoteTemplate.SelectedValue = _note.NoteTemplateId;
+            cbDepartment.SelectedValue = _note.DepartmentId;
+            dtpDateCreate.Value = _note.Date;
+
+            this.tbAvtor.Text = _note.NameAvtor;
+
+            //Имена утвердивших в журнале, тут хз куда лепить и надо ли
+
+            // цветность кнопок утверждения
+            if (_note.ApprAvtor) setBtnLime(btnApprAvtor);
+            if (_note.ApprDir) setBtnLime(btnApprDir);
+            if (_note.ApprComdir) setBtnLime(btnApprComdir);
+            if (_note.ApprSBNach) setBtnLime(btnApprSBNach);
+            if (_note.ApprSB) setBtnLime(btnApprSB);
+            if (_note.ApprKasa) setBtnLime(btnApprKasa);
+            if (_note.ApprNach) setBtnLime(btnApprNach);
+            if (_note.ApprFin) setBtnLime(btnApprFin);
+            if (_note.ApprDostavka) setBtnLime(btnApprDostavka);
+            if (_note.ApprEnerg) setBtnLime(btnApprEnerg);
+            if (_note.ApprSklad) setBtnLime(btnApprSklad);
+            if (_note.ApprBuh) setBtnLime(btnApprBuh);
+            if (_note.ApprASU) setBtnLime(btnApprASU);
+
+            labelApprAll.Visible = _note.ApprAll;
+
+            this.tbBodyUp.Text = _note.BodyUp;
+            this.tbBodyDown.Text = _note.BodyDown;
+            this.tbHeadDir.Text = _note.HeadDir;
+            this.tbHeadNach.Text = _note.HeadNach;
+        }
+
         private List<string> getDGVColNames()
         {
             List<string> names = new List<string>();
@@ -135,31 +137,28 @@ namespace FlyDoc.Forms
                 return;
             }
 
-            // новая служебка
-            if (_note == null) _note = new Note();
-
             // передать в вызывающий модуль значения полей в объекте Note
-            _note.NoteTemplateId = (int)cbNoteTemplate.SelectedValue;
-            _note.DepartmentId = (int)cbDepartment.SelectedValue;
-            _note.Date = dtpDateCreate.Value;
+            if (_isNew)
+            {
+                _note.NoteTemplateId = (int)cbNoteTemplate.SelectedValue;
+                _note.DepartmentId = (int)cbDepartment.SelectedValue;
+                _note.Date = dtpDateCreate.Value;
+                _note.HeadDir = this.tbHeadDir.Text;
+                _note.HeadNach = this.tbHeadNach.Text;
+            }
             _note.NameAvtor = this.tbAvtor.Text;
             _note.BodyUp = this.tbBodyUp.Text;
             _note.BodyDown = this.tbBodyDown.Text;
-            _note.HeadDir = this.tbHeadDir.Text;
-            _note.HeadNach = this.tbHeadNach.Text;
 
             // TODO заполнить _note.Include из DGV
-            // доп.табличные данные
-             if (dgvTable.Visible == true)
+            IList<NoteInclude> inclList = (IList<NoteInclude>)dgvTable.DataSource;
+            _note.Include.Clear();
+            foreach (NoteInclude item in inclList)
             {
-                if (_note.Include == null) _note.Include = new List<NoteInclude>();
-                else _note.Include.Clear();
-
-                foreach (DataGridViewRow item in dgvTable.Rows)
-                {
-
-                }
+                if (item.IdNotes != _note.Id) item.IdNotes = _note.Id;
+                _note.Include.Add(item);
             }
+
         }  // method
 
         private bool checkInput()
@@ -232,25 +231,23 @@ namespace FlyDoc.Forms
             }
             else
             {
+                dgvTable.Rows.Clear();
                 dgvTable.Visible = true;
                 tbBodyDown.Visible = true;
-                dgvTable.ColumnCount = dr["TableColums"].ToInt();
-                dgvTable.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
-                string colName, colHeader, colTplName;
-                for (int i = 0; i < dgvTable.ColumnCount; i++)
+
+                // скрыть все столбцы
+                foreach (DataGridViewColumn item in dgvTable.Columns) item.Visible = false;
+                // отобразить только те, которые есть в шаблоне
+                string colName, colHeader;
+                foreach (DataColumn col in dr.Table.Columns)
                 {
-                    colTplName = "ColumName" + (i + 1).ToString();
-                    colHeader = (string)dr[colTplName];
-                    colName = NoteInclude.GetNameByHeader(colHeader);
-                    dgvTable.Columns[i].Name = (colName.IsNull() ? colTplName : colName);
-                    dgvTable.Columns[i].HeaderText = colHeader;
-
-                    //DataGridViewColumn dgvColumn = dgvTable.Columns[i];
-                    //dgvColumn.AutoSizeMode = DataGridViewAutoSizeColumnMode.DisplayedCells;
+                    if (col.ColumnName.StartsWith("ColumName") && (!dr.IsNull(col)))
+                    {
+                        colHeader = (string)dr[col];
+                        colName = NoteInclude.GetNameByHeader(colHeader);
+                        if (!colName.IsNull()) dgvTable.Columns[colName].Visible = true;
+                    }
                 }
-
-                //dataGridView1.Columns[0].Visible = false;
-                //dataGridView1.ReadOnly = true;
             }
 
             btnApprDir.Visible = dr["ApprDir"].ToBool();
@@ -358,6 +355,9 @@ namespace FlyDoc.Forms
             Process process = Process.Start(pInfo);
         }
 
-
-        }  // class
+        private void dgvTable_DataError(object sender, DataGridViewDataErrorEventArgs e)
+        {
+            MessageBox.Show("Ошибка ввода: " + e.Exception.Message, "Проверка ввода", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
+        }
+    }  // class
 }

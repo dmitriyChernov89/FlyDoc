@@ -320,7 +320,13 @@ namespace FlyDoc.Model
         public static bool UpdateNotes(Note note)
         {
             string sqlText = string.Format("UPDATE Notes SET {0} WHERE (Id = {1})", note.GetSQLUpdateString(), note.Id);
-            return Execute(sqlText);
+            bool result = Execute(sqlText);
+            if (result)
+            {
+                //note.Include
+            }
+
+            return result;
         }
 
         public static bool DeleteNotes(int Id)
