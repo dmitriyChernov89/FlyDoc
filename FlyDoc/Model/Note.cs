@@ -54,12 +54,12 @@ namespace FlyDoc.Model
         }
 
         // объект, заполненный данными из БД
-        public Note(int dbId)
+        public Note(int noteId)
         {
-            DataRow dr = DBContext.GetNote(dbId);
+            DataRow dr = DBContext.GetNote(noteId);
             if (dr != null)
             {
-                Id = dbId;
+                Id = noteId;
                 DepartmentId = Convert.ToInt32(dr["IdDepartment"]);
                 NoteTemplateId = Convert.ToInt32(dr["Templates"]);
                 Date = (DateTime)(dr["Date"] ?? DateTime.MinValue);
@@ -97,7 +97,7 @@ namespace FlyDoc.Model
             }
 
             // TODO заполнить из БД Include - ПРОТЕСТИТЬ !!!
-            DataTable dt = DBContext.GetNoteInclude(dbId);
+            DataTable dt = DBContext.GetNoteIncludeByNoteId(noteId);
             if (dt != null)
             {
                 this.Include = new List<NoteInclude>();

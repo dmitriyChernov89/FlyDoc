@@ -150,13 +150,13 @@ namespace FlyDoc.Forms
             _note.BodyUp = this.tbBodyUp.Text;
             _note.BodyDown = this.tbBodyDown.Text;
 
-            // TODO заполнить _note.Include из DGV
-            IList<NoteInclude> inclList = (IList<NoteInclude>)dgvTable.DataSource;
-            _note.Include.Clear();
-            foreach (NoteInclude item in inclList)
+            if ((dgvTable.Visible == true) && (dgvTable.Rows.Count > 0))
             {
-                if (item.IdNotes != _note.Id) item.IdNotes = _note.Id;
-                _note.Include.Add(item);
+                if (_note.Include == null) _note.Include = new List<NoteInclude>();
+                else _note.Include.Clear();
+
+                IList<NoteInclude> inclList = (IList<NoteInclude>)dgvTable.DataSource;
+                foreach (NoteInclude item in inclList) _note.Include.Add(item);
             }
 
         }  // method
@@ -278,10 +278,12 @@ namespace FlyDoc.Forms
         {
             MessageBox.Show(dtpDateCreate.Value.TimeOfDay.ToString());
         }
+        //Application.StartupPath, 
 
         private void btnPrint_Click(object sender, EventArgs e)
             {
-            string fileName = string.Format(@"{0}\doc_{1}.pdf", Application.StartupPath, _note.Id);
+            string mydocu = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
+            string fileName = string.Format(@"{0}\doc_{1}.pdf", mydocu, _note.Id);
             string sText;
 
             Document document = new Document();
@@ -326,7 +328,15 @@ namespace FlyDoc.Forms
                         document.Add(p);
                     }
                     
-                    // TODO таблиця
+                    // TODO доделать вывод табилицы
+                    // таблицу взять из DataGridView
+                    if (dgvTable.Visible == true)
+                    {
+                        foreach (DataGridViewRow row in dgvTable.Rows)
+                        {
+
+                        }
+                    }
 
                     // текст 2
                     if (_note.BodyDown != null)

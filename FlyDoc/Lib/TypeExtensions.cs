@@ -35,6 +35,13 @@ namespace FlyDoc.Lib
 
     }
 
+    public static class DateTimeExtensions
+    {
+        public static string ToSQLExpr(this DateTime source)
+        {
+            return string.Format("CONVERT(datetime, '{0}', 20)", source.ToString("yyyy-MM-dd HH:mm:ss"));
+        }
+    }
 
     public static class StringExtensions
     {

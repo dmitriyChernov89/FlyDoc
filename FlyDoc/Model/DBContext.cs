@@ -1,9 +1,12 @@
-﻿using System;
+﻿using FlyDoc.Lib;
+using System;
 using System.Collections.Generic;
 using System.Configuration;
 using System.Data;
+using System.Linq;
 using System.Data.SqlClient;
 using System.Diagnostics;
+using System.Collections;
 using System.Windows.Forms;
 
 namespace FlyDoc.Model
@@ -281,24 +284,33 @@ namespace FlyDoc.Model
             return GetQueryTable("SELECT * FROM vwNote");// ORDER BY Id DESC");
         }
 
-        public static DataTable GetNoteTemplates()
-        {
-            return GetQueryTable("SELECT * FROM NoteTemplates");
-        }
-
         public static DataRow GetNote(int Id)
         {
             string sqlText = string.Format("SELECT * FROM Notes WHERE (Id = {0})", Id);
             DataTable dt = GetQueryTable(sqlText);
             return ((dt == null) || (dt.Rows.Count == 0)) ? null : dt.Rows[0];
         }
-        // TODO получить из БД доп.таблицу для служебки
-        public static DataTable GetNoteInclude(int Id)
+
+        public static DataTable GetNoteTemplates()
         {
-            string sqlText = string.Format("SELECT * FROM NoteIncludeTable WHERE (IdNotes = {0})", Id);
+            return GetQueryTable("SELECT * FROM NoteTemplates");
+        }
+
+        // получить настройки шаблона
+        public static DataRow GetNoteTemplatesConfig(int Id)
+        {
+            string sqlText = string.Format("SELECT * FROM NoteTemplates WHERE (Id='{0}')", Id);
+            DataTable dt = GetQueryTable(sqlText);
+            return ((dt == null) || (dt.Rows.Count == 0)) ? null : dt.Rows[0];
+        }
+
+        public static DataTable GetNoteIncludeByNoteId(int noteId)
+        {
+            string sqlText = string.Format("SELECT * FROM NoteIncludeTable WHERE (IdNotes = {0})", noteId);
             DataTable dt = GetQueryTable(sqlText);
             return dt;
         }
+
         public static bool NoteApproved(int Id, string ApprColumn, bool Appr)
         {
             string sqlText = string.Format("UPDATE Notes SET [ApprDir] = NULL WHERE (Id = {0})", Id, Appr);
@@ -309,10 +321,24 @@ namespace FlyDoc.Model
         // TODO добавление в [NoteIncludeTable] данных из Note.Include
         public static bool InsertNotes(Note note, out int newId)
         {
-            string sqlText = string.Format("INSERT INTO Notes (Templates, IdDepartment, [Date], NameAvtor, BodyUp, BodyDown, HeadNach, HeadDir) VALUES ({0}, {1}, CONVERT(datetime, '{2}', 20), '{3}', '{4}', '{5}', '{6}', '{7}'); SELECT @@IDENTITY",
-                 note.NoteTemplateId, note.DepartmentId, note.Date.ToString("yyyy-MM-dd HH:mm:ss"), note.NameAvtor, note.BodyUp, note.BodyDown, note.HeadNach, note.HeadDir);
+            string sqlText = string.Format("INSERT INTO Notes (Templates, IdDepartment, [Date], NameAvtor, BodyUp, BodyDown, HeadNach, HeadDir) VALUES ({0}, {1}, {2}, '{3}', '{4}', '{5}', '{6}', '{7}'); SELECT @@IDENTITY",
+                 note.NoteTemplateId, note.DepartmentId, note.Date.ToSQLExpr(), note.NameAvtor, note.BodyUp, note.BodyDown, note.HeadNach, note.HeadDir);
             DataTable dt = GetQueryTable(sqlText);
             newId = Convert.ToInt32(dt.Rows[0][0]);
+            note.Id = newId;
+
+            // note.Include
+            if ((newId > 0) && (note.Include != null))
+            {
+                foreach (NoteInclude incl in note.Include)
+                {
+                    incl.IdNotes = newId;
+                    sqlText = incl.GetSQLInsertText() + "; SELECT @@IDENTITY";
+                    dt = GetQueryTable(sqlText);
+                    incl.Id = Convert.ToInt32(dt.Rows[0][0]);
+                }
+            }
+
             return (newId > 0);
         }
 
@@ -321,9 +347,42 @@ namespace FlyDoc.Model
         {
             string sqlText = string.Format("UPDATE Notes SET {0} WHERE (Id = {1})", note.GetSQLUpdateString(), note.Id);
             bool result = Execute(sqlText);
-            if (result)
+
+            // note.Include
+            if ((result) && (note.Include != null) && (note.Include.Count > 0))
             {
-                //note.Include
+                // то, что лежит в БД
+                DataTable dtIncl = GetNoteIncludeByNoteId(note.Id);
+                List<int> dbInclIds = new List<int>();
+                foreach (DataRow item in dtIncl.Rows) dbInclIds.Add((int)item["Id"]);
+
+                // удалить из БД строки, отсутствующие в таблице
+                int[] delIds = dbInclIds.Except(note.Include.Select(i => i.Id)).ToArray();
+                if (delIds.Length > 0)
+                {
+                    string sDelIds = string.Join(",", delIds.Select(j => j.ToString()).ToArray());
+                    sqlText = string.Format("DELETE FROM NoteIncludeTable WHERE [Id] In ({0})", sDelIds);
+                    Execute(sqlText);
+                }
+                // обновить или добавить
+                DataTable dtTmp;
+                foreach (NoteInclude incl in note.Include)
+                {
+                    // добавить
+                    if (incl.Id == 0)
+                    {
+                        incl.IdNotes = note.Id;
+                        sqlText = incl.GetSQLInsertText() + "; SELECT @@IDENTITY";
+                        dtTmp = GetQueryTable(sqlText);
+                        incl.Id = Convert.ToInt32(dtTmp.Rows[0][0]);
+                    }
+                    // TODO найти измененные строки и значения
+                    else
+                    {
+                        sqlText = incl.GetSQLUpdateText();
+                        Execute(sqlText);
+                    }
+                }
             }
 
             return result;
@@ -366,12 +425,5 @@ namespace FlyDoc.Model
 
         #endregion
 
-        // получить настройки шаблона
-        public static DataRow GetNoteTemplatesConfig(int Id)
-        {
-            string sqlText = string.Format("SELECT * FROM NoteTemplates WHERE (Id='{0}')", Id);
-            DataTable dt = GetQueryTable(sqlText);
-            return ((dt == null) || (dt.Rows.Count == 0)) ? null : dt.Rows[0];
-        }
     }  // class DBContext
 }
