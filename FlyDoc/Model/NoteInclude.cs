@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 
 namespace FlyDoc.Model
@@ -11,45 +12,45 @@ namespace FlyDoc.Model
     {
         public int Id { get; set; }
         public int IdNotes { get; set; }
-        public int Order { get; set; }
-        public DateTime Date { get; set; }
+        public Nullable<int> Order { get; set; }
+        public Nullable<DateTime> Date { get; set; }
         public string NumberDoc { get; set; }
-        public int Artikul { get; set; }
-        public decimal Amount { get; set; }
+        public Nullable<int> Artikul { get; set; }
+        public Nullable<decimal> Amount { get; set; }
         public string Description { get; set; }
         public string NumberDoc2 { get; set; }
-        public DateTime DateDoc { get; set; }
+        public Nullable<DateTime> DateDoc { get; set; }
         public string Code { get; set; }
-        public decimal Sum { get; set; }
+        public Nullable<decimal> Sum { get; set; }
         public string Label { get; set; }
-        public decimal Price { get; set; }
+        public Nullable<decimal> Price { get; set; }
         public string Unit { get; set; }
 
-        private static List<ColumnNameHeader> _nameHeaders;
+        private static List<ColumnNameHeader> _headers;
         static NoteInclude()
         {
-            _nameHeaders = new List<ColumnNameHeader>()
+            _headers = new List<ColumnNameHeader>()
             {
-                new ColumnNameHeader("Order", "№ п/п"),
-                new ColumnNameHeader("Date", "Date"),
-                new ColumnNameHeader("NumberDoc", "№ документа"),
-                new ColumnNameHeader("Artikul", "Артикул"),
-                new ColumnNameHeader("Amount", "Кількість"),
-                new ColumnNameHeader("Description", "Назва товару"),
-                new ColumnNameHeader("NumberDoc2", "NumberDoc2"),
-                new ColumnNameHeader("DateDoc", "DateDoc"),
-                new ColumnNameHeader("Code", "Code"),
-                new ColumnNameHeader("Sum", "Сума, в грн"),
-                new ColumnNameHeader("Label", "Label"),
-                new ColumnNameHeader("Price", "Ціна, грн."),
-                new ColumnNameHeader("Unit", "Од. вим.")
+                new ColumnNameHeader("Order", "№ п/п", true, null),
+                new ColumnNameHeader("Date", "Date", true, (o)=>Convert.ToDateTime(o).ToSQLExpr()),
+                new ColumnNameHeader("NumberDoc", "№ документа", true, (o)=>"'" + o.ToString() + "'"),
+                new ColumnNameHeader("Artikul", "Артикул", true, null),
+                new ColumnNameHeader("Amount", "Кількість", true, (o)=>Convert.ToDecimal(o).ToString(CultureInfo.InvariantCulture)),
+                new ColumnNameHeader("Description", "Назва товару", true, (o)=>"'" + o.ToString() + "'"),
+                new ColumnNameHeader("NumberDoc2", "NumberDoc2", true, (o)=>"'" + o.ToString() + "'"),
+                new ColumnNameHeader("DateDoc", "DateDoc", true, (o)=>Convert.ToDateTime(o).ToSQLExpr()),
+                new ColumnNameHeader("Code", "Code", true, (o)=>"'" + o.ToString() + "'"),
+                new ColumnNameHeader("Sum", "Сума", true, (o)=>Convert.ToDecimal(o).ToString(CultureInfo.InvariantCulture)),
+                new ColumnNameHeader("Label", "Label", true, (o)=>"'" + o.ToString() + "'"),
+                new ColumnNameHeader("Price", "Ціна", true, (o)=>Convert.ToDecimal(o).ToString(CultureInfo.InvariantCulture)),
+                new ColumnNameHeader("Unit", "Од. вим.", true, (o)=>"'" + o.ToString() + "'")
             };
         }
         // получить имя поля таблицы NoteIncludeTable (столбца доп.таблицы) по заголовку поля (столбца доп.таблицы)
         internal static string GetNameByHeader(string header)
         {
             string retVal = null;
-            ColumnNameHeader cn = NoteInclude._nameHeaders.FirstOrDefault(c => c.Header == header);
+            ColumnNameHeader cn = NoteInclude._headers.FirstOrDefault(c => (c.Header == header) || (header.StartsWith(c.Header)));
             if (cn != null) retVal = cn.Name;
 
             return retVal;
@@ -58,7 +59,7 @@ namespace FlyDoc.Model
         internal static string GetHeaderByName(string name)
         {
             string retVal = null;
-            ColumnNameHeader cn = NoteInclude._nameHeaders.FirstOrDefault(c => c.Name == name);
+            ColumnNameHeader cn = NoteInclude._headers.FirstOrDefault(c => c.Name == name);
             if (cn != null) retVal = cn.Header;
 
             return retVal;
@@ -69,49 +70,58 @@ namespace FlyDoc.Model
         {
             public string Name { get; set; }
             public string Header { get; set; }
+            public bool IsDBNull { get; set; }
+            private Func<object, string> _toSQLStringFunc { get; set; }
 
             public ColumnNameHeader()
             {
             }
 
-            public ColumnNameHeader(string name, string header)
+            public ColumnNameHeader(string name, string header, bool isDBNull, Func<object, string> toSQLStrFunc)
             {
                 this.Name = name; this.Header = header;
+                this.IsDBNull = isDBNull;
+                this._toSQLStringFunc = toSQLStrFunc;
             }
+
+            public string GetSQLStringValue(object objValue)
+            {
+                if (objValue == null)
+                    return "Null";
+                else
+                {
+                    if (_toSQLStringFunc == null)
+                        return objValue.ToString();
+                    else
+                        return _toSQLStringFunc(objValue);
+                }
+            }
+
         }
 
-        internal string GetSQLInsertText()
+
+        internal string GetSQLInsertText(List<string> tplFields)
         {
             List<string> flds = new List<string>();
             List<string> vals = new List<string>();
 
             flds.Add("IdNotes"); vals.Add(this.IdNotes.ToString());
 
-            if (this.Order != 0) { flds.Add("[Order]"); vals.Add(this.Order.ToString()); }
-
-            if (this.Date != DateTime.MinValue) { flds.Add("[Date]"); vals.Add(this.Date.ToSQLExpr()); }
-
-            if (this.NumberDoc.IsNull() == false) { flds.Add("NumberDoc"); vals.Add("'" + this.NumberDoc + "'"); }
-
-            if (this.Artikul != 0) { flds.Add("Artikul"); vals.Add(this.Artikul.ToString()); }
-
-            if (this.Amount != 0) { flds.Add("Amount"); vals.Add(this.Amount.ToString(CultureInfo.InvariantCulture)); }
-
-            if (this.Description.IsNull() == false) { flds.Add("Description"); vals.Add("'" + this.Description + "'"); }
-
-            if (this.NumberDoc2.IsNull() == false) { flds.Add("NumberDoc2"); vals.Add("'" + this.NumberDoc2 + "'"); }
-
-            if (this.DateDoc != DateTime.MinValue) { flds.Add("DateDoc"); vals.Add(this.DateDoc.ToSQLExpr()); }
-
-            if (this.Code.IsNull() == false) { flds.Add("Code"); vals.Add("'" + this.Code + "'"); }
-
-            if (this.Sum != 0) { flds.Add("[Sum]"); vals.Add(this.Sum.ToString(CultureInfo.InvariantCulture)); }
-
-            if (this.Label.IsNull() == false) { flds.Add("Label"); vals.Add("'" + this.Label + "'"); }
-
-            if (this.Price != 0) { flds.Add("Price"); vals.Add(this.Price.ToString(CultureInfo.InvariantCulture)); }
-
-            if (this.Unit.IsNull() == false) { flds.Add("Unit"); vals.Add("'" + this.Unit + "'"); }
+            ColumnNameHeader colDescr;
+            // коллекция свойств объекта типа NoteInclude
+            List<PropertyInfo> pInfos = typeof(NoteInclude).GetProperties().ToList();
+            PropertyInfo pInfo;
+            foreach (string fldName in tplFields)
+            {
+                flds.Add("[" + fldName + "]");
+                colDescr = _headers.FirstOrDefault(c => c.Name == fldName);
+                if (colDescr != null)
+                {
+                    pInfo = pInfos.FirstOrDefault(p => p.Name == fldName);
+                    string sqlStrVal = colDescr.GetSQLStringValue(pInfo.GetValue(this, null));
+                    vals.Add(sqlStrVal);
+                }
+            }
 
             string sFlds = string.Join(", ", flds.ToArray());
             string sVals = string.Join(", ", vals.ToArray());
@@ -120,38 +130,29 @@ namespace FlyDoc.Model
             return retVal;
         }
 
-        internal string GetSQLUpdateText()
+        internal string GetSQLUpdateText(List<string> tplFields)
         {
             List<string> sets = new List<string>();
 
-            if (this.Order != 0) sets.Add("[Order] = " + this.Order.ToString());
+            ColumnNameHeader colDescr;
+            // коллекция свойств объекта типа NoteInclude
+            List<PropertyInfo> pInfos = typeof(NoteInclude).GetProperties().ToList();
+            PropertyInfo pInfo;
+            foreach (string fldName in tplFields)
+            {
+                colDescr = _headers.FirstOrDefault(c => c.Name == fldName);
+                if (colDescr != null)
+                {
+                    pInfo = pInfos.FirstOrDefault(p => p.Name == fldName);
+                    object obj = pInfo.GetValue(this, null);
+                    string sqlStrVal = colDescr.GetSQLStringValue(obj);
 
-            if (this.Date != DateTime.MinValue) sets.Add("[Date] = " + this.Date.ToSQLExpr());
-
-            if (this.NumberDoc.IsNull() == false) sets.Add("NumberDoc = '" + this.NumberDoc + "'");
-
-            if (this.Artikul != 0) sets.Add("Artikul = " + this.Artikul.ToString());
-
-            if (this.Amount != 0) sets.Add("Amount = " + this.Amount.ToString(CultureInfo.InvariantCulture));
-
-            if (this.Description.IsNull() == false) sets.Add("Description = '" + this.Description + "'");
-
-            if (this.NumberDoc2.IsNull() == false) sets.Add("NumberDoc2 = '" + this.NumberDoc2 + "'");
-
-            if (this.DateDoc != DateTime.MinValue) sets.Add("DateDoc = " + this.DateDoc.ToSQLExpr());
-
-            if (this.Code.IsNull() == false) sets.Add("Code = '" + this.Code + "'");
-
-            if (this.Sum != 0) sets.Add("[Sum] = " + this.Sum.ToString(CultureInfo.InvariantCulture));
-
-            if (this.Label.IsNull() == false) sets.Add("Label = '" + this.Label + "'");
-
-            if (this.Price != 0) sets.Add("Price = " + this.Price.ToString(CultureInfo.InvariantCulture));
-
-            if (this.Unit.IsNull() == false) sets.Add("Unit = '" + this.Unit + "'");
+                    sets.Add("[" + fldName + "] = " + sqlStrVal);
+                }
+            }
 
             string sSets = string.Join(", ", sets.ToArray());
-            string retVal = string.Format("UPDATE NoteIncludeTable SET {0} WHERE ({1})", sSets, this.Id);
+            string retVal = string.Format("UPDATE NoteIncludeTable SET {0} WHERE (Id = {1})", sSets, this.Id);
 
             return retVal;
         }

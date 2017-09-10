@@ -318,7 +318,6 @@ namespace FlyDoc.Model
             return Execute(sqlText);
         }
 
-        // TODO добавление в [NoteIncludeTable] данных из Note.Include
         public static bool InsertNotes(Note note, out int newId)
         {
             string sqlText = string.Format("INSERT INTO Notes (Templates, IdDepartment, [Date], NameAvtor, BodyUp, BodyDown, HeadNach, HeadDir) VALUES ({0}, {1}, {2}, '{3}', '{4}', '{5}', '{6}', '{7}'); SELECT @@IDENTITY",
@@ -333,7 +332,7 @@ namespace FlyDoc.Model
                 foreach (NoteInclude incl in note.Include)
                 {
                     incl.IdNotes = newId;
-                    sqlText = incl.GetSQLInsertText() + "; SELECT @@IDENTITY";
+                    sqlText = incl.GetSQLInsertText(note.IncludeFields) + "; SELECT @@IDENTITY";
                     dt = GetQueryTable(sqlText);
                     incl.Id = Convert.ToInt32(dt.Rows[0][0]);
                 }
@@ -342,11 +341,18 @@ namespace FlyDoc.Model
             return (newId > 0);
         }
 
-        // TODO сохранение в [NoteIncludeTable] данных из Note.Include
         public static bool UpdateNotes(Note note)
         {
             string sqlText = string.Format("UPDATE Notes SET {0} WHERE (Id = {1})", note.GetSQLUpdateString(), note.Id);
-            bool result = Execute(sqlText);
+            bool result = false;
+            try
+            {
+                result = Execute(sqlText);
+            }
+            catch (Exception ex)
+            {
+                showErrorBox("Notes", "обновления", ex.Message + ": " + sqlText);
+            }
 
             // note.Include
             if ((result) && (note.Include != null) && (note.Include.Count > 0))
@@ -362,30 +368,58 @@ namespace FlyDoc.Model
                 {
                     string sDelIds = string.Join(",", delIds.Select(j => j.ToString()).ToArray());
                     sqlText = string.Format("DELETE FROM NoteIncludeTable WHERE [Id] In ({0})", sDelIds);
-                    Execute(sqlText);
-                }
-                // обновить или добавить
-                DataTable dtTmp;
-                foreach (NoteInclude incl in note.Include)
-                {
-                    // добавить
-                    if (incl.Id == 0)
+                    try
                     {
-                        incl.IdNotes = note.Id;
-                        sqlText = incl.GetSQLInsertText() + "; SELECT @@IDENTITY";
-                        dtTmp = GetQueryTable(sqlText);
-                        incl.Id = Convert.ToInt32(dtTmp.Rows[0][0]);
-                    }
-                    // TODO найти измененные строки и значения
-                    else
-                    {
-                        sqlText = incl.GetSQLUpdateText();
                         Execute(sqlText);
                     }
+                    catch (Exception ex)
+                    {
+                        showErrorBox("NoteIncludeTable", "удаления", ex.Message + ": " + sqlText);
+                    }
+                }
+                // обновить или добавить
+                foreach (NoteInclude incl in note.Include)
+                {
+                    updNoteIncl(incl, note.Id, note);
                 }
             }
 
             return result;
+        }
+
+        private static void updNoteIncl(NoteInclude incl, int noteId, Note note)
+        {
+            string sqlText = "";
+
+            // добавить
+            if (incl.Id == 0)
+            {
+                incl.IdNotes = noteId;
+                try
+                {
+                    sqlText = incl.GetSQLInsertText(note.IncludeFields) + "; SELECT @@IDENTITY";
+                    using (DataTable dtTmp = GetQueryTable(sqlText))
+                    {
+                        incl.Id = Convert.ToInt32(dtTmp.Rows[0][0]);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    showErrorBox("NoteIncludeTable", "добавления", ex.Message + ": " + sqlText);
+                }
+            }
+            else
+            {
+                try
+                {
+                    sqlText = incl.GetSQLUpdateText(note.IncludeFields);
+                    Execute(sqlText);
+                }
+                catch (Exception ex)
+                {
+                    showErrorBox("NoteIncludeTable", "обновления", ex.Message + ": " + sqlText);
+                }
+            }
         }
 
         public static bool DeleteNotes(int Id)
@@ -424,6 +458,11 @@ namespace FlyDoc.Model
         }
 
         #endregion
+
+        private static void showErrorBox(string tableName, string actionName, string errText)
+        {
+            MessageBox.Show(string.Format("Ошибка {1} записи в {0}: {2}", actionName, tableName, errText), "Обновление " + tableName, MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
+        }
 
     }  // class DBContext
 }

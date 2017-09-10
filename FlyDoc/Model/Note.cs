@@ -47,14 +47,37 @@ namespace FlyDoc.Model
         public string HeadDir { get; set; }
 
         public List<NoteInclude> Include { get; set; }
+        private List<string> _inclFields;
+        public List<string> IncludeFields { get { return _inclFields; } }
+
 
         public Note()
         {
+            _inclFields = new List<string>();
+        }
 
+        public void ResetIncludeFields(DataRow drTemplate = null)
+        {
+            if (drTemplate == null) drTemplate = DBContext.GetNoteTemplatesConfig(this.NoteTemplateId);
+
+            if (drTemplate["TableColums"].ToInt() == 0)
+            {
+                if (_inclFields.Count > 0) _inclFields.Clear();
+            }
+            else
+            {
+                _inclFields.Clear();
+                if (drTemplate != null)
+                    foreach (DataColumn col in drTemplate.Table.Columns)
+                    {
+                        if (col.ColumnName.StartsWith("ColumName") && (!drTemplate.IsNull(col)))
+                            _inclFields.Add(NoteInclude.GetNameByHeader((string)drTemplate[col]));
+                    }
+            }
         }
 
         // объект, заполненный данными из БД
-        public Note(int noteId)
+        public Note(int noteId) : this()
         {
             DataRow dr = DBContext.GetNote(noteId);
             if (dr != null)
@@ -96,7 +119,6 @@ namespace FlyDoc.Model
                 HeadDir = dr["HeadDir"].ToString();
             }
 
-            // TODO заполнить из БД Include - ПРОТЕСТИТЬ !!!
             DataTable dt = DBContext.GetNoteIncludeByNoteId(noteId);
             if (dt != null)
             {
@@ -114,7 +136,7 @@ namespace FlyDoc.Model
                     {
                         if (colNames.Contains(item.Name))
                         {
-                            item.SetValue(noteIncl, row[item.Name], null);
+                            item.SetValue(noteIncl, (row.IsNull(item.Name) ? null : row[item.Name]), null);
                         }
                     }
                     // и добавляем в коллекцию Include
@@ -129,7 +151,7 @@ namespace FlyDoc.Model
             PropertyInfo[] fields = (typeof(Note)).GetProperties();
             foreach (PropertyInfo item in fields)
             {
-                if ((item.Name == "Id") || (item.Name == "Include")) continue;
+                if ((item.Name == "Id") || (item.Name == "Include") || (item.Name == "IncludeFields")) continue;
                 if (item.Name.StartsWith("Name") && (item.Name != "NameAvtor")) continue;
 
                 if (retVal.Length > 0) retVal += ", ";

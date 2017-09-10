@@ -14,6 +14,7 @@ using iTextSharp.text;
 using iTextSharp.text.pdf;
 using System.Diagnostics;
 using System.IO;
+using System.Reflection;
 
 namespace FlyDoc.Forms
 {
@@ -43,19 +44,7 @@ namespace FlyDoc.Forms
             // получить данные и настроить комбобокс отделов
             FormsHelper.SetDepartmentsComboBox(cbDepartment);
 
-            // TODO отображение доп.данных из БД
-            dgvTable.Visible = false;
-            BindingList<NoteInclude> dgvSource = new BindingList<NoteInclude>();
-            if (_note.Include != null) _note.Include.ForEach(i => dgvSource.Add(i));
-            dgvTable.DataSource = dgvSource;
-            // заголовки столбцов
-            string sHeader;
-            foreach (DataGridViewColumn col in dgvTable.Columns)
-            {
-                sHeader = NoteInclude.GetHeaderByName(col.Name);
-                if (sHeader.IsNull() == false) col.HeaderText = sHeader;
-            }
-            tbBodyDown.Visible = false;
+            setNoteIncludeTable();
 
             // режим добавления
             if (_isNew)
@@ -70,6 +59,37 @@ namespace FlyDoc.Forms
             {
                 setControlsForEdit();
             }
+        }
+
+        private void setNoteIncludeTable()
+        {
+            bool isNoRows = true;
+            // заполнить таблицу реальными данными или фиктивной записью (для создания колонок таблицы)
+            BindingList<NoteInclude> dgvSource = new BindingList<NoteInclude>();
+            if (_isNew == false)
+            {
+                if (_note.Include != null)
+                {
+                    isNoRows = false;
+                    _note.Include.ForEach(i => dgvSource.Add(i));
+                }
+                else
+                    dgvSource.Add(new NoteInclude());
+            }
+            else
+                dgvSource.Add(new NoteInclude());
+
+            dgvTable.DataSource = dgvSource;
+
+            // заголовки столбцов
+            string sHeader;
+            foreach (DataGridViewColumn col in dgvTable.Columns)
+            {
+                sHeader = NoteInclude.GetHeaderByName(col.Name);
+                if (sHeader.IsNull() == false) col.HeaderText = sHeader;
+            }
+
+            if (isNoRows) dgvSource.Clear();
         }
 
         private void setControlsForEdit()
@@ -150,13 +170,14 @@ namespace FlyDoc.Forms
             _note.BodyUp = this.tbBodyUp.Text;
             _note.BodyDown = this.tbBodyDown.Text;
 
-            if ((dgvTable.Visible == true) && (dgvTable.Rows.Count > 0))
+            if ((dgvTable.Visible == true) && ((dgvTable.Rows.Count-1) > 0))
             {
                 if (_note.Include == null) _note.Include = new List<NoteInclude>();
                 else _note.Include.Clear();
 
                 IList<NoteInclude> inclList = (IList<NoteInclude>)dgvTable.DataSource;
                 foreach (NoteInclude item in inclList) _note.Include.Add(item);
+
             }
 
         }  // method
@@ -231,22 +252,19 @@ namespace FlyDoc.Forms
             }
             else
             {
-                dgvTable.Rows.Clear();
+                if (_isNew) dgvTable.Rows.Clear();
+
                 dgvTable.Visible = true;
                 tbBodyDown.Visible = true;
 
                 // скрыть все столбцы
                 foreach (DataGridViewColumn item in dgvTable.Columns) item.Visible = false;
+                // заполнить коллекцию полей
+                _note.ResetIncludeFields(dr);
                 // отобразить только те, которые есть в шаблоне
-                string colName, colHeader;
-                foreach (DataColumn col in dr.Table.Columns)
+                foreach (string colName in _note.IncludeFields)
                 {
-                    if (col.ColumnName.StartsWith("ColumName") && (!dr.IsNull(col)))
-                    {
-                        colHeader = (string)dr[col];
-                        colName = NoteInclude.GetNameByHeader(colHeader);
-                        if (!colName.IsNull()) dgvTable.Columns[colName].Visible = true;
-                    }
+                    dgvTable.Columns[colName].Visible = true;
                 }
             }
 
@@ -332,10 +350,63 @@ namespace FlyDoc.Forms
                     // таблицу взять из DataGridView
                     if (dgvTable.Visible == true)
                     {
-                        foreach (DataGridViewRow row in dgvTable.Rows)
-                        {
+                        List<PropertyInfo> propInfos = typeof(NoteInclude).GetProperties().ToList();
+                        PropertyInfo propInfo;
 
+                        int colVisCount = 0;
+                        foreach (DataGridViewColumn col in dgvTable.Columns) if (col.Visible) colVisCount++;
+
+                        PdfPTable table = new PdfPTable(colVisCount);
+
+                        table.SpacingBefore = 20f;
+                        table.SpacingAfter = 20f;
+                        table.WidthPercentage = 100;
+                        table.HorizontalAlignment = iTextSharp.text.Element.ALIGN_LEFT;
+                        //table.WidthPercentage
+                        foreach (DataGridViewColumn col in dgvTable.Columns)
+                        {
+                            if (col.Visible) table.AddCell(new Paragraph(col.HeaderText, font12));
                         }
+
+                        foreach (DataGridViewRow row in dgvTable.Rows)
+                            foreach (DataGridViewColumn col in dgvTable.Columns)
+                                if (col.Visible)
+                                {
+                                    object oValue = row.Cells[col.Name].Value;
+                                    string cellValue = oValue.ToStringNull();
+
+                                    table.AddCell(new Paragraph(cellValue, font12));
+                                }
+
+
+                        document.Add(table);
+
+                        //PdfPCell cell = new PdfPCell(new Phrase("Simple table",
+                        //  new iTextSharp.text.Font(iTextSharp.text.Font.FontFamily.TIMES_ROMAN, 16,
+                        //  iTextSharp.text.Font.NORMAL, new BaseColor(Color.Orange))));
+                        //cell.BackgroundColor = new BaseColor(Color.Wheat);
+                        //cell.Padding = 5;
+                        //cell.Colspan = 3;
+                        //cell.HorizontalAlignment = Element.ALIGN_CENTER;
+                        //table.AddCell(cell);
+
+                        //table.AddCell("Col 1 Row 1");
+                        //table.AddCell("Col 2 Row 1");
+                        //table.AddCell("Col 3 Row 1");
+                        //table.AddCell("Col 1 Row 2");
+                        //table.AddCell("Col 2 Row 2");
+                        //table.AddCell("Col 3 Row 2");
+
+
+                        //foreach (NoteInclude incl in _note.Include)
+                        //{
+                        //    foreach (string fldName in _note.IncludeFields)
+                        //    {
+                        //        propInfo = propInfos.FirstOrDefault(prp => prp.Name == fldName);
+                        //        object obj = propInfo.GetValue(this, null);
+                        //    }
+
+                        //}
                     }
 
                     // текст 2
