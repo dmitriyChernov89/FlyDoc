@@ -151,9 +151,7 @@ namespace FlyDoc.ViewModel
                 _dataGrid.DataSource = _dataTable;
 
                 // скрыть колонку Id
-           // _dataGrid.Columns["Id"].Visible = false;
-           // _dataGrid.Columns["DepartmentId"].Visible = false;
-           _dataGrid.Columns[1].Visible = false; //прячем "DepartmentId"
+                if (isExistIdColumn) _dataGrid.Columns["Id"].Visible = false;
             }
         }
 

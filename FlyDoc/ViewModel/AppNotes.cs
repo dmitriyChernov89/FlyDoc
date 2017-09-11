@@ -12,11 +12,37 @@ namespace FlyDoc.ViewModel
 {
     public class AppNotes : AppModelBase
     {
-        #region fields
-        #endregion
+        public static Dictionary<string, DGVColDescr> dgvColDescr;
 
-        #region properties
-        #endregion
+        static AppNotes()
+        {
+            dgvColDescr = new Dictionary<string, DGVColDescr>();
+            setColDescr("Тип", fillWeight: 800);
+            setColDescr("Відділ", fillWeight: 200);
+            setColDescr("Дата", fillWeight: 250);
+            setColDescr("ApprAvtor", "Автор", DataGridViewContentAlignment.MiddleCenter, 80, true);
+            setColDescr("ApprDir", "Директор", DataGridViewContentAlignment.MiddleCenter, 80, true);
+            setColDescr("ApprComdir", "КомДир", DataGridViewContentAlignment.MiddleCenter, 80, true);
+            setColDescr("ApprSBNach", "СБНач", DataGridViewContentAlignment.MiddleCenter, 80, true);
+            setColDescr("ApprSB", "СБ", DataGridViewContentAlignment.MiddleCenter, 80, true);
+            setColDescr("ApprKasa", "Каса", DataGridViewContentAlignment.MiddleCenter, 80, true);
+            setColDescr("ApprNach", "Нач", DataGridViewContentAlignment.MiddleCenter, 80, true);
+            setColDescr("ApprFin", "Фiн", DataGridViewContentAlignment.MiddleCenter, 80, true);
+            setColDescr("ApprDostavka", "Доставка", DataGridViewContentAlignment.MiddleCenter, 80, true);
+            setColDescr("ApprEnerg", "Енерг", DataGridViewContentAlignment.MiddleCenter, 80, true);
+            setColDescr("ApprSklad", "Склад", DataGridViewContentAlignment.MiddleCenter, 80, true);
+            setColDescr("ApprBuh", "Бух", DataGridViewContentAlignment.MiddleCenter, 80, true);
+            setColDescr("ApprASU", "АСУ", DataGridViewContentAlignment.MiddleCenter, 80, true);
+            setColDescr("ApprAll", "Всi", DataGridViewContentAlignment.MiddleCenter, 80, true);
+        }
+        private static void setColDescr(string name, 
+            string header=null, DataGridViewContentAlignment alignment = DataGridViewContentAlignment.NotSet, int fillWeight = 100, bool threeStates=false)
+        {
+            if (header == null) header = name;
+            DGVColDescr col = new DGVColDescr() { Name = name, Header = header, Alignment=alignment, FillWeight=fillWeight, ThreeStates=threeStates};
+
+            dgvColDescr.Add(name, col);
+        }
 
         public AppNotes()
         {
@@ -92,20 +118,9 @@ namespace FlyDoc.ViewModel
        
             base.LoadDataToGrid();
 
-            DataGridViewColumn column1 = _dataGrid.Columns[1];
-            column1.Name = "Відділ";
-            column1.AutoSizeMode = DataGridViewAutoSizeColumnMode.DisplayedCells;
+            if (_dataGrid.Columns.Contains("DepartmentId")) _dataGrid.Columns["DepartmentId"].Visible = false;
 
-            DataGridViewColumn column2 = _dataGrid.Columns[2];
-            column2.AutoSizeMode = DataGridViewAutoSizeColumnMode.DisplayedCells;
-            DataGridViewColumn column3 = _dataGrid.Columns[3];
-            column3.AutoSizeMode = DataGridViewAutoSizeColumnMode.DisplayedCells;
-            DataGridViewColumn column4 = _dataGrid.Columns[4];
-            column4.AutoSizeMode = DataGridViewAutoSizeColumnMode.DisplayedCells;
-            DataGridViewColumn column5 = _dataGrid.Columns[5];
-            column5.AutoSizeMode = DataGridViewAutoSizeColumnMode.DisplayedCells;
-            DataGridViewColumn column6 = _dataGrid.Columns[6];
-            column6.AutoSizeMode = DataGridViewAutoSizeColumnMode.DisplayedCells;
+            AppFuncs.SetDGVColumnsFromDescr(_dataGrid, AppNotes.dgvColDescr);
         }
         #endregion
 

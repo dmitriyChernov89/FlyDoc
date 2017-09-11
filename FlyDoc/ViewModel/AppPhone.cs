@@ -84,10 +84,10 @@ namespace FlyDoc.ViewModel
         public override void LoadDataToGrid()
         {
             _dataTable = DBContext.GetPhones();  // чтение данных о сл.зап.
+
             base.LoadDataToGrid();
 
-           // _dataGrid.Columns[5].Visible = false;
-           // _dataGrid.Columns[8].Visible = false;  // DepartmentId
+            if (_dataGrid.Columns.Contains("DepartmentId")) _dataGrid.Columns["DepartmentId"].Visible = false;
 
             DataGridViewColumn column1 = _dataGrid.Columns[1];
             column1.AutoSizeMode = DataGridViewAutoSizeColumnMode.DisplayedCells;

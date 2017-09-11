@@ -64,7 +64,6 @@ namespace FlyDoc.Forms
             InitializeComponent();
 
             _noteModel = new AppNotes() { ViewForm = this, DataGrid = this.dgvNotes };
-           
 
             _noteTemplateModel = new AppNoteTemplates() { ViewForm = this, DataGrid = this.dgvNoteTemplates };
          
@@ -80,7 +79,6 @@ namespace FlyDoc.Forms
 
             _phoneModel = new AppPhone() { ViewForm = this, DataGrid = this.dgvPhonebook };
             _phoneModel.LoadDataToGrid();
-
         }
 
         public void FlyDoc_Load(object sender, EventArgs e)
