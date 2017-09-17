@@ -310,13 +310,38 @@ namespace FlyDoc.Model
             DataTable dt = GetQueryTable(sqlText);
             return dt;
         }
-
-        public static bool NoteApproved(int Id, string ApprColumn, bool Appr)
+        #region DBApproved_and_notApproeved
+        public static bool NoteApprovedDir(int Id, string ApprColumn, bool Appr)
         {
-            string sqlText = string.Format("UPDATE Notes SET [ApprDir] = NULL WHERE (Id = {0})", Id, Appr);
-            //MessageBox.Show(sqlText);
+            string sqlText = string.Format("UPDATE Notes SET [ApprDir] = 0 WHERE (Id = {0})", Id, Appr);
             return Execute(sqlText);
         }
+        public static bool NotNoteApprovedDir(int Id, string ApprColumn, bool Appr)
+        {
+            string sqlText = string.Format("UPDATE Notes SET [ApprDir] = 1 WHERE (Id = {0})", Id, Appr);
+            return Execute(sqlText);
+        }
+        public static bool NoteApprovedCom(int Id, string ApprColumn, bool Appr)
+        {
+            string sqlText = string.Format("UPDATE Notes SET [ApprComdir] = 0 WHERE (Id = {0})", Id, Appr);
+            return Execute(sqlText);
+        }
+        public static bool NotNoteApprovedCom(int Id, string ApprColumn, bool Appr)
+        {
+            string sqlText = string.Format("UPDATE Notes SET [ApprComdir] = 1 WHERE (Id = {0})", Id, Appr);
+            return Execute(sqlText);
+        }
+
+        //TODO
+        //Разобратся с кнопкой Автора
+        public static bool NoteApprovedAvtor(int Id, string ApprColumn, bool Appr)
+        {
+            string sqlText = string.Format("UPDATE Notes SET [ApprAvtor] = 0 WHERE (Id = {0})", Id, Appr);
+            return Execute(sqlText);
+        }
+
+        #endregion
+
 
         public static bool InsertNotes(Note note, out int newId)
         {

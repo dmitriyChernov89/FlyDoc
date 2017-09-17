@@ -282,10 +282,36 @@ namespace FlyDoc.Forms
             btnApprASU.Visible = dr["ApprASU"].ToBool();
         }
 
+        #region btn_approved_and_notApproved
         private void btnApprDir_Click(object sender, EventArgs e)
         {
-            DBContext.NoteApproved(_note.Id, "[ApprDir]", true);
+            if (btnApprDir.BackColor == Color.Lime)
+            {
+                DBContext.NoteApprovedDir(_note.Id, "[ApprDir]", true);
+                btnApprDir.BackColor = Color.Magenta;
+            }
+            else
+            {
+                DBContext.NotNoteApprovedDir(_note.Id, "[ApprDir]", true);
+                btnApprDir.BackColor = Color.Lime;
+            }
         }
+
+        private void btnApprComdir_Click(object sender, EventArgs e)
+        {
+            if (btnApprComdir.BackColor == Color.Lime)
+            {
+                DBContext.NoteApprovedCom(_note.Id, "[ApprDir]", true);
+                btnApprComdir.BackColor = Color.Magenta;
+            }
+            else
+            {
+                DBContext.NotNoteApprovedCom(_note.Id, "[ApprDir]", true);
+                btnApprComdir.BackColor = Color.Lime;
+            }
+        }
+
+        #endregion
 
         private void btnHelp_Click(object sender, EventArgs e)
         {
@@ -294,7 +320,9 @@ namespace FlyDoc.Forms
 
         private void btnApprAvtor_Click(object sender, EventArgs e)
         {
-            MessageBox.Show(dtpDateCreate.Value.TimeOfDay.ToString());
+            DBContext.NoteApprovedAvtor(_note.Id, "[ApprAvtor]", true);
+            btnApprAvtor.BackColor = Color.Lime;
+            // MessageBox.Show(dtpDateCreate.Value.TimeOfDay.ToString());
         }
         //Application.StartupPath, 
 
@@ -440,5 +468,7 @@ namespace FlyDoc.Forms
         {
             MessageBox.Show("Ошибка ввода: " + e.Exception.Message, "Проверка ввода", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
         }
+
+
     }  // class
 }

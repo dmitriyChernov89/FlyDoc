@@ -224,12 +224,13 @@
             // 
             // btnApprDir
             // 
+            this.btnApprDir.BackColor = System.Drawing.SystemColors.Control;
             this.btnApprDir.Location = new System.Drawing.Point(7, 18);
             this.btnApprDir.Name = "btnApprDir";
             this.btnApprDir.Size = new System.Drawing.Size(75, 23);
             this.btnApprDir.TabIndex = 18;
             this.btnApprDir.Text = "Директор";
-            this.btnApprDir.UseVisualStyleBackColor = true;
+            this.btnApprDir.UseVisualStyleBackColor = false;
             this.btnApprDir.Click += new System.EventHandler(this.btnApprDir_Click);
             // 
             // btnApprComdir
@@ -240,6 +241,7 @@
             this.btnApprComdir.TabIndex = 19;
             this.btnApprComdir.Text = "Комерц.";
             this.btnApprComdir.UseVisualStyleBackColor = true;
+            this.btnApprComdir.Click += new System.EventHandler(this.btnApprComdir_Click);
             // 
             // btnApprSB
             // 
