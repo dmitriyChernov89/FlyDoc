@@ -251,6 +251,7 @@
             this.btnApprSB.TabIndex = 21;
             this.btnApprSB.Text = "Інспектор";
             this.btnApprSB.UseVisualStyleBackColor = true;
+            this.btnApprSB.Click += new System.EventHandler(this.btnApprSB_Click);
             // 
             // btnApprSBNach
             // 
@@ -260,6 +261,7 @@
             this.btnApprSBNach.TabIndex = 20;
             this.btnApprSBNach.Text = "Нач. СБ";
             this.btnApprSBNach.UseVisualStyleBackColor = true;
+            this.btnApprSBNach.Click += new System.EventHandler(this.btnApprSBNach_Click);
             // 
             // btnApprNach
             // 
@@ -269,6 +271,7 @@
             this.btnApprNach.TabIndex = 23;
             this.btnApprNach.Text = "Нач.торг.";
             this.btnApprNach.UseVisualStyleBackColor = true;
+            this.btnApprNach.Click += new System.EventHandler(this.btnApprNach_Click);
             // 
             // btnApprKasa
             // 
@@ -278,6 +281,7 @@
             this.btnApprKasa.TabIndex = 22;
             this.btnApprKasa.Text = "Ст. касир";
             this.btnApprKasa.UseVisualStyleBackColor = true;
+            this.btnApprKasa.Click += new System.EventHandler(this.btnApprKasa_Click);
             // 
             // btnApprASU
             // 
@@ -287,6 +291,7 @@
             this.btnApprASU.TabIndex = 29;
             this.btnApprASU.Text = "АСУ";
             this.btnApprASU.UseVisualStyleBackColor = true;
+            this.btnApprASU.Click += new System.EventHandler(this.btnApprASU_Click);
             // 
             // btnApprBuh
             // 
@@ -296,6 +301,7 @@
             this.btnApprBuh.TabIndex = 28;
             this.btnApprBuh.Text = "Бухгалтер";
             this.btnApprBuh.UseVisualStyleBackColor = true;
+            this.btnApprBuh.Click += new System.EventHandler(this.btnApprBuh_Click);
             // 
             // btnApprSklad
             // 
@@ -305,6 +311,7 @@
             this.btnApprSklad.TabIndex = 27;
             this.btnApprSklad.Text = "Склад";
             this.btnApprSklad.UseVisualStyleBackColor = true;
+            this.btnApprSklad.Click += new System.EventHandler(this.btnApprSklad_Click);
             // 
             // btnApprEnerg
             // 
@@ -314,6 +321,7 @@
             this.btnApprEnerg.TabIndex = 26;
             this.btnApprEnerg.Text = "Енергетик";
             this.btnApprEnerg.UseVisualStyleBackColor = true;
+            this.btnApprEnerg.Click += new System.EventHandler(this.btnApprEnerg_Click);
             // 
             // btnApprDostavka
             // 
@@ -323,6 +331,7 @@
             this.btnApprDostavka.TabIndex = 25;
             this.btnApprDostavka.Text = "Доставка";
             this.btnApprDostavka.UseVisualStyleBackColor = true;
+            this.btnApprDostavka.Click += new System.EventHandler(this.btnApprDostavka_Click);
             // 
             // btnApprFin
             // 
@@ -332,6 +341,7 @@
             this.btnApprFin.TabIndex = 24;
             this.btnApprFin.Text = "Фінансист";
             this.btnApprFin.UseVisualStyleBackColor = true;
+            this.btnApprFin.Click += new System.EventHandler(this.btnApprFin_Click);
             // 
             // btnPrint
             // 

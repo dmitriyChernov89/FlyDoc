@@ -310,39 +310,7 @@ namespace FlyDoc.Model
             DataTable dt = GetQueryTable(sqlText);
             return dt;
         }
-        #region DBApproved_and_notApproeved
-        public static bool NoteApprovedDir(int Id, string ApprColumn, bool Appr)
-        {
-            string sqlText = string.Format("UPDATE Notes SET [ApprDir] = 0 WHERE (Id = {0})", Id, Appr);
-            return Execute(sqlText);
-        }
-        public static bool NotNoteApprovedDir(int Id, string ApprColumn, bool Appr)
-        {
-            string sqlText = string.Format("UPDATE Notes SET [ApprDir] = 1 WHERE (Id = {0})", Id, Appr);
-            return Execute(sqlText);
-        }
-        public static bool NoteApprovedCom(int Id, string ApprColumn, bool Appr)
-        {
-            string sqlText = string.Format("UPDATE Notes SET [ApprComdir] = 0 WHERE (Id = {0})", Id, Appr);
-            return Execute(sqlText);
-        }
-        public static bool NotNoteApprovedCom(int Id, string ApprColumn, bool Appr)
-        {
-            string sqlText = string.Format("UPDATE Notes SET [ApprComdir] = 1 WHERE (Id = {0})", Id, Appr);
-            return Execute(sqlText);
-        }
-
-        //TODO
-        //Разобратся с кнопкой Автора
-        public static bool NoteApprovedAvtor(int Id, string ApprColumn, bool Appr)
-        {
-            string sqlText = string.Format("UPDATE Notes SET [ApprAvtor] = 0 WHERE (Id = {0})", Id, Appr);
-            return Execute(sqlText);
-        }
-
-        #endregion
-
-
+        
         public static bool InsertNotes(Note note, out int newId)
         {
             string sqlText = string.Format("INSERT INTO Notes (Templates, IdDepartment, [Date], NameAvtor, BodyUp, BodyDown, HeadNach, HeadDir) VALUES ({0}, {1}, {2}, '{3}', '{4}', '{5}', '{6}', '{7}'); SELECT @@IDENTITY",
@@ -452,6 +420,140 @@ namespace FlyDoc.Model
             string sqlText = string.Format("DELETE FROM Notes WHERE (Id = {0})", Id);
             return Execute(sqlText);
         }
+
+        #region DBApproved_and_notApproved
+        public static bool NoteApprovedDir(int Id, string ApprColumn, bool Appr)
+        {
+            string sqlText = string.Format("UPDATE Notes SET [ApprDir] = 0 WHERE (Id = {0})", Id, Appr);
+            return Execute(sqlText);
+        }
+        public static bool NotNoteApprovedDir(int Id, string ApprColumn, bool Appr)
+        {
+            string sqlText = string.Format("UPDATE Notes SET [ApprDir] = 1 WHERE (Id = {0})", Id, Appr);
+            return Execute(sqlText);
+        }
+        public static bool NoteApprovedCom(int Id, string ApprColumn, bool Appr)
+        {
+            string sqlText = string.Format("UPDATE Notes SET [ApprComdir] = 0 WHERE (Id = {0})", Id, Appr);
+            return Execute(sqlText);
+        }
+        public static bool NotNoteApprovedCom(int Id, string ApprColumn, bool Appr)
+        {
+            string sqlText = string.Format("UPDATE Notes SET [ApprComdir] = 1 WHERE (Id = {0})", Id, Appr);
+            return Execute(sqlText);
+        }
+        //TODO Разобратся с кнопкой Автора
+        public static bool NoteApprovedAvtor(int Id, string ApprColumn, bool Appr)
+        {
+            string sqlText = string.Format("UPDATE Notes SET [ApprAvtor] = 0 WHERE (Id = {0})", Id, Appr);
+            return Execute(sqlText);
+        }
+        public static bool NotNoteApprovedAvtor(int Id, string ApprColumn, bool Appr)
+        {
+            string sqlText = string.Format("UPDATE Notes SET [ApprAvtor] = 1 WHERE (Id = {0})", Id, Appr);
+            return Execute(sqlText);
+        }
+        public static bool NoteApprovedSBNach(int Id, string ApprColumn, bool Appr)
+        {
+            string sqlText = string.Format("UPDATE Notes SET [ApprSBNach] = 0 WHERE (Id = {0})", Id, Appr);
+            return Execute(sqlText);
+        }
+        public static bool NotNoteApprovedSBNach(int Id, string ApprColumn, bool Appr)
+        {
+            string sqlText = string.Format("UPDATE Notes SET [ApprSBNach] = 1 WHERE (Id = {0})", Id, Appr);
+            return Execute(sqlText);
+        }
+        public static bool NoteApprovedSB(int Id, string ApprColumn, bool Appr)
+        {
+            string sqlText = string.Format("UPDATE Notes SET [ApprSB] = 0 WHERE (Id = {0})", Id, Appr);
+            return Execute(sqlText);
+        }
+        public static bool NotNoteApprovedSB(int Id, string ApprColumn, bool Appr)
+        {
+            string sqlText = string.Format("UPDATE Notes SET [ApprSB] = 1 WHERE (Id = {0})", Id, Appr);
+            return Execute(sqlText);
+        }
+        public static bool NoteApprovedKasa(int Id, string ApprColumn, bool Appr)
+        {
+            string sqlText = string.Format("UPDATE Notes SET [ApprKasa] = 0 WHERE (Id = {0})", Id, Appr);
+            return Execute(sqlText);
+        }
+        public static bool NotNoteApprovedKasa(int Id, string ApprColumn, bool Appr)
+        {
+            string sqlText = string.Format("UPDATE Notes SET [ApprKasa] = 1 WHERE (Id = {0})", Id, Appr);
+            return Execute(sqlText);
+        }
+        public static bool NoteApprovedNach(int Id, string ApprColumn, bool Appr)
+        {
+            string sqlText = string.Format("UPDATE Notes SET [ApprNach] = 0 WHERE (Id = {0})", Id, Appr);
+            return Execute(sqlText);
+        }
+        public static bool NotNoteApprovedNach(int Id, string ApprColumn, bool Appr)
+        {
+            string sqlText = string.Format("UPDATE Notes SET [ApprNach] = 1 WHERE (Id = {0})", Id, Appr);
+            return Execute(sqlText);
+        }
+        public static bool NoteApprovedFin(int Id, string ApprColumn, bool Appr)
+        {
+            string sqlText = string.Format("UPDATE Notes SET [ApprFin] = 0 WHERE (Id = {0})", Id, Appr);
+            return Execute(sqlText);
+        }
+        public static bool NotNoteApprovedFin(int Id, string ApprColumn, bool Appr)
+        {
+            string sqlText = string.Format("UPDATE Notes SET [ApprFin] = 1 WHERE (Id = {0})", Id, Appr);
+            return Execute(sqlText);
+        }
+        public static bool NoteApprovedDostavka(int Id, string ApprColumn, bool Appr)
+        {
+            string sqlText = string.Format("UPDATE Notes SET [ApprDostavka] = 0 WHERE (Id = {0})", Id, Appr);
+            return Execute(sqlText);
+        }
+        public static bool NotNoteApprovedDostavka(int Id, string ApprColumn, bool Appr)
+        {
+            string sqlText = string.Format("UPDATE Notes SET [ApprDostavka] = 1 WHERE (Id = {0})", Id, Appr);
+            return Execute(sqlText);
+        }
+        public static bool NoteApprovedEnerg(int Id, string ApprColumn, bool Appr)
+        {
+            string sqlText = string.Format("UPDATE Notes SET [ApprEnerg] = 0 WHERE (Id = {0})", Id, Appr);
+            return Execute(sqlText);
+        }
+        public static bool NotNoteApprovedEnerg(int Id, string ApprColumn, bool Appr)
+        {
+            string sqlText = string.Format("UPDATE Notes SET [ApprEnerg] = 1 WHERE (Id = {0})", Id, Appr);
+            return Execute(sqlText);
+        }
+        public static bool NoteApprovedSklad(int Id, string ApprColumn, bool Appr)
+        {
+            string sqlText = string.Format("UPDATE Notes SET [ApprSklad] = 0 WHERE (Id = {0})", Id, Appr);
+            return Execute(sqlText);
+        }
+        public static bool NotNoteApprovedSklad(int Id, string ApprColumn, bool Appr)
+        {
+            string sqlText = string.Format("UPDATE Notes SET [ApprSklad] = 1 WHERE (Id = {0})", Id, Appr);
+            return Execute(sqlText);
+        }
+        public static bool NoteApprovedBuh(int Id, string ApprColumn, bool Appr)
+        {
+            string sqlText = string.Format("UPDATE Notes SET [ApprBuh] = 0 WHERE (Id = {0})", Id, Appr);
+            return Execute(sqlText);
+        }
+        public static bool NotNoteApprovedBuh(int Id, string ApprColumn, bool Appr)
+        {
+            string sqlText = string.Format("UPDATE Notes SET [ApprBuh] = 1 WHERE (Id = {0})", Id, Appr);
+            return Execute(sqlText);
+        }
+        public static bool NoteApprovedASU(int Id, string ApprColumn, bool Appr)
+        {
+            string sqlText = string.Format("UPDATE Notes SET [ApprASU] = 0 WHERE (Id = {0})", Id, Appr);
+            return Execute(sqlText);
+        }
+        public static bool NotNoteApprovedASU(int Id, string ApprColumn, bool Appr)
+        {
+            string sqlText = string.Format("UPDATE Notes SET [ApprASU] = 1 WHERE (Id = {0})", Id, Appr);
+            return Execute(sqlText);
+        }
+        #endregion
 
         #endregion
 

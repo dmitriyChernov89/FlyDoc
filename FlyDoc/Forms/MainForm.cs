@@ -693,7 +693,6 @@ namespace FlyDoc.Forms
         {
             appModeButton.Enabled = enable;
             toolTip1.SetToolTip(appModeButton, appModeButton.Text);
-
         }
 
 
@@ -703,5 +702,12 @@ namespace FlyDoc.Forms
         {
 
         }
+
+        //private void refreshDBTimer_Tick(object sender, EventArgs e)
+        //{
+        //    Timer refresh = new Timer();
+        //    refresh.Enabled = true;
+        //    refresh.Start();
+        //}
     }  // class
 }
