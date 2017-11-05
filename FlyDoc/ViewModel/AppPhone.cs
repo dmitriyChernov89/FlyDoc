@@ -23,13 +23,13 @@ namespace FlyDoc.ViewModel
                 PhoneModel phone = new PhoneModel()
                 {
                     Id = editId,
-                    Name = dgvRow.Cells["Відділ"].Value.ToStringNull(),
-                    Positions = dgvRow.Cells["Посада"].Value.ToString(),
-                    FIO = dgvRow.Cells["П.І.Б."].Value.ToString(),
-                    Dect = dgvRow.Cells["Трубка"].Value.ToString(),
-                    PhoneNumber = dgvRow.Cells["Телефон"].Value.ToString(),
-                    Mobile = dgvRow.Cells["Мобільний"].Value.ToString(),
-                    eMail = dgvRow.Cells["Пошта"].Value.ToString()
+                    Name = Convert.ToString(dgvRow.Cells["Відділ"].Value),
+                    Positions = Convert.ToString(dgvRow.Cells["Посада"].Value),
+                    FIO = Convert.ToString(dgvRow.Cells["П.І.Б."].Value),
+                    Dect = Convert.ToString(dgvRow.Cells["Трубка"].Value),
+                    PhoneNumber = Convert.ToString(dgvRow.Cells["Телефон"].Value),
+                    Mobile = Convert.ToString(dgvRow.Cells["Мобільний"].Value),
+                    eMail = Convert.ToString(dgvRow.Cells["Пошта"].Value)
                 };
                 NewPhone frm = new NewPhone(phone);
                 DialogResult result = frm.ShowDialog();

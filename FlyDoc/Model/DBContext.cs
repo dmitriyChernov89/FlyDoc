@@ -185,6 +185,17 @@ namespace FlyDoc.Model
             }
             return retVal;
         }
+        public static int GetDepartmenIdByName(string depName)
+        {
+            int retVal = -1;
+            string sqlText = string.Format("SELECT Id FROM Department WHERE (Name = '{0}')", depName);
+            using (DataTable dt = GetQueryTable(sqlText))
+            {
+                retVal = (dt == null) || (dt.Rows.Count == 0) ? -1 : (int)dt.Rows[0][0];
+            }
+            return retVal;
+        }
+
         public static bool InsertDepartment(Department dep)
         {
             string sqlText = string.Format("INSERT INTO Department (Id, Name) VALUES ({0}, '{1}')", dep.Id, dep.Name);
@@ -220,20 +231,14 @@ namespace FlyDoc.Model
 
         public static bool InsertUser(User user, out int newId)
         {
-            string sqlText = string.Format("INSERT INTO Access (PC, UserName, Department, Notes, Schedule, Phone, Config, ApprovedNach, ApprovedSB, ApprovedDir, Mail) VALUES ('{0}', '{1}', {2}, {3}, {4}, {5}, {6}, {7}, {8}, {9}, '{10}'); SELECT @@IDENTITY",
-                user.PC, user.UserName, user.DepartmentId,
-                (user.AllowNote) ? 1 : 0, (user.AllowSchedule) ? 1 : 0, (user.AllowPhonebook) ? 1 : 0, (user.AllowConfig) ? 1 : 0, (user.AllowApprovedNach) ? 1 : 0,
-                (user.AllowApproverSB) ? 1 : 0, (user.AllowApproverDir) ? 1 : 0, user.enterMail);
+            string sqlText = $"INSERT INTO Access (PC, UserName, Department, Name, HeadNach, Notes, Schedule, Phone, Config, ApprAvtor, ApprDir, ApprComdir, ApprSBNach, ApprSB, ApprKasa, ApprNach, ApprFin, ApprDostavka, ApprEnerg, ApprSklad, ApprBuh, ApprASU, Mail) VALUES ('{user.PC}', '{user.UserName}', {user.DepartmentId}, '{user.Name}', '{user.HeadNach}', {((user.AllowNote) ? 1 : 0)}, {((user.AllowSchedule) ? 1 : 0)}, {((user.AllowPhonebook) ? 1 : 0)}, {((user.AllowConfig) ? 1 : 0)}, {((user.AllowApprAvtor) ? 1 : 0)}, {((user.AllowApproverDir) ? 1 : 0)}, {((user.AllowApprComdir) ? 1 : 0)}, {((user.AllowApprSBNach) ? 1 : 0)}, {((user.AllowApproverSB) ? 1 : 0)}, {((user.AllowApprKasa) ? 1 : 0)}, {((user.AllowApprovedNach) ? 1 : 0)}, {((user.AllowApprFin) ? 1 : 0)}, {((user.AllowApprDostavka) ? 1 : 0)}, {((user.AllowApprEnerg) ? 1 : 0)}, {((user.AllowApprSklad) ? 1 : 0)}, {((user.AllowApprBuh) ? 1 : 0)}, {((user.AllowApprASU) ? 1 : 0)},  '{user.enterMail}'); SELECT @@IDENTITY";
             DataTable dt = GetQueryTable(sqlText);
             newId = Convert.ToInt32(dt.Rows[0][0]);
             return (newId > 0);
         }
         public static bool UpdateUser(User user)
         {
-            string sqlText = string.Format("UPDATE Access SET PC = '{1}', UserName = '{2}', Department = {3}, Notes = {4}, Schedule = {5}, Phone = {6}, Config = {7}, ApprovedNach = {8}, ApprovedSB = {9}, ApprovedDir = {10}, Mail = '{11}' WHERE (Id = {0})",
-                user.Id, user.PC, user.UserName, user.DepartmentId,
-                (user.AllowNote) ? 1 : 0, (user.AllowSchedule) ? 1 : 0, (user.AllowPhonebook) ? 1 : 0, (user.AllowConfig) ? 1 : 0, (user.AllowApprovedNach) ? 1 : 0,
-                (user.AllowApproverSB) ? 1 : 0, (user.AllowApproverDir) ? 1 : 0, user.enterMail);
+            string sqlText = $"UPDATE Access SET PC = '{user.PC}', UserName = '{user.UserName}', Department = {user.DepartmentId}, Name = '{user.Name}', HeadNach = '{user.HeadNach}', Notes = {((user.AllowNote) ? 1 : 0)}, Schedule = {((user.AllowSchedule) ? 1 : 0)}, Phone = {((user.AllowPhonebook) ? 1 : 0)}, Config = {((user.AllowConfig) ? 1 : 0)}, ApprAvtor = {((user.AllowApprAvtor) ? 1 : 0)}, ApprDir = {((user.AllowApproverDir) ? 1 : 0)}, ApprComdir = {((user.AllowApprComdir) ? 1 : 0)}, ApprSBNach = {((user.AllowApprSBNach) ? 1 : 0)}, ApprSB = {((user.AllowApproverSB) ? 1 : 0)}, ApprKasa = {((user.AllowApprKasa) ? 1 : 0)}, ApprNach = {((user.AllowApprovedNach) ? 1 : 0)}, ApprFin = {((user.AllowApprFin) ? 1 : 0)}, ApprDostavka = {((user.AllowApprDostavka) ? 1 : 0)}, ApprEnerg = {((user.AllowApprEnerg) ? 1 : 0)}, ApprSklad = {((user.AllowApprSklad) ? 1 : 0)}, ApprBuh = {((user.AllowApprBuh) ? 1 : 0)}, ApprASU = {((user.AllowApprASU) ? 1 : 0)}, Mail = '{user.enterMail}' WHERE (Id = {user.Id})";
             return Execute(sqlText);
         }
         public static bool DeleteUser(int Id)
@@ -255,8 +260,7 @@ namespace FlyDoc.Model
         }
         public static bool InsertSchedule(ScheduleModel sched, out int newId)
         {
-            string sqlText = string.Format("INSERT INTO Schedules ([IdDepartment], [Data], [Approved]) VALUES ({0}, '{1}', {2}); SELECT @@IDENTITY",
-                sched.DepartmentId, sched.Date, (sched.Approved) ? 1 : 0);
+            string sqlText = $"INSERT INTO Schedules ([IdDepartment], [Data], [Approved]) VALUES ({sched.DepartmentId}, '{sched.Date}', {((sched.Approved) ? 1 : 0)}); SELECT @@IDENTITY";
             DataTable dt = GetQueryTable(sqlText);
             newId = Convert.ToInt32(dt.Rows[0][0]);
             return (newId > 0);
@@ -264,7 +268,7 @@ namespace FlyDoc.Model
 
         public static bool UpdateSchedule(ScheduleModel sched)
         {
-            string sqlText = string.Format("UPDATE Schedules SET [IdDepartment] = {1}, [Data] = '{2}', [Approved] = {3} WHERE (Id = {0})", sched.Id, sched.DepartmentId, sched.Date, (sched.Approved) ? 1 : 0);
+            string sqlText = $"UPDATE Schedules SET [IdDepartment] = {sched.DepartmentId}, [Data] = '{sched.Date}', [Approved] = {((sched.Approved) ? 1 : 0)} WHERE (Id = {sched.Id})";
             return Execute(sqlText);
         }
 
@@ -299,7 +303,7 @@ namespace FlyDoc.Model
         // получить настройки шаблона
         public static DataRow GetNoteTemplatesConfig(int Id)
         {
-            string sqlText = string.Format("SELECT * FROM NoteTemplates WHERE (Id='{0}')", Id);
+            string sqlText = $"SELECT * FROM NoteTemplates WHERE (Id='{Id}')";
             DataTable dt = GetQueryTable(sqlText);
             return ((dt == null) || (dt.Rows.Count == 0)) ? null : dt.Rows[0];
         }
@@ -313,8 +317,7 @@ namespace FlyDoc.Model
         
         public static bool InsertNotes(Note note, out int newId)
         {
-            string sqlText = string.Format("INSERT INTO Notes (Templates, IdDepartment, [Date], NameAvtor, BodyUp, BodyDown, HeadNach, HeadDir) VALUES ({0}, {1}, {2}, '{3}', '{4}', '{5}', '{6}', '{7}'); SELECT @@IDENTITY",
-                 note.NoteTemplateId, note.DepartmentId, note.Date.ToSQLExpr(), note.NameAvtor, note.BodyUp, note.BodyDown, note.HeadNach, note.HeadDir);
+            string sqlText = $"INSERT INTO Notes (Templates, IdDepartment, [Date], NameAvtor, BodyUp, BodyDown, HeadNach, HeadDir) VALUES ({note.NoteTemplateId}, {note.DepartmentId}, {note.Date.ToSQLExpr()}, '{note.NameAvtor}', '{note.BodyUp}', '{note.BodyDown}', '{note.HeadNach}', '{note.HeadDir}'); SELECT @@IDENTITY";
             DataTable dt = GetQueryTable(sqlText);
             newId = Convert.ToInt32(dt.Rows[0][0]);
             note.Id = newId;
@@ -565,8 +568,7 @@ namespace FlyDoc.Model
         }
         public static bool InsertPhone(PhoneModel phone, out int newId)
         {
-            string sqlText = string.Format("INSERT INTO Phonebook ([Name], [Positions], [Name], [Dect], [Phone], [Mobile], [Mail]) VALUES ('{0}', {1}, '{2}', '{3}', {4}, {5}, {6}); SELECT @@IDENTITY",
-                phone.Name, phone.Positions, phone.FIO, phone.Dect, phone.PhoneNumber, phone.Mobile, phone.eMail);
+            string sqlText = $"INSERT INTO Phonebook ([Name], [Positions], [Name], [Dect], [Phone], [Mobile], [Mail]) VALUES ('{phone.Name}', {phone.Positions}, '{phone.FIO}', '{phone.Dect}', {phone.PhoneNumber}, {phone.Mobile}, {phone.eMail}); SELECT @@IDENTITY";
             DataTable dt = GetQueryTable(sqlText);
             newId = Convert.ToInt32(dt.Rows[0][0]);
             return (newId > 0);
@@ -574,7 +576,7 @@ namespace FlyDoc.Model
 
         public static bool UpdatePhone(PhoneModel phone)
         {
-            string sqlText = string.Format("UPDATE Phonebook SET [Name] = {1}, [Positions] = '{2}', [Name] = {3}, [Dect] = {4}, [Phone] = {5}, [Mobile] = {6}, [Mail] = {7} WHERE (Id = {0})", phone.Id, phone.Name, phone.Positions, phone.FIO, phone.Dect, phone.PhoneNumber, phone.Mobile, phone.eMail);
+            string sqlText = $"UPDATE Phonebook SET [Name] = {phone.Name}, [Positions] = '{phone.Positions}', [Name] = {phone.FIO}, [Dect] = {phone.Dect}, [Phone] = {phone.PhoneNumber}, [Mobile] = {phone.Mobile}, [Mail] = {phone.eMail} WHERE (Id = {phone.Id})";
             return Execute(sqlText);
         }
 

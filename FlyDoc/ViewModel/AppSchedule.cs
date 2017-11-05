@@ -26,11 +26,11 @@ namespace FlyDoc.ViewModel
                 ScheduleModel sched = new ScheduleModel()
                 {
                     Id = editId,
-                    DepartmentName  = dgvRow.Cells["Відділ"].Value.ToStringNull(),
-                    DepartmentId  = dgvRow.Cells["DepartmentId"].Value.ToInt(),
-                    Approved =  dgvRow.Cells["Затверджений"].Value.ToBool(),
-                    Date = (DateTime)dgvRow.Cells["Дата"].Value,
-                    Dir = dgvRow.Cells["Ким"].Value.ToString()
+                    DepartmentName  = Convert.ToString(dgvRow.Cells["Відділ"].Value),
+                    DepartmentId  = Convert.ToInt32(dgvRow.Cells["DepartmentId"].Value),
+                    Approved =  Convert.ToBoolean(dgvRow.Cells["Затверджений"].Value),
+                    Date = Convert.ToDateTime(dgvRow.Cells["Дата"].Value),
+                    Dir = Convert.ToString(dgvRow.Cells["Ким"].Value)
                 };
                 Schedule frm = new Schedule(sched);
                 DialogResult result = frm.ShowDialog();

@@ -30,20 +30,29 @@ namespace FlyDoc.ViewModel
                 int editId = (int)dgvRow.Cells["Id"].Value;
                 User user = new User()
                 {
-                    Id = editId,PC = (string)dgvRow.Cells["ПК"].Value,
+                    Id = editId, PC = (string)dgvRow.Cells["ПК"].Value,
                     UserName = (string)dgvRow.Cells["Користувач"].Value,
-                    DepartmentId = (int)dgvRow.Cells["Відділ"].Value,
+                    DepartmentId = DBContext.GetDepartmenIdByName(dgvRow.Cells["Відділ"].Value.ToString()),
                     AllowNote = (bool)dgvRow.Cells["Службові"].Value,
                     AllowSchedule = (bool)dgvRow.Cells["Графіки"].Value,
                     AllowPhonebook = (bool)dgvRow.Cells["Тел.книга"].Value,
                     AllowConfig = (bool)dgvRow.Cells["Налаштування"].Value,
-                    AllowApprovedNach = (bool)dgvRow.Cells["Затв.нач"].Value,
-                //    AllowNach = (string)dgvRow.Cells["Ім'я нач"].Value,
-                    AllowApproverSB = (bool)dgvRow.Cells["Затв.СБ"].Value,
-                //    AllowSB = (string)dgvRow.Cells["Ім'я СБ"].Value,
+                    AllowApprAvtor = (bool)dgvRow.Cells["Затв.автор"].Value,
                     AllowApproverDir = (bool)dgvRow.Cells["Затв.дир"].Value,
-                //    AllowDir = (string)dgvRow.Cells["Ім'я дир"].Value,
-                    enterMail = (string)dgvRow.Cells["Mail"].Value,
+                    AllowApprComdir = (bool)dgvRow.Cells["Затв.комерц"].Value,
+                    AllowApprSBNach = (bool)dgvRow.Cells["Затв.НачСБ"].Value,
+                    AllowApproverSB = (bool)dgvRow.Cells["Затв.СБ"].Value,
+                    AllowApprKasa = (bool)dgvRow.Cells["Затв.СтКасир"].Value,
+                    AllowApprovedNach = (bool)dgvRow.Cells["Затв.НачТорг"].Value,
+                    AllowApprFin = (bool)dgvRow.Cells["Затв.Фін"].Value,
+                    AllowApprDostavka = (bool)dgvRow.Cells["Затв.Доставка"].Value,
+                    AllowApprEnerg = (bool)dgvRow.Cells["Затв.Енергет"].Value,
+                    AllowApprSklad = (bool)dgvRow.Cells["Затв.Склад"].Value,
+                    AllowApprBuh = (bool)dgvRow.Cells["Затв.Бух"].Value,
+                    AllowApprASU = (bool)dgvRow.Cells["Затв.АСУ"].Value,
+                    HeadNach = Convert.ToString(dgvRow.Cells["Шапка"].Value),
+                    Name = Convert.ToString(dgvRow.Cells["Ім'я"].Value),
+                    enterMail = Convert.ToString(dgvRow.Cells["Пошта"].Value)
                 };
                 UserForm frm = new UserForm(user);
                 DialogResult result = frm.ShowDialog();
@@ -66,6 +75,7 @@ namespace FlyDoc.ViewModel
 
             if (_dataGrid.Columns.Contains("DepartmentId")) _dataGrid.Columns["DepartmentId"].Visible = false;
 
+            
             // установить отн.ширину колонок
             //_dataGrid.Columns[4].FillWeight = 50;
             //_dataGrid.Columns[5].FillWeight = 50;

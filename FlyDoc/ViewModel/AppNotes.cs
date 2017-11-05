@@ -97,7 +97,7 @@ namespace FlyDoc.ViewModel
             int id = getSelectedId();
             if (id != -1)
             {
-                DialogResult result = MessageBox.Show("Ви впевнені що хочете видалити службову № " + id.ToString() + " ?", "Видалення службової", MessageBoxButtons.YesNoCancel, MessageBoxIcon.Question, MessageBoxDefaultButton.Button2);
+                DialogResult result = MessageBox.Show($"Ви впевнені що хочете видалити службову № {id.ToString()} ?", "Видалення службової", MessageBoxButtons.YesNoCancel, MessageBoxIcon.Question, MessageBoxDefaultButton.Button2);
                 if (result == DialogResult.Yes)
                 {
                     if (DBContext.DeleteNotes(id))

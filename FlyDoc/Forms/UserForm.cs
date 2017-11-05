@@ -46,6 +46,18 @@ namespace FlyDoc.Forms
                 checkBoxApprovedN.Checked = _currentUser.AllowApprovedNach;
                 checkBoxApprovedSB.Checked = _currentUser.AllowApproverSB;
                 checkBoxApprovedDir.Checked = _currentUser.AllowApproverDir;
+                checkBoxApprAvtor.Checked = _currentUser.AllowApprAvtor;
+                checkBoxApprComdir.Checked = _currentUser.AllowApprComdir;
+                checkBoxApprSBN.Checked = _currentUser.AllowApprSBNach;
+                checkBoxApprKasa.Checked = _currentUser.AllowApprKasa;
+                checkBoxApprFin.Checked = _currentUser.AllowApprFin;
+                checkBoxApprDastavka.Checked = _currentUser.AllowApprDostavka;
+                checkBoxApprEnerg.Checked = _currentUser.AllowApprEnerg;
+                checkBoxApprSklad.Checked = _currentUser.AllowApprSklad;
+                checkBoxApprBun.Checked = _currentUser.AllowApprBuh;
+                checkBoxApprASU.Checked = _currentUser.AllowApprASU;
+                tbxName.Text = _currentUser.Name;
+                tbxHeadNach.Text = _currentUser.HeadNach;
                 tbxMail.Text = _currentUser.enterMail;
             }
 
@@ -69,6 +81,18 @@ namespace FlyDoc.Forms
                     _currentUser.AllowApproverSB = checkBoxApprovedSB.Checked;
                     _currentUser.AllowApproverDir = checkBoxApprovedDir.Checked;
                     _currentUser.enterMail = tbxMail.Text;
+                    _currentUser.AllowApprAvtor = checkBoxApprAvtor.Checked;
+                    _currentUser.AllowApprComdir = checkBoxApprComdir.Checked;
+                    _currentUser.AllowApprSBNach = checkBoxApprSBN.Checked;
+                    _currentUser.AllowApprKasa = checkBoxApprKasa.Checked;
+                    _currentUser.AllowApprFin = checkBoxApprFin.Checked;
+                    _currentUser.AllowApprDostavka = checkBoxApprDastavka.Checked;
+                    _currentUser.AllowApprEnerg = checkBoxApprEnerg.Checked;
+                    _currentUser.AllowApprSklad = checkBoxApprSklad.Checked;
+                    _currentUser.AllowApprBuh = checkBoxApprBun.Checked;
+                    _currentUser.AllowApprASU = checkBoxApprASU.Checked;
+                    _currentUser.Name = tbxName.Text;
+                    _currentUser.HeadNach = tbxHeadNach.Text;
 
                     this.DialogResult = DialogResult.OK;
                 }
@@ -121,7 +145,19 @@ namespace FlyDoc.Forms
                     || (checkBoxConfig.Checked != _currentUser.AllowConfig)
                     || (checkBoxApprovedN.Checked != _currentUser.AllowApprovedNach)
                     || (checkBoxApprovedSB.Checked != _currentUser.AllowApproverSB)
-                    || (checkBoxApprovedDir.Checked != _currentUser.AllowApproverDir);
+                    || (checkBoxApprovedDir.Checked != _currentUser.AllowApproverDir)
+                    || (checkBoxApprAvtor.Checked != _currentUser.AllowApprAvtor)
+                    || (checkBoxApprComdir.Checked != _currentUser.AllowApprComdir)
+                    || (checkBoxApprSBN.Checked != _currentUser.AllowApprSBNach)
+                    || (checkBoxApprKasa.Checked != _currentUser.AllowApprKasa)
+                    || (checkBoxApprFin.Checked != _currentUser.AllowApprFin)
+                    || (checkBoxApprDastavka.Checked != _currentUser.AllowApprDostavka)
+                    || (checkBoxApprEnerg.Checked != _currentUser.AllowApprEnerg)
+                    || (checkBoxApprSklad.Checked != _currentUser.AllowApprSklad)
+                    || (checkBoxApprBun.Checked != _currentUser.AllowApprBuh)
+                    || (checkBoxApprASU.Checked != _currentUser.AllowApprASU)
+                    || (tbxName.Text.Equals(_currentUser.Name) == false)
+                    || (tbxHeadNach.Text.Equals(_currentUser.HeadNach) == false);
         }
         #endregion
 
