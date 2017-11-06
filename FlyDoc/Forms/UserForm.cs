@@ -126,7 +126,24 @@ namespace FlyDoc.Forms
                 tbxUserName.Focus();
                 return false;
             }
-
+            if (tbxMail.Text.IsNull())
+            {
+                MessageBox.Show("Введіть електроний адрес", "Перевірка вводу", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
+                tbxMail.Focus();
+                return false;
+            }
+            if (tbxName.Text.IsNull())
+            {
+                MessageBox.Show("Введіть Ф.І.О", "Перевірка вводу", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
+                tbxName.Focus();
+                return false;
+            }
+            if (tbxHeadNach.Text.IsNull())
+            {
+                MessageBox.Show("Введіть посаду", "Перевірка вводу", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
+                tbxHeadNach.Focus();
+                return false;
+            }
             return true;
         }
 
