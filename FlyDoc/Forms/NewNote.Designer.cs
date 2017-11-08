@@ -229,9 +229,10 @@
             this.btnApprDir.Name = "btnApprDir";
             this.btnApprDir.Size = new System.Drawing.Size(75, 23);
             this.btnApprDir.TabIndex = 18;
+            this.btnApprDir.Tag = "ApprDir";
             this.btnApprDir.Text = "Директор";
             this.btnApprDir.UseVisualStyleBackColor = false;
-            this.btnApprDir.Click += new System.EventHandler(this.btnApprDir_Click);
+            this.btnApprDir.Click += new System.EventHandler(this.btnApprField_Click);
             // 
             // btnApprComdir
             // 
@@ -239,9 +240,10 @@
             this.btnApprComdir.Name = "btnApprComdir";
             this.btnApprComdir.Size = new System.Drawing.Size(75, 23);
             this.btnApprComdir.TabIndex = 19;
+            this.btnApprComdir.Tag = "ApprComdir";
             this.btnApprComdir.Text = "Комерц.";
             this.btnApprComdir.UseVisualStyleBackColor = true;
-            this.btnApprComdir.Click += new System.EventHandler(this.btnApprComdir_Click);
+            this.btnApprComdir.Click += new System.EventHandler(this.btnApprField_Click);
             // 
             // btnApprSB
             // 
@@ -249,9 +251,10 @@
             this.btnApprSB.Name = "btnApprSB";
             this.btnApprSB.Size = new System.Drawing.Size(75, 23);
             this.btnApprSB.TabIndex = 21;
+            this.btnApprSB.Tag = "ApprSB";
             this.btnApprSB.Text = "Інспектор";
             this.btnApprSB.UseVisualStyleBackColor = true;
-            this.btnApprSB.Click += new System.EventHandler(this.btnApprSB_Click);
+            this.btnApprSB.Click += new System.EventHandler(this.btnApprField_Click);
             // 
             // btnApprSBNach
             // 
@@ -259,9 +262,10 @@
             this.btnApprSBNach.Name = "btnApprSBNach";
             this.btnApprSBNach.Size = new System.Drawing.Size(75, 23);
             this.btnApprSBNach.TabIndex = 20;
+            this.btnApprSBNach.Tag = "ApprSBNach";
             this.btnApprSBNach.Text = "Нач. СБ";
             this.btnApprSBNach.UseVisualStyleBackColor = true;
-            this.btnApprSBNach.Click += new System.EventHandler(this.btnApprSBNach_Click);
+            this.btnApprSBNach.Click += new System.EventHandler(this.btnApprField_Click);
             // 
             // btnApprNach
             // 
@@ -269,9 +273,10 @@
             this.btnApprNach.Name = "btnApprNach";
             this.btnApprNach.Size = new System.Drawing.Size(75, 23);
             this.btnApprNach.TabIndex = 23;
+            this.btnApprNach.Tag = "ApprNach";
             this.btnApprNach.Text = "Нач.торг.";
             this.btnApprNach.UseVisualStyleBackColor = true;
-            this.btnApprNach.Click += new System.EventHandler(this.btnApprNach_Click);
+            this.btnApprNach.Click += new System.EventHandler(this.btnApprField_Click);
             // 
             // btnApprKasa
             // 
@@ -279,9 +284,10 @@
             this.btnApprKasa.Name = "btnApprKasa";
             this.btnApprKasa.Size = new System.Drawing.Size(75, 23);
             this.btnApprKasa.TabIndex = 22;
+            this.btnApprKasa.Tag = "ApprKasa";
             this.btnApprKasa.Text = "Ст. касир";
             this.btnApprKasa.UseVisualStyleBackColor = true;
-            this.btnApprKasa.Click += new System.EventHandler(this.btnApprKasa_Click);
+            this.btnApprKasa.Click += new System.EventHandler(this.btnApprField_Click);
             // 
             // btnApprASU
             // 
@@ -289,9 +295,10 @@
             this.btnApprASU.Name = "btnApprASU";
             this.btnApprASU.Size = new System.Drawing.Size(75, 23);
             this.btnApprASU.TabIndex = 29;
+            this.btnApprASU.Tag = "ApprASU";
             this.btnApprASU.Text = "АСУ";
             this.btnApprASU.UseVisualStyleBackColor = true;
-            this.btnApprASU.Click += new System.EventHandler(this.btnApprASU_Click);
+            this.btnApprASU.Click += new System.EventHandler(this.btnApprField_Click);
             // 
             // btnApprBuh
             // 
@@ -299,9 +306,10 @@
             this.btnApprBuh.Name = "btnApprBuh";
             this.btnApprBuh.Size = new System.Drawing.Size(75, 23);
             this.btnApprBuh.TabIndex = 28;
+            this.btnApprBuh.Tag = "ApprBuh";
             this.btnApprBuh.Text = "Бухгалтер";
             this.btnApprBuh.UseVisualStyleBackColor = true;
-            this.btnApprBuh.Click += new System.EventHandler(this.btnApprBuh_Click);
+            this.btnApprBuh.Click += new System.EventHandler(this.btnApprField_Click);
             // 
             // btnApprSklad
             // 
@@ -309,9 +317,10 @@
             this.btnApprSklad.Name = "btnApprSklad";
             this.btnApprSklad.Size = new System.Drawing.Size(75, 23);
             this.btnApprSklad.TabIndex = 27;
+            this.btnApprSklad.Tag = "ApprSklad";
             this.btnApprSklad.Text = "Склад";
             this.btnApprSklad.UseVisualStyleBackColor = true;
-            this.btnApprSklad.Click += new System.EventHandler(this.btnApprSklad_Click);
+            this.btnApprSklad.Click += new System.EventHandler(this.btnApprField_Click);
             // 
             // btnApprEnerg
             // 
@@ -319,9 +328,10 @@
             this.btnApprEnerg.Name = "btnApprEnerg";
             this.btnApprEnerg.Size = new System.Drawing.Size(75, 23);
             this.btnApprEnerg.TabIndex = 26;
+            this.btnApprEnerg.Tag = "ApprEnerg";
             this.btnApprEnerg.Text = "Енергетик";
             this.btnApprEnerg.UseVisualStyleBackColor = true;
-            this.btnApprEnerg.Click += new System.EventHandler(this.btnApprEnerg_Click);
+            this.btnApprEnerg.Click += new System.EventHandler(this.btnApprField_Click);
             // 
             // btnApprDostavka
             // 
@@ -329,9 +339,10 @@
             this.btnApprDostavka.Name = "btnApprDostavka";
             this.btnApprDostavka.Size = new System.Drawing.Size(75, 23);
             this.btnApprDostavka.TabIndex = 25;
+            this.btnApprDostavka.Tag = "ApprDostavka";
             this.btnApprDostavka.Text = "Доставка";
             this.btnApprDostavka.UseVisualStyleBackColor = true;
-            this.btnApprDostavka.Click += new System.EventHandler(this.btnApprDostavka_Click);
+            this.btnApprDostavka.Click += new System.EventHandler(this.btnApprField_Click);
             // 
             // btnApprFin
             // 
@@ -339,9 +350,10 @@
             this.btnApprFin.Name = "btnApprFin";
             this.btnApprFin.Size = new System.Drawing.Size(75, 23);
             this.btnApprFin.TabIndex = 24;
+            this.btnApprFin.Tag = "ApprFin";
             this.btnApprFin.Text = "Фінансист";
             this.btnApprFin.UseVisualStyleBackColor = true;
-            this.btnApprFin.Click += new System.EventHandler(this.btnApprFin_Click);
+            this.btnApprFin.Click += new System.EventHandler(this.btnApprField_Click);
             // 
             // btnPrint
             // 
@@ -391,9 +403,10 @@
             this.btnApprAvtor.Name = "btnApprAvtor";
             this.btnApprAvtor.Size = new System.Drawing.Size(75, 23);
             this.btnApprAvtor.TabIndex = 30;
+            this.btnApprAvtor.Tag = "ApprAvtor";
             this.btnApprAvtor.Text = "Затвердити";
             this.btnApprAvtor.UseVisualStyleBackColor = true;
-            this.btnApprAvtor.Click += new System.EventHandler(this.btnApprAvtor_Click);
+            this.btnApprAvtor.Click += new System.EventHandler(this.btnApprField_Click);
             // 
             // labelApprAll
             // 

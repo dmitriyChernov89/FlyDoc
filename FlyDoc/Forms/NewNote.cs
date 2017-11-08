@@ -283,176 +283,24 @@ namespace FlyDoc.Forms
         }
 
         #region btn_approved_and_notApproved
-        private void btnApprDir_Click(object sender, EventArgs e)
+        private void btnApprField_Click(object sender, EventArgs e)
         {
-
-            if (btnApprDir.BackColor == Color.Lime)
-            {
-                DBContext.NoteApprovedDir(_note.Id, "[ApprDir]", true);
-                btnApprDir.BackColor = Color.Magenta;
-            }
-            else
-            {
-                DBContext.NotNoteApprovedDir(_note.Id, "[ApprDir]", true);
-                btnApprDir.BackColor = Color.Lime;
-            }
+            setApprFieldByButton((Button)sender);
         }
-
-        private void btnApprComdir_Click(object sender, EventArgs e)
+        
+        private void setApprFieldByButton(Button button)
         {
-            if (btnApprComdir.BackColor == Color.Lime)
+            string apprFieldName = button.Tag.ToString();
+            PropertyInfo propInfo = _note.GetType().GetProperty(apprFieldName);
+            if (button.BackColor == Color.Lime)
             {
-                DBContext.NoteApprovedCom(_note.Id, "[ApprDir]", true);
-                btnApprComdir.BackColor = Color.Magenta;
+                button.BackColor = Color.Magenta;
+                propInfo.SetValue(_note, false, null);
             }
             else
             {
-                DBContext.NotNoteApprovedCom(_note.Id, "[ApprDir]", true);
-                btnApprComdir.BackColor = Color.Lime;
-            }
-        }
-        private void btnApprAvtor_Click(object sender, EventArgs e)
-        {
-            if (btnApprAvtor.BackColor == Color.Lime)
-            {
-                DBContext.NoteApprovedAvtor(_note.Id, "[ApprAvtor]", true);
-                btnApprAvtor.BackColor = Color.Magenta;
-            }
-            else
-            {
-                DBContext.NotNoteApprovedAvtor(_note.Id, "[ApprAvtor]", true);
-                btnApprAvtor.BackColor = Color.Lime;
-            }
-            // MessageBox.Show(dtpDateCreate.Value.TimeOfDay.ToString());
-        }
-        private void btnApprSBNach_Click(object sender, EventArgs e)
-        {
-            if (btnApprSBNach.BackColor == Color.Lime)
-            {
-                DBContext.NoteApprovedSBNach(_note.Id, "[ApprSBNach]", true);
-                btnApprSBNach.BackColor = Color.Magenta;
-            }
-            else
-            {
-                DBContext.NotNoteApprovedSBNach(_note.Id, "[ApprSBNach]", true);
-                btnApprSBNach.BackColor = Color.Lime;
-            }
-        }
-        private void btnApprSB_Click(object sender, EventArgs e)
-        {
-            if (btnApprSB.BackColor == Color.Lime)
-            {
-                DBContext.NoteApprovedSB(_note.Id, "[ApprSB]", true);
-                btnApprSB.BackColor = Color.Magenta;
-            }
-            else
-            {
-                DBContext.NotNoteApprovedSB(_note.Id, "[ApprSB]", true);
-                btnApprSB.BackColor = Color.Lime;
-            }
-        }
-        private void btnApprKasa_Click(object sender, EventArgs e)
-        {
-            if (btnApprKasa.BackColor == Color.Lime)
-            {
-                DBContext.NoteApprovedKasa(_note.Id, "[ApprKasa]", true);
-                btnApprKasa.BackColor = Color.Magenta;
-            }
-            else
-            {
-                DBContext.NotNoteApprovedKasa(_note.Id, "[ApprKasa]", true);
-                btnApprKasa.BackColor = Color.Lime;
-            }
-        }
-        private void btnApprNach_Click(object sender, EventArgs e)
-        {
-            if (btnApprNach.BackColor == Color.Lime)
-            {
-                DBContext.NoteApprovedNach(_note.Id, "[ApprNach]", true);
-                btnApprNach.BackColor = Color.Magenta;
-            }
-            else
-            {
-                DBContext.NotNoteApprovedNach(_note.Id, "[ApprNach]", true);
-                btnApprNach.BackColor = Color.Lime;
-            }
-        }
-        private void btnApprFin_Click(object sender, EventArgs e)
-        {
-            if (btnApprFin.BackColor == Color.Lime)
-            {
-                DBContext.NoteApprovedFin(_note.Id, "[ApprFin]", true);
-                btnApprFin.BackColor = Color.Magenta;
-            }
-            else
-            {
-                DBContext.NotNoteApprovedFin(_note.Id, "[ApprFin]", true);
-                btnApprFin.BackColor = Color.Lime;
-            }
-        }
-        private void btnApprDostavka_Click(object sender, EventArgs e)
-        {
-            if (btnApprDostavka.BackColor == Color.Lime)
-            {
-                DBContext.NoteApprovedDostavka(_note.Id, "[ApprDostavka]", true);
-                btnApprDostavka.BackColor = Color.Magenta;
-            }
-            else
-            {
-                DBContext.NotNoteApprovedDostavka(_note.Id, "[ApprDostavka]", true);
-                btnApprDostavka.BackColor = Color.Lime;
-            }
-        }
-        private void btnApprEnerg_Click(object sender, EventArgs e)
-        {
-            if (btnApprEnerg.BackColor == Color.Lime)
-            {
-                DBContext.NoteApprovedEnerg(_note.Id, "[ApprEnerg]", true);
-                btnApprEnerg.BackColor = Color.Magenta;
-            }
-            else
-            {
-                DBContext.NotNoteApprovedEnerg(_note.Id, "[ApprEnerg]", true);
-                btnApprEnerg.BackColor = Color.Lime;
-            }
-        }
-        private void btnApprSklad_Click(object sender, EventArgs e)
-        {
-            if (btnApprSklad.BackColor == Color.Lime)
-            {
-                DBContext.NoteApprovedSklad(_note.Id, "[ApprSklad]", true);
-                btnApprSklad.BackColor = Color.Magenta;
-            }
-            else
-            {
-                DBContext.NotNoteApprovedSklad(_note.Id, "[ApprSklad]", true);
-                btnApprSklad.BackColor = Color.Lime;
-            }
-        }
-        private void btnApprBuh_Click(object sender, EventArgs e)
-        {
-            if (btnApprBuh.BackColor == Color.Lime)
-            {
-                DBContext.NoteApprovedBuh(_note.Id, "[ApprBuh]", true);
-                btnApprBuh.BackColor = Color.Magenta;
-            }
-            else
-            {
-                DBContext.NotNoteApprovedBuh(_note.Id, "[ApprBuh]", true);
-                btnApprBuh.BackColor = Color.Lime;
-            }
-        }
-        private void btnApprASU_Click(object sender, EventArgs e)
-        {
-            if (btnApprASU.BackColor == Color.Lime)
-            {
-                DBContext.NoteApprovedASU(_note.Id, "[ApprASU]", true);
-                btnApprASU.BackColor = Color.Magenta;
-            }
-            else
-            {
-                DBContext.NotNoteApprovedASU(_note.Id, "[ApprASU]", true);
-                btnApprASU.BackColor = Color.Lime;
+                button.BackColor = Color.Lime;
+                propInfo.SetValue(_note, true, null);
             }
         }
         #endregion
