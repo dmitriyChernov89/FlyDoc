@@ -285,6 +285,7 @@ namespace FlyDoc.Forms
         #region btn_approved_and_notApproved
         private void btnApprDir_Click(object sender, EventArgs e)
         {
+
             if (btnApprDir.BackColor == Color.Lime)
             {
                 DBContext.NoteApprovedDir(_note.Id, "[ApprDir]", true);

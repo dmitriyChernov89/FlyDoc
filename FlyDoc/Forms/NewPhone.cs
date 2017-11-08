@@ -35,13 +35,14 @@ namespace FlyDoc.Forms
             {
                 this.Text = "Редагування контакта";
                 _phone = phone;
-                tbxFio.Text = _phone.FIO;
+                tbxFio.Text = _phone.Name;
                 tbxPosition.Text = _phone.Positions;
-                cbxFormPhoneDepartment.Text = _phone.Name;
+                cbxFormPhoneDepartment.Text = _phone.DepName;
                 tbxDect.Text = _phone.Dect;
                 tbxMobile.Text = _phone.Mobile;
                 tbxPhone.Text = _phone.PhoneNumber;
                 tbxFormPhoneMail.Text = _phone.eMail;
+
             }
            // 
         }
@@ -53,9 +54,10 @@ namespace FlyDoc.Forms
                 if (_isNewPhone || isUpdate())
                 {
                     if (_phone == null) _phone = new PhoneModel();
-                    _phone.FIO = tbxFio.Text;
+                    _phone.DepartmentId = Convert.ToInt32(cbxFormPhoneDepartment.SelectedValue);
+                    _phone.Name = tbxFio.Text;
                     _phone.Positions = tbxPosition.Text;
-                    _phone.Name = cbxFormPhoneDepartment.Text;
+                    _phone.DepName = cbxFormPhoneDepartment.Text;
                     _phone.Dect = tbxDect.Text;
                     _phone.PhoneNumber = tbxPhone.Text;
                     _phone.Mobile = tbxMobile.Text;
@@ -124,7 +126,7 @@ namespace FlyDoc.Forms
             if (_phone == null)
                 return true;
             else
-                return (tbxFio.Text.Equals(_phone.FIO) == false)
+                return (tbxFio.Text.Equals(_phone.Name) == false)
                     || (tbxPosition.Text.Equals(_phone.Positions) == false)
                     || (cbxFormPhoneDepartment.SelectedValue.Equals(_phone.Name) == false)
                     || (tbxFormPhoneMail.Text.Equals(_phone.eMail) == false)

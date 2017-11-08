@@ -92,6 +92,7 @@ namespace FlyDoc.ViewModel
                     if ((int)dr.Cells["Id"].Value == Id)
                     {
                         dr.Selected = true;
+                        _dataGrid.FirstDisplayedScrollingRowIndex = dr.Index;
                         break;
                     }
                 }

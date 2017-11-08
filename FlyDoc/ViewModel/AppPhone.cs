@@ -23,9 +23,10 @@ namespace FlyDoc.ViewModel
                 PhoneModel phone = new PhoneModel()
                 {
                     Id = editId,
-                    Name = Convert.ToString(dgvRow.Cells["Відділ"].Value),
+                    DepartmentId = Convert.ToInt32(dgvRow.Cells["DepartmentId"].Value),
+                    DepName = Convert.ToString(dgvRow.Cells["Відділ"].Value),
                     Positions = Convert.ToString(dgvRow.Cells["Посада"].Value),
-                    FIO = Convert.ToString(dgvRow.Cells["П.І.Б."].Value),
+                    Name = Convert.ToString(dgvRow.Cells["П.І.Б."].Value),
                     Dect = Convert.ToString(dgvRow.Cells["Трубка"].Value),
                     PhoneNumber = Convert.ToString(dgvRow.Cells["Телефон"].Value),
                     Mobile = Convert.ToString(dgvRow.Cells["Мобільний"].Value),

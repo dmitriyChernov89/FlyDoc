@@ -568,7 +568,7 @@ namespace FlyDoc.Model
         }
         public static bool InsertPhone(PhoneModel phone, out int newId)
         {
-            string sqlText = $"INSERT INTO Phonebook ([Name], [Positions], [FIO], [Dect], [Phone], [Mobile], [Mail]) VALUES ('{phone.Name}', {phone.Positions}, '{phone.FIO}', '{phone.Dect}', {phone.PhoneNumber}, {phone.Mobile}, {phone.eMail}); SELECT @@IDENTITY";
+            string sqlText = $"INSERT INTO Phonebook ([Department], [Positions], [FIO], [Dect], [Phone], [Mobile], [Mail]) VALUES ({phone.DepartmentId}, '{phone.Positions}', '{phone.Name}', '{phone.Dect}', '{phone.PhoneNumber}', '{phone.Mobile}', '{phone.eMail}'); SELECT @@IDENTITY";
             DataTable dt = GetQueryTable(sqlText);
             newId = Convert.ToInt32(dt.Rows[0][0]);
             return (newId > 0);
@@ -576,7 +576,7 @@ namespace FlyDoc.Model
 
         public static bool UpdatePhone(PhoneModel phone)
         {
-            string sqlText = $"UPDATE Phonebook SET [Name] = {phone.Name}, [Positions] = '{phone.Positions}', [FIO] = {phone.FIO}, [Dect] = {phone.Dect}, [Phone] = {phone.PhoneNumber}, [Mobile] = {phone.Mobile}, [Mail] = {phone.eMail} WHERE (Id = {phone.Id})";
+            string sqlText = $"UPDATE Phonebook SET [Department] = {phone.DepartmentId}, [Positions] = '{phone.Positions}', [FIO] = '{phone.Name}', [Dect] = '{phone.Dect}', [Phone] = '{phone.PhoneNumber}', [Mobile] = '{phone.Mobile}', [Mail] = '{phone.eMail}' WHERE (Id = {phone.Id})";
             return Execute(sqlText);
         }
 
