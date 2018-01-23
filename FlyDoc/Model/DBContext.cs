@@ -148,6 +148,46 @@ namespace FlyDoc.Model
 
             return retVal;
         }
+
+        // получить поля таблицы из схемы
+        public static List<string> GetTableFieldNames(string tableName)
+        {
+            SqlConnection conn = getConnection();
+            if (conn == null) return null;
+
+            List<string> retVal = new List<string>();
+            if (openDB(conn))
+            {
+                try
+                {
+                    // For the array, 0-member represents Catalog; 1-member represents Schema; 
+                    // 2-member represents Table Name; 3-member represents Column Name. 
+                    string[] columnRestrictions = new string[4];
+                    columnRestrictions[2] = tableName;
+                    DataTable dt = conn.GetSchema("Columns", columnRestrictions);
+                    if (dt != null)
+                    {
+                        foreach (DataRow row in dt.Rows)
+                        {
+
+                        }
+                    }
+                }
+                catch (Exception ex)
+                {
+                    string errMsg = string.Format("Ошибка получения метаданных для таблицы [{0}]: {1}", tableName, ex.Message);
+                    showMsg(errMsg);
+                    retVal = null;
+                }
+                finally
+                {
+                    closeDB(conn);
+                }
+            }
+
+            return retVal;
+        }
+
         #endregion
 
         public static int GetLastInsertedId()
@@ -452,6 +492,34 @@ namespace FlyDoc.Model
             return Execute(sqlText);
         }
 
+        #endregion
+
+        #region согласователи
+        // описание согласователей
+        private static Dictionary<string, string> _coordDescr = new Dictionary<string, string>()
+        {
+            {"ApprDir", "директор"},
+            {"ApprComdir", "ком.директор"},
+            {"ApprSBNach", "нач СБ"},
+            {"ApprSB", "инспектор СБ"},
+            {"ApprKasa", "ст кассир"},
+            {"ApprNach", "нач торг"},
+            {"ApprFin", "финик"},
+            {"ApprDostavka", "доставка"},
+            {"ApprEnerg", "енергетик"},
+            {"ApprSklad", "склад"},
+            {"ApprBuh", "бух"},
+            {"ApprASU", "АСУ"}
+        };
+
+        public static List<Coordinator> GetCoordinatorsDescr()
+        {
+            List<Coordinator> retVal = new List<Coordinator>();
+
+            List<string> fldNames = GetTableFieldNames("Notes");
+
+            return retVal;
+        }
         #endregion
 
         private static void showErrorBox(string tableName, string actionName, string errText)

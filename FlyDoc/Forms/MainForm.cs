@@ -83,6 +83,11 @@ namespace FlyDoc.Forms
 
         public void FlyDoc_Load(object sender, EventArgs e)
         {
+            string argValue = AppArgsHelper.GetAppArgValue("machine");
+            if (!argValue.IsNull()) pc = argValue;
+            argValue = AppArgsHelper.GetAppArgValue("user");
+            if (!argValue.IsNull()) userName = argValue;
+
             // заголовок окна
             String substring = pc.Substring(3, 3);
             _currentDepId = substring.ToInt();
