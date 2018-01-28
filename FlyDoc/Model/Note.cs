@@ -58,7 +58,7 @@ namespace FlyDoc.Model
 
         public void ResetIncludeFields(DataRow drTemplate = null)
         {
-            if (drTemplate == null) drTemplate = DBContext.GetNoteTemplatesConfig(this.NoteTemplateId);
+            if (drTemplate == null) drTemplate = DBContext.GetNoteTemplateById(this.NoteTemplateId);
 
             if (drTemplate["TableColums"].ToInt() == 0)
             {

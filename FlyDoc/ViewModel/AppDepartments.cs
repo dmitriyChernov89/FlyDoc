@@ -34,7 +34,7 @@ namespace FlyDoc.ViewModel
 
                     sqlText = string.Format("INSERT INTO Department (Id, Name) VALUES ({0}, '{1}')", newId, dr["Name"]);
 
-                    if (DBContext.Execute(sqlText))
+                    if (DBContext.Execute(sqlText) > 0)
                     {
                         this.LoadDataToGrid();
                         base.selectGridRowById(newId);

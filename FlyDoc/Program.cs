@@ -26,7 +26,6 @@ namespace FlyDoc
                 }
             }
 #endif
-
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
 

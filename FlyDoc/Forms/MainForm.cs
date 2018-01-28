@@ -418,7 +418,7 @@ namespace FlyDoc.Forms
         {
             WhichBtnClick = 1;
             gridCreate();
-             }
+        }
         private void btnCopy_Click(object sender, EventArgs e)
         {
             WhichBtnClick = 2;
@@ -706,6 +706,13 @@ namespace FlyDoc.Forms
         private void dgvNotes_CellContentClick(object sender, DataGridViewCellEventArgs e)
         {
 
+        }
+
+        private void button2_Click(object sender, EventArgs e)
+        {
+            //CoordSeqEditForm frm = new CoordSeqEditForm();
+            CoordsTemplatesEditForm frm = new CoordsTemplatesEditForm();
+            frm.ShowDialog();
         }
 
         //private void refreshDBTimer_Tick(object sender, EventArgs e)

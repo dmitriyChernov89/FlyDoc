@@ -98,7 +98,7 @@ namespace FlyDoc.Forms
 
             // настроить контролы для данного шаблона
             cbNoteTemplate.Enabled = false;
-            DataRow drTemplate = DBContext.GetNoteTemplatesConfig(_note.NoteTemplateId);
+            DataRow drTemplate = DBContext.GetNoteTemplateById(_note.NoteTemplateId);
             if (drTemplate != null) setControlForTemplate(drTemplate);
 
             this.tbNumber.Text = _note.Id.ToString();
@@ -225,7 +225,7 @@ namespace FlyDoc.Forms
             cbDepartment.SelectedValue = MainForm._currentDepId.ToString();
 
             int tplId = cbNoteTemplate.SelectedValue.ToInt();
-            DataRow dr = DBContext.GetNoteTemplatesConfig(tplId);
+            DataRow dr = DBContext.GetNoteTemplateById(tplId);
             if (dr != null)
             {
                 this.tbHeadDir.Text = dr["HeadDir"].ToStringNull();

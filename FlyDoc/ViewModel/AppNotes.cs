@@ -12,7 +12,7 @@ namespace FlyDoc.ViewModel
 {
     public class AppNotes : AppModelBase
     {
-        public static Dictionary<string, DGVColDescr> dgvColDescr;
+        private static Dictionary<string, DGVColDescr> dgvColDescr;
 
         static AppNotes()
         {
@@ -74,6 +74,7 @@ namespace FlyDoc.ViewModel
                 base.EditObject();
             }
         }
+
         public override void CreateNewObject()
         {
             NewNote frm = new NewNote(null);
@@ -92,6 +93,7 @@ namespace FlyDoc.ViewModel
 
             base.CreateNewObject();
         }
+
         public override void DeleteObject()
         {
             int id = getSelectedId();

@@ -2,6 +2,7 @@
 <Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
     <SSDTUnitTestPath Condition="'$(SSDTUnitTestPath)' == ''">$(VsInstallRoot)\Common7\IDE\Extensions\Microsoft\SQLDB</SSDTUnitTestPath>
+    <TargetFrameworkProfile />
   </PropertyGroup>
   <PropertyGroup>
     <SSDTPath Condition="'$(SSDTPath)' == ''">$(VsInstallRoot)\Common7\IDE\Extensions\Microsoft\SQLDB\DAC\130</SSDTPath>
@@ -17,7 +18,7 @@
     <OutputType>WinExe</OutputType>
     <RootNamespace>FlyDoc</RootNamespace>
     <AssemblyName>FlyDoc</AssemblyName>
-    <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.5.1</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
@@ -29,6 +30,7 @@
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <PlatformTarget>AnyCPU</PlatformTarget>
@@ -38,6 +40,7 @@
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <PropertyGroup>
     <ApplicationIcon>Paper_Plane-96.ico</ApplicationIcon>
@@ -71,6 +74,12 @@
     <Compile Include="Forms\CoordSeqEditForm.Designer.cs">
       <DependentUpon>CoordSeqEditForm.cs</DependentUpon>
     </Compile>
+    <Compile Include="Forms\CoordsTemplatesEditForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Forms\CoordsTemplatesEditForm.Designer.cs">
+      <DependentUpon>CoordsTemplatesEditForm.cs</DependentUpon>
+    </Compile>
     <Compile Include="Forms\DepartmentForm.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -96,6 +105,12 @@
     <Compile Include="Forms\Schedule.Designer.cs">
       <DependentUpon>Schedule.cs</DependentUpon>
     </Compile>
+    <Compile Include="Forms\NoteTemplateForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Forms\NoteTemplateForm.Designer.cs">
+      <DependentUpon>NoteTemplateForm.cs</DependentUpon>
+    </Compile>
     <Compile Include="Forms\UserForm.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -108,6 +123,7 @@
     <Compile Include="Model\Department.cs" />
     <Compile Include="Model\Note.cs" />
     <Compile Include="Model\NoteInclude.cs" />
+    <Compile Include="Model\NoteTemplate.cs" />
     <Compile Include="Model\Phone.cs" />
     <Compile Include="Model\Schedule.cs" />
     <Compile Include="Model\User.cs" />
@@ -135,6 +151,9 @@
     <EmbeddedResource Include="Forms\CoordSeqEditForm.resx">
       <DependentUpon>CoordSeqEditForm.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="Forms\CoordsTemplatesEditForm.resx">
+      <DependentUpon>CoordsTemplatesEditForm.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Forms\DepartmentForm.resx">
       <DependentUpon>DepartmentForm.cs</DependentUpon>
     </EmbeddedResource>
@@ -153,6 +172,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Forms\Schedule.resx">
       <DependentUpon>Schedule.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Forms\NoteTemplateForm.resx">
+      <DependentUpon>NoteTemplateForm.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Forms\UserForm.resx">
       <DependentUpon>UserForm.cs</DependentUpon>

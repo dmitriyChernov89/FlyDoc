@@ -12,10 +12,10 @@ using System.Windows.Forms;
 namespace FlyDoc.Model
 {
     // служебный класс для CRUD-методов к данным (Create-Read-Update-Delete)
-
     public static class DBContext
     {
         private static readonly string _configConStringName = "FlyDoc";
+        private static readonly List<string> _items = new List<string>();
 
         #region private methods
 
@@ -120,25 +120,26 @@ namespace FlyDoc.Model
             return retVal;
         }
 
+
         // метод, который выполняет SQL-запрос, не возвращающий данные, напр. вставка или удаление строк
-        public static bool Execute(string sqlText)
+        public static int Execute(string sqlText)
         {
             SqlConnection conn = getConnection();
-            if (conn == null) return false;
+            if (conn == null) return 0;
 
-            bool retVal = true;
+            int retVal = 0;
             if (openDB(conn))
             {
                 SqlCommand sc = conn.CreateCommand();
                 sc.CommandText = sqlText;
                 try
                 {
-                    sc.ExecuteNonQuery();
+                    retVal = sc.ExecuteNonQuery();
                 }
                 catch (Exception ex)
                 {
                     showMsg("Ошибка выполнения команды в MS SQL Server: " + ex.Message);
-                    retVal = false;
+                    retVal = 0;
                 }
                 finally
                 {
@@ -169,7 +170,7 @@ namespace FlyDoc.Model
                     {
                         foreach (DataRow row in dt.Rows)
                         {
-
+                            retVal.Add(row[3].ToString());
                         }
                     }
                 }
@@ -239,17 +240,17 @@ namespace FlyDoc.Model
         public static bool InsertDepartment(Department dep)
         {
             string sqlText = string.Format("INSERT INTO Department (Id, Name) VALUES ({0}, '{1}')", dep.Id, dep.Name);
-            return Execute(sqlText);
+            return (Execute(sqlText) > 0);
         }
         public static bool UpdateDepartment(Department dep, int Id)
         {
             string sqlText = string.Format("UPDATE Department SET Id = {0}, Name = '{1}' WHERE (Id = {2})", dep.Id, dep.Name, Id);
-            return Execute(sqlText);
+            return (Execute(sqlText) > 0);
         }
         public static bool DeleteDepartment(int Id)
         {
             string sqlText = string.Format("DELETE FROM Department WHERE (Id = {0})", Id);
-            return Execute(sqlText);
+            return (Execute(sqlText) > 0);
         }
         #endregion
 
@@ -279,12 +280,12 @@ namespace FlyDoc.Model
         public static bool UpdateUser(User user)
         {
             string sqlText = $"UPDATE Access SET PC = '{user.PC}', UserName = '{user.UserName}', Department = {user.DepartmentId}, Name = '{user.Name}', HeadNach = '{user.HeadNach}', Notes = {((user.AllowNote) ? 1 : 0)}, Schedule = {((user.AllowSchedule) ? 1 : 0)}, Phone = {((user.AllowPhonebook) ? 1 : 0)}, Config = {((user.AllowConfig) ? 1 : 0)}, ApprAvtor = {((user.AllowApprAvtor) ? 1 : 0)}, ApprDir = {((user.AllowApproverDir) ? 1 : 0)}, ApprComdir = {((user.AllowApprComdir) ? 1 : 0)}, ApprSBNach = {((user.AllowApprSBNach) ? 1 : 0)}, ApprSB = {((user.AllowApproverSB) ? 1 : 0)}, ApprKasa = {((user.AllowApprKasa) ? 1 : 0)}, ApprNach = {((user.AllowApprovedNach) ? 1 : 0)}, ApprFin = {((user.AllowApprFin) ? 1 : 0)}, ApprDostavka = {((user.AllowApprDostavka) ? 1 : 0)}, ApprEnerg = {((user.AllowApprEnerg) ? 1 : 0)}, ApprSklad = {((user.AllowApprSklad) ? 1 : 0)}, ApprBuh = {((user.AllowApprBuh) ? 1 : 0)}, ApprASU = {((user.AllowApprASU) ? 1 : 0)}, Mail = '{user.enterMail}' WHERE (Id = {user.Id})";
-            return Execute(sqlText);
+            return (Execute(sqlText) > 0);
         }
         public static bool DeleteUser(int Id)
         {
             string sqlText = string.Format("DELETE FROM Access WHERE (Id = {0})", Id);
-            return Execute(sqlText);
+            return (Execute(sqlText) > 0);
         }
         #endregion
 
@@ -309,13 +310,13 @@ namespace FlyDoc.Model
         public static bool UpdateSchedule(ScheduleModel sched)
         {
             string sqlText = $"UPDATE Schedules SET [IdDepartment] = {sched.DepartmentId}, [Data] = '{sched.Date}', [Approved] = {((sched.Approved) ? 1 : 0)} WHERE (Id = {sched.Id})";
-            return Execute(sqlText);
+            return (Execute(sqlText) > 0);
         }
 
         public static bool DeleteSchedule(int Id)
         {
             string sqlText = string.Format("DELETE FROM Schedules WHERE (Id = {0})", Id);
-            return Execute(sqlText);
+            return (Execute(sqlText) > 0);
         }
         #endregion
 
@@ -331,19 +332,6 @@ namespace FlyDoc.Model
         public static DataRow GetNote(int Id)
         {
             string sqlText = string.Format("SELECT * FROM Notes WHERE (Id = {0})", Id);
-            DataTable dt = GetQueryTable(sqlText);
-            return ((dt == null) || (dt.Rows.Count == 0)) ? null : dt.Rows[0];
-        }
-
-        public static DataTable GetNoteTemplates()
-        {
-            return GetQueryTable("SELECT * FROM NoteTemplates");
-        }
-
-        // получить настройки шаблона
-        public static DataRow GetNoteTemplatesConfig(int Id)
-        {
-            string sqlText = $"SELECT * FROM NoteTemplates WHERE (Id='{Id}')";
             DataTable dt = GetQueryTable(sqlText);
             return ((dt == null) || (dt.Rows.Count == 0)) ? null : dt.Rows[0];
         }
@@ -383,7 +371,7 @@ namespace FlyDoc.Model
             bool result = false;
             try
             {
-                result = Execute(sqlText);
+                result = (Execute(sqlText) > 0);
             }
             catch (Exception ex)
             {
@@ -461,7 +449,7 @@ namespace FlyDoc.Model
         public static bool DeleteNotes(int Id)
         {
             string sqlText = string.Format("DELETE FROM Notes WHERE (Id = {0})", Id);
-            return Execute(sqlText);
+            return (Execute(sqlText) > 0);
         }
 
         #endregion
@@ -483,13 +471,57 @@ namespace FlyDoc.Model
         public static bool UpdatePhone(PhoneModel phone)
         {
             string sqlText = $"UPDATE Phonebook SET [Department] = {phone.DepartmentId}, [Positions] = '{phone.Positions}', [FIO] = '{phone.Name}', [Dect] = '{phone.Dect}', [Phone] = '{phone.PhoneNumber}', [Mobile] = '{phone.Mobile}', [Mail] = '{phone.eMail}' WHERE (Id = {phone.Id})";
-            return Execute(sqlText);
+            return (Execute(sqlText) > 0);
         }
 
         public static bool DeletePhone(int Id)
         {
             string sqlText = string.Format("DELETE FROM Phonebook WHERE (Id = {0})", Id);
-            return Execute(sqlText);
+            return (Execute(sqlText) > 0);
+        }
+
+        #endregion
+
+        #region шаблон службової
+        public static DataTable GetNoteTemplates()
+        {
+            return GetQueryTable("SELECT * FROM NoteTemplates");
+        }
+
+        // получить настройки шаблона
+        public static DataRow GetNoteTemplateById(int Id)
+        {
+            string sqlText = $"SELECT * FROM [NoteTemplates] WHERE ([Id] = '{Id}')";
+            DataTable dt = GetQueryTable(sqlText);
+            return ((dt == null) || (dt.Rows.Count == 0)) ? null : dt.Rows[0];
+        }
+
+        internal static bool InsertNoteTemplate(NoteTemplate nt)
+        {
+            string sqlText = nt.GetSQLInsertString() + "; SELECT @@IDENTITY";
+            DataTable dt = GetQueryTable(sqlText);
+
+            if ((dt != null) && (dt.Rows.Count > 0))
+            {
+                int newId = Convert.ToInt32(dt.Rows[0][0]);
+                nt.Id = newId;
+                return (newId > 0);
+            }
+            else
+                return false;
+        }
+
+        public static bool UpdateNoteTemplate(NoteTemplate noteTemplate)
+        {
+            string sqlText = string.Format("UPDATE Notes SET {0} WHERE (Id = {1})", noteTemplate.GetSQLUpdateString(), noteTemplate.Id);
+
+            return (Execute(sqlText) > 0);
+        }
+
+        public static bool DeleteNoteTemplate(int Id)
+        {
+            string sqlText = $"DELETE FROM [NoteTemplates] WHERE (Id = {Id.ToString()})";
+            return (Execute(sqlText) > 0);
         }
 
         #endregion
@@ -512,14 +544,76 @@ namespace FlyDoc.Model
             {"ApprASU", "АСУ"}
         };
 
+        // получить набор объектов Coordinator с заполненными полями Title
         public static List<Coordinator> GetCoordinatorsDescr()
         {
-            List<Coordinator> retVal = new List<Coordinator>();
-
+            // поля таблицы Notes
             List<string> fldNames = GetTableFieldNames("Notes");
+            if (fldNames == null) return null;
+
+            List<Coordinator> retVal = new List<Coordinator>();
+            Coordinator newCoord;
+            foreach (string item in (from n in fldNames where n.StartsWith("Appr") select n))
+            {
+                newCoord = new Coordinator() { Key = item };
+                newCoord.Title = (_coordDescr.ContainsKey(item) ? _coordDescr[item] : item);
+                retVal.Add(newCoord);
+            }
 
             return retVal;
         }
+
+        public static DataTable GetCoordsTemplates()
+        {
+            return GetQueryTable("SELECT * FROM CoordsTemplates");
+        }
+
+        // получить шаблон Согласователей
+        public static DataRow GetCoordsTemplatesById(int Id)
+        {
+            string sqlText = $"SELECT * FROM CoordsTemplates WHERE (Id='{Id}')";
+            DataTable dt = GetQueryTable(sqlText);
+            return ((dt == null) || (dt.Rows.Count == 0)) ? null : dt.Rows[0];
+        }
+
+        // вернуть Id новой записи
+        public static int InsertCoordsTemplate(string templateName, string templateEnabledKeys)
+        {
+            int retVal = 0;
+
+            // templateName - обязательное
+            if (templateName.IsNull()) return retVal;
+
+            string sqlText = string.Format("INSERT INTO [CoordsTemplates] ([TemplateName], [CoordsList]) VALUES ('{0}', {1}); SELECT @@IDENTITY", templateName, (templateEnabledKeys.IsNull() ? "NULL" : "'" + templateEnabledKeys + "'"));
+            DataTable dt = DBContext.GetQueryTable(sqlText);
+            if ((dt != null) && (dt.Rows.Count > 0))
+            {
+                retVal = System.Convert.ToInt32(dt.Rows[0][0]);
+            }
+            return retVal;
+        }
+
+        public static bool UpdateCoordsTemplate(int id, string templateName = null, string templateEnabledKeys = null)
+        {
+            bool retVal = false;
+            _items.Clear();
+            if (!templateName.IsNull()) _items.Add(string.Format("[TemplateName] = '{0}'", templateName));
+            if (!templateEnabledKeys.IsNull()) _items.Add(string.Format("[CoordsList] = '{0}'", templateEnabledKeys));
+            if (_items.Count > 0)
+            {
+                string sqlText = string.Format("UPDATE [CoordsTemplates] SET {0} WHERE ([Id] = {1})", 
+                    string.Join(", ", _items), id.ToString());
+                retVal = (DBContext.Execute(sqlText) > 0);
+            }
+            return retVal;
+        }
+
+        public static bool DeleteCoordsTemplate(int Id)
+        {
+            string sqlText = string.Format("DELETE FROM [CoordsTemplates] WHERE ([Id] = {0})", Id);
+            return (Execute(sqlText) > 0);
+        }
+
         #endregion
 
         private static void showErrorBox(string tableName, string actionName, string errText)
