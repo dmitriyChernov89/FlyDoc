@@ -1,4 +1,5 @@
 ﻿using FlyDoc.Forms;
+using FlyDoc.Lib;
 using FlyDoc.Model;
 using System;
 using System.Collections.Generic;
@@ -22,7 +23,7 @@ namespace FlyDoc.ViewModel
                 { "HeadDir", new DGVColDescr() { Visible = false } },
                 { "HeadNach", new DGVColDescr() { Visible = false } },
                 { "BodyUp", new DGVColDescr() { Header = "текст службової", FillWeight=30 } },
-                { "TableColums", new DGVColDescr() { Header="стовпців таблиці", FillWeight=10 } },
+                { "TableColums", new DGVColDescr() { Header="стовпців таблиці", FillWeight=5 } },
                 { "ColumName1", new DGVColDescr() { Visible = false } },
                 { "ColumName2", new DGVColDescr() { Visible = false } },
                 { "ColumName3", new DGVColDescr() { Visible = false } },
@@ -34,18 +35,18 @@ namespace FlyDoc.ViewModel
                 { "ColumName9", new DGVColDescr() { Visible = false } },
                 { "ColumName10", new DGVColDescr() { Visible = false } },
                 { "BodyDown", new DGVColDescr() { Visible = false } },
-                { "ApprASU", new DGVColDescr() { Header="АСУ", FillWeight=4 } },
-                { "ApprBuh", new DGVColDescr() { Header="Бух", FillWeight=4 } },
-                { "ApprComdir", new DGVColDescr() { Header="КомДир", FillWeight=4 } },
-                { "ApprDir", new DGVColDescr() { Header="Директор", FillWeight=4 } },
-                { "ApprDostavka", new DGVColDescr() { Header="Доставка", FillWeight=4 } },
-                { "ApprEnerg", new DGVColDescr() { Header="Енерг", FillWeight=4 } },
-                { "ApprFin", new DGVColDescr() { Header="Фiн", FillWeight=4 } },
-                { "ApprKasa", new DGVColDescr() { Header="Каса", FillWeight=4 } },
-                { "ApprNach", new DGVColDescr() { Header="Нач", FillWeight=4 } },
-                { "ApprSB", new DGVColDescr() { Header="СБ", FillWeight=4 } },
-                { "ApprSBNach", new DGVColDescr() { Header="СБНач", FillWeight=4 } },
-                { "ApprSklad", new DGVColDescr() { Header="Склад", FillWeight=4 } },
+                { "ApprASU", new DGVColDescr() { Header="АСУ", FillWeight=4, Alignment = DataGridViewContentAlignment.MiddleCenter, HeaderAlignment = DataGridViewContentAlignment.MiddleLeft } },
+                { "ApprBuh", new DGVColDescr() { Header="Бух", FillWeight=4, Alignment = DataGridViewContentAlignment.MiddleCenter, HeaderAlignment = DataGridViewContentAlignment.MiddleLeft } },
+                { "ApprComdir", new DGVColDescr() { Header="КомДир", FillWeight=4, Alignment = DataGridViewContentAlignment.MiddleCenter, HeaderAlignment = DataGridViewContentAlignment.MiddleLeft } },
+                { "ApprDir", new DGVColDescr() { Header="Директор", FillWeight=4, Alignment = DataGridViewContentAlignment.MiddleCenter, HeaderAlignment = DataGridViewContentAlignment.MiddleLeft } },
+                { "ApprDostavka", new DGVColDescr() { Header="Доставка", FillWeight=4, Alignment = DataGridViewContentAlignment.MiddleCenter, HeaderAlignment = DataGridViewContentAlignment.MiddleLeft } },
+                { "ApprEnerg", new DGVColDescr() { Header="Енерг", FillWeight=4, Alignment = DataGridViewContentAlignment.MiddleCenter, HeaderAlignment = DataGridViewContentAlignment.MiddleLeft } },
+                { "ApprFin", new DGVColDescr() { Header="Фiн", FillWeight=4, Alignment = DataGridViewContentAlignment.MiddleCenter, HeaderAlignment = DataGridViewContentAlignment.MiddleLeft } },
+                { "ApprKasa", new DGVColDescr() { Header="Каса", FillWeight=4, Alignment = DataGridViewContentAlignment.MiddleCenter, HeaderAlignment = DataGridViewContentAlignment.MiddleLeft } },
+                { "ApprNach", new DGVColDescr() { Header="Нач", FillWeight=4, Alignment = DataGridViewContentAlignment.MiddleCenter, HeaderAlignment = DataGridViewContentAlignment.MiddleLeft } },
+                { "ApprSB", new DGVColDescr() { Header="СБ", FillWeight=4, Alignment = DataGridViewContentAlignment.MiddleCenter, HeaderAlignment = DataGridViewContentAlignment.MiddleLeft } },
+                { "ApprSBNach", new DGVColDescr() { Header="СБНач", FillWeight=4, Alignment = DataGridViewContentAlignment.MiddleCenter, HeaderAlignment = DataGridViewContentAlignment.MiddleLeft } },
+                { "ApprSklad", new DGVColDescr() { Header="Склад", FillWeight=4, Alignment = DataGridViewContentAlignment.MiddleCenter, HeaderAlignment = DataGridViewContentAlignment.MiddleLeft } },
                 { "Help", new DGVColDescr() { Visible = false } }
             };
         }
@@ -129,6 +130,8 @@ namespace FlyDoc.ViewModel
         {
             _dataTable = DBContext.GetNoteTemplates();  // чтение данных о шаблонах сл.зап.
             base.LoadDataToGrid();
+
+            AppFuncs.SetDGVColumnsFromDescr(_dataGrid, AppNoteTemplates.dgvColDescr);
         }
         #endregion
 

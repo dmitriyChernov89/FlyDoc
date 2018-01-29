@@ -129,7 +129,6 @@ namespace FlyDoc.Forms
         {
             if (_isNullTextBox(tbxTplName, "Введіть найменування шаблону")
                 || _isNullTextBox(tbxHeadDir, "Введіть заголовок Директора")
-                || _isNullTextBox(tbxHeadNach, "Введіть заголовок нач.відділу")
                 || _isNullTextBox(tbxBodyUp, "Введіть шаблон тексту службової")
                 )
                 return false;

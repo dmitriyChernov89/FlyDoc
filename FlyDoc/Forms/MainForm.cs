@@ -63,22 +63,17 @@ namespace FlyDoc.Forms
         {
             InitializeComponent();
 
+            // режимы работы
             _noteModel = new AppNotes() { ViewForm = this, DataGrid = this.dgvNotes };
-
-            _noteTemplateModel = new AppNoteTemplates() { ViewForm = this, DataGrid = this.dgvNoteTemplates };
-         
-
-            _userModel = new AppUsers() { ViewForm = this, DataGrid = this.dgvUsers };
-            _userModel.LoadDataToGrid();
-
             _scheduleModel = new AppSchedule() { ViewForm = this, DataGrid = this.dgvSchedule };
-            
-
-            _departmentModel = new AppDepartments() { ViewForm = this, DataGrid = this.dgvDepartments };
-            _departmentModel.LoadDataToGrid();
-
             _phoneModel = new AppPhone() { ViewForm = this, DataGrid = this.dgvPhonebook };
             _phoneModel.LoadDataToGrid();
+
+            // настройка
+            _noteTemplateModel = new AppNoteTemplates() { ViewForm = this, DataGrid = this.dgvNoteTemplates };
+            _userModel = new AppUsers() { ViewForm = this, DataGrid = this.dgvUsers };
+            _departmentModel = new AppDepartments() { ViewForm = this, DataGrid = this.dgvDepartments };
+
         }
 
         public void FlyDoc_Load(object sender, EventArgs e)
@@ -193,7 +188,6 @@ namespace FlyDoc.Forms
         private void btnotes_Click(object sender, EventArgs e) 
         {
             _noteModel.LoadDataToGrid();
-            _noteTemplateModel.LoadDataToGrid();
             tabControlMain.SelectTab("tpgNotes");
             WhichSection = 1;
             btnOnOff(WhichSection);
@@ -224,6 +218,10 @@ namespace FlyDoc.Forms
 
         private void btconfig_Click(object sender, EventArgs e)
         {
+            _userModel.LoadDataToGrid();
+            _noteTemplateModel.LoadDataToGrid();
+            _departmentModel.LoadDataToGrid();
+
             tabControlMain.SelectTab("tpgConfig");
             WhichSection = 5;
             btnOnOff(WhichSection);

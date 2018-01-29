@@ -15,6 +15,8 @@ namespace FlyDoc.ViewModel
         public string Header { get; set; }
 
         public DataGridViewContentAlignment Alignment { get; set; }
+        public DataGridViewContentAlignment HeaderAlignment { get; set; }
+
         public bool ReadOnly { get; set; }
         public bool Visible { get; set; }
         public int FillWeight { get; set; }
