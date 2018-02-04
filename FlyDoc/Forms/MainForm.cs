@@ -706,13 +706,6 @@ namespace FlyDoc.Forms
 
         }
 
-        private void button2_Click(object sender, EventArgs e)
-        {
-            //CoordSeqEditForm frm = new CoordSeqEditForm();
-            CoordsTemplatesEditForm frm = new CoordsTemplatesEditForm();
-            frm.ShowDialog();
-        }
-
         //private void refreshDBTimer_Tick(object sender, EventArgs e)
         //{
         //    Timer refresh = new Timer();

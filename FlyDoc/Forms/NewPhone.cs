@@ -35,13 +35,13 @@ namespace FlyDoc.Forms
             {
                 this.Text = "Редагування контакта";
                 _phone = phone;
-                tbxFio.Text = _phone.Name;
+                tbxFio.Text = _phone.FIO;
                 tbxPosition.Text = _phone.Positions;
-                cbxFormPhoneDepartment.Text = _phone.DepName;
+                cbxFormPhoneDepartment.SelectedValue = _phone.Department;
                 tbxDect.Text = _phone.Dect;
                 tbxMobile.Text = _phone.Mobile;
-                tbxPhone.Text = _phone.PhoneNumber;
-                tbxFormPhoneMail.Text = _phone.eMail;
+                tbxPhone.Text = _phone.Phone;
+                tbxFormPhoneMail.Text = _phone.Mail;
 
             }
            // 
@@ -54,14 +54,14 @@ namespace FlyDoc.Forms
                 if (_isNewPhone || isUpdate())
                 {
                     if (_phone == null) _phone = new PhoneModel();
-                    _phone.DepartmentId = Convert.ToInt32(cbxFormPhoneDepartment.SelectedValue);
-                    _phone.Name = tbxFio.Text;
+                    _phone.Department = Convert.ToInt32(cbxFormPhoneDepartment.SelectedValue);
+                    _phone.FIO = tbxFio.Text;
                     _phone.Positions = tbxPosition.Text;
                     _phone.DepName = cbxFormPhoneDepartment.Text;
                     _phone.Dect = tbxDect.Text;
-                    _phone.PhoneNumber = tbxPhone.Text;
+                    _phone.Phone = tbxPhone.Text;
                     _phone.Mobile = tbxMobile.Text;
-                    _phone.eMail = tbxFormPhoneMail.Text;
+                    _phone.Mail = tbxFormPhoneMail.Text;
 
                     this.DialogResult = DialogResult.OK;
                 }
@@ -126,13 +126,13 @@ namespace FlyDoc.Forms
             if (_phone == null)
                 return true;
             else
-                return (tbxFio.Text.Equals(_phone.Name) == false)
+                return (tbxFio.Text.Equals(_phone.FIO) == false)
                     || (tbxPosition.Text.Equals(_phone.Positions) == false)
-                    || (cbxFormPhoneDepartment.SelectedValue.Equals(_phone.Name) == false)
-                    || (tbxFormPhoneMail.Text.Equals(_phone.eMail) == false)
+                    || (cbxFormPhoneDepartment.SelectedValue.Equals(_phone.Department) == false)
+                    || (tbxFormPhoneMail.Text.Equals(_phone.Mail) == false)
                     || (tbxDect.Text.Equals(_phone.Dect) == false)
                     || (tbxMobile.Text.Equals(_phone.Mobile) == false)
-                    || (tbxPhone.Text.Equals(_phone.PhoneNumber) == false);
+                    || (tbxPhone.Text.Equals(_phone.Phone) == false);
 
         }
     }

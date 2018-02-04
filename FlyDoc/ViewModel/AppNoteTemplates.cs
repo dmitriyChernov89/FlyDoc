@@ -67,7 +67,7 @@ namespace FlyDoc.ViewModel
             DialogResult result = frm.ShowDialog();
             if ((result == DialogResult.OK) && (frm.NoteTemplate != null))
             {
-                if (DBContext.InsertNoteTemplate(frm.NoteTemplate))
+                if (DBContext.InsertEntity(frm.NoteTemplate))
                 {
                     this.LoadDataToGrid();
                     base.selectGridRowById(frm.NoteTemplate.Id);
@@ -91,7 +91,7 @@ namespace FlyDoc.ViewModel
                 DialogResult result = frm.ShowDialog();
                 if (result == DialogResult.OK)
                 {
-                    if (DBContext.UpdateNoteTemplate(note))
+                    if (DBContext.UpdateEntity(note))
                     {
                         this.LoadDataToGrid();
                         base.selectGridRowById(editId);
@@ -113,7 +113,7 @@ namespace FlyDoc.ViewModel
                 DialogResult result = MessageBox.Show($"Ви впевнені що хочете видалити шаблон службової '{nameTpl}' ?", "Видалення шаблону службової", MessageBoxButtons.YesNoCancel, MessageBoxIcon.Question, MessageBoxDefaultButton.Button2);
                 if (result == DialogResult.Yes)
                 {
-                    if (DBContext.DeleteNotes(id))
+                    if (DBContext.DeleteEntityById(NoteTemplate._dbTableName, id))
                     {
                         base.DeleteObject();
                     }

@@ -20,23 +20,13 @@ namespace FlyDoc.ViewModel
             if (dgvRow != null)
             {
                 int editId = (int)dgvRow.Cells["Id"].Value;
-                PhoneModel phone = new PhoneModel()
-                {
-                    Id = editId,
-                    DepartmentId = Convert.ToInt32(dgvRow.Cells["DepartmentId"].Value),
-                    DepName = Convert.ToString(dgvRow.Cells["Відділ"].Value),
-                    Positions = Convert.ToString(dgvRow.Cells["Посада"].Value),
-                    Name = Convert.ToString(dgvRow.Cells["П.І.Б."].Value),
-                    Dect = Convert.ToString(dgvRow.Cells["Трубка"].Value),
-                    PhoneNumber = Convert.ToString(dgvRow.Cells["Телефон"].Value),
-                    Mobile = Convert.ToString(dgvRow.Cells["Мобільний"].Value),
-                    eMail = Convert.ToString(dgvRow.Cells["Пошта"].Value)
-                };
+                PhoneModel phone = new PhoneModel(editId);
+
                 NewPhone frm = new NewPhone(phone);
                 DialogResult result = frm.ShowDialog();
                 if (result == DialogResult.OK)
                 {
-                    if (DBContext.UpdatePhone(phone))
+                    if (DBContext.UpdateEntity(phone))
                     {
                         this.LoadDataToGrid();
                         base.selectGridRowById(editId);
@@ -45,17 +35,17 @@ namespace FlyDoc.ViewModel
                 base.EditObject();
             }
         }//Edit
+
         public override void CreateNewObject()
         {
             NewPhone frm = new NewPhone(null);
             DialogResult result = frm.ShowDialog();
             if ((result == DialogResult.OK) && (frm.PhoneModel != null))
             {
-                int newId = 0;
-                if (DBContext.InsertPhone(frm.PhoneModel, out newId))
+                if (DBContext.InsertEntity(frm.PhoneModel))
                 {
                     this.LoadDataToGrid();
-                    base.selectGridRowById(newId);
+                    base.selectGridRowById(frm.PhoneModel.Id);
                 }
             }
             frm.Dispose();
@@ -71,7 +61,7 @@ namespace FlyDoc.ViewModel
                 DialogResult result = MessageBox.Show("Ви впевнені що хочете видалити поточний телефон?", "Видалення телефона", MessageBoxButtons.YesNoCancel, MessageBoxIcon.Question, MessageBoxDefaultButton.Button2);
                 if (result == DialogResult.Yes)
                 {
-                    if (DBContext.DeletePhone(id))
+                    if (DBContext.DeleteEntityById(PhoneModel._dbTableName, id))
                     {
                         base.DeleteObject();
                     }
@@ -82,6 +72,7 @@ namespace FlyDoc.ViewModel
                 MessageBox.Show("Виберіть рядок для видалення");
             }
         }
+
         public override void LoadDataToGrid()
         {
             _dataTable = DBContext.GetPhones();  // чтение данных о сл.зап.

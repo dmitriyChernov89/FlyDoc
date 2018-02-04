@@ -5,16 +5,40 @@ using System.Text;
 
 namespace FlyDoc.Model
 {
-    public class PhoneModel
+    public class PhoneModel: IDBInfo
     {
+        public static string _dbTableName = "Phonebook";
+        private static List<DBTableColumn> _dbColumns;
+        static PhoneModel()
+        {
+            _dbColumns = DBContext.GetTableColumns(_dbTableName);
+        }
+
+        #region public fields
         public int Id { get; set; }
-        public int DepartmentId { get; set; }
+        public int Department { get; set; }
         public string DepName { get; set; }
         public string Positions { get; set; }
-        public string Name { get; set; }
+        public string FIO { get; set; }
         public string Dect { get; set; }
-        public string PhoneNumber { get; set; }
+        public string Phone { get; set; }
         public string Mobile { get; set; }
-        public string eMail { get; set; }
-    }
+        public string Mail { get; set; }
+        #endregion
+
+        #region IDBInfo
+        public string DBTableName { get { return _dbTableName; } }
+        public List<DBTableColumn> DBColumns { get { return _dbColumns; } }
+        #endregion
+
+
+        public PhoneModel()
+        {
+        }
+        public PhoneModel(int id): this()
+        {
+            DBContext.PopulateEntityById(this, id);
+        }
+
+    }  // class
 }

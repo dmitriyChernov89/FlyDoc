@@ -45,6 +45,8 @@ namespace FlyDoc.Model
         public string BodyDown { get; set; }
         public string HeadNach { get; set; }
         public string HeadDir { get; set; }
+        public string Approvers { get; set; }
+
 
         public List<NoteInclude> Include { get; set; }
         private List<string> _inclFields;
@@ -117,6 +119,7 @@ namespace FlyDoc.Model
                 BodyDown = dr["BodyDown"].ToString();
                 HeadNach = dr["HeadNach"].ToString();
                 HeadDir = dr["HeadDir"].ToString();
+                Approvers = dr["Approvers"].ToString().Trim();
             }
 
             DataTable dt = DBContext.GetNoteIncludeByNoteId(noteId);

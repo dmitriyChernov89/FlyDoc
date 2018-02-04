@@ -68,17 +68,11 @@
     <Compile Include="Forms\AppSetup.Designer.cs">
       <DependentUpon>AppSetup.cs</DependentUpon>
     </Compile>
-    <Compile Include="Forms\CoordSeqEditForm.cs">
+    <Compile Include="Forms\NoteApproversEdit.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="Forms\CoordSeqEditForm.Designer.cs">
-      <DependentUpon>CoordSeqEditForm.cs</DependentUpon>
-    </Compile>
-    <Compile Include="Forms\CoordsTemplatesEditForm.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="Forms\CoordsTemplatesEditForm.Designer.cs">
-      <DependentUpon>CoordsTemplatesEditForm.cs</DependentUpon>
+    <Compile Include="Forms\NoteApproversEdit.designer.cs">
+      <DependentUpon>NoteApproversEdit.cs</DependentUpon>
     </Compile>
     <Compile Include="Forms\DepartmentForm.cs">
       <SubType>Form</SubType>
@@ -119,8 +113,8 @@
     </Compile>
     <Compile Include="Lib\AppArgsHelper.cs" />
     <Compile Include="Lib\AppFuncs.cs" />
-    <Compile Include="Model\Coordinator.cs" />
     <Compile Include="Model\Department.cs" />
+    <Compile Include="Model\IDBInfo.cs" />
     <Compile Include="Model\Note.cs" />
     <Compile Include="Model\NoteInclude.cs" />
     <Compile Include="Model\NoteTemplate.cs" />
@@ -148,11 +142,8 @@
     <EmbeddedResource Include="Forms\AppSetup.resx">
       <DependentUpon>AppSetup.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Forms\CoordSeqEditForm.resx">
-      <DependentUpon>CoordSeqEditForm.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Forms\CoordsTemplatesEditForm.resx">
-      <DependentUpon>CoordsTemplatesEditForm.cs</DependentUpon>
+    <EmbeddedResource Include="Forms\NoteApproversEdit.resx">
+      <DependentUpon>NoteApproversEdit.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Forms\DepartmentForm.resx">
       <DependentUpon>DepartmentForm.cs</DependentUpon>
@@ -205,6 +196,8 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="Paper_Plane-96.ico" />
+    <None Include="Resources\3dots.bmp" />
+    <None Include="Resources\3dot.bmp" />
     <Content Include="sql_schema.txt" />
     <None Include="Images\Add Row-64.png" />
     <Content Include="Images\Data Recovery-50.png" />

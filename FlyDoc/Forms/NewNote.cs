@@ -111,19 +111,19 @@ namespace FlyDoc.Forms
             //Имена утвердивших в журнале, тут хз куда лепить и надо ли
 
             // цветность кнопок утверждения
-            if (_note.ApprAvtor) setBtnLime(btnApprAvtor);
-            if (_note.ApprDir) setBtnLime(btnApprDir);
-            if (_note.ApprComdir) setBtnLime(btnApprComdir);
-            if (_note.ApprSBNach) setBtnLime(btnApprSBNach);
-            if (_note.ApprSB) setBtnLime(btnApprSB);
-            if (_note.ApprKasa) setBtnLime(btnApprKasa);
-            if (_note.ApprNach) setBtnLime(btnApprNach);
-            if (_note.ApprFin) setBtnLime(btnApprFin);
-            if (_note.ApprDostavka) setBtnLime(btnApprDostavka);
-            if (_note.ApprEnerg) setBtnLime(btnApprEnerg);
-            if (_note.ApprSklad) setBtnLime(btnApprSklad);
-            if (_note.ApprBuh) setBtnLime(btnApprBuh);
-            if (_note.ApprASU) setBtnLime(btnApprASU);
+            //if (_note.ApprAvtor) setBtnLime(btnApprAvtor);
+            //if (_note.ApprDir) setBtnLime(btnApprDir);
+            //if (_note.ApprComdir) setBtnLime(btnApprComdir);
+            //if (_note.ApprSBNach) setBtnLime(btnApprSBNach);
+            //if (_note.ApprSB) setBtnLime(btnApprSB);
+            //if (_note.ApprKasa) setBtnLime(btnApprKasa);
+            //if (_note.ApprNach) setBtnLime(btnApprNach);
+            //if (_note.ApprFin) setBtnLime(btnApprFin);
+            //if (_note.ApprDostavka) setBtnLime(btnApprDostavka);
+            //if (_note.ApprEnerg) setBtnLime(btnApprEnerg);
+            //if (_note.ApprSklad) setBtnLime(btnApprSklad);
+            //if (_note.ApprBuh) setBtnLime(btnApprBuh);
+            //if (_note.ApprASU) setBtnLime(btnApprASU);
 
             labelApprAll.Visible = _note.ApprAll;
 
@@ -264,25 +264,43 @@ namespace FlyDoc.Forms
                 // отобразить только те, которые есть в шаблоне
                 foreach (string colName in _note.IncludeFields)
                 {
+                    if (colName.IsNull()) continue;
                     dgvTable.Columns[colName].Visible = true;
                 }
             }
 
-            btnApprDir.Visible = dr["ApprDir"].ToBool();
-            btnApprComdir.Visible = dr["ApprComdir"].ToBool();
-            btnApprSBNach.Visible = dr["ApprSBNach"].ToBool();
-            btnApprSB.Visible = dr["ApprSB"].ToBool();
-            btnApprKasa.Visible = dr["ApprKasa"].ToBool();
-            btnApprNach.Visible = dr["ApprNach"].ToBool();
-            btnApprFin.Visible = dr["ApprFin"].ToBool();
-            btnApprDostavka.Visible = dr["ApprDostavka"].ToBool();
-            btnApprEnerg.Visible = dr["ApprEnerg"].ToBool();
-            btnApprSklad.Visible = dr["ApprSklad"].ToBool();
-            btnApprBuh.Visible = dr["ApprBuh"].ToBool();
-            btnApprASU.Visible = dr["ApprASU"].ToBool();
+            // собрать из шаблона согласователей в Approvers
+            string sBuf = "";
+            foreach (DataColumn item in dr.Table.Columns)
+            {
+                if ((item.Caption.StartsWith("Appr")) && (dr[item.Caption].ToBool()))
+                {
+                    if (sBuf.Length > 0) sBuf += ";";
+                    sBuf += item.Caption;
+                }
+            }
+            _note.Approvers = sBuf;
+            updateApproversButtonsVisible();
         }
 
         #region btn_approved_and_notApproved
+        private void updateApproversButtonsVisible()
+        {
+            // сначал скрыть все кнопки согласователей, кроме автора
+            foreach (Control item in grpApprove.Controls)
+            {
+                if ((item is Button) && (item.Name.StartsWith("btnAppr"))) item.Visible = false;
+            }
+            // видимость кнопок согласователей брать из поля Approvers
+            string[] aStr = (_note.Approvers.IsNull() ? "" : _note.Approvers).Split(';');
+            string key;
+            foreach (string item in aStr)
+            {
+                key = "btn" + item;
+                if (grpApprove.Controls.ContainsKey(key)) grpApprove.Controls[key].Visible = true;
+            }
+        }
+
         private void btnApprField_Click(object sender, EventArgs e)
         {
             setApprFieldByButton((Button)sender);
@@ -303,6 +321,50 @@ namespace FlyDoc.Forms
                 propInfo.SetValue(_note, true, null);
             }
         }
+
+        private void btnEditApprovers_Click(object sender, EventArgs e)
+        {
+            string preValue = _note.Approvers;
+
+            NoteApproversEdit frm = new NoteApproversEdit();
+            frm.ApproversText = _note.Approvers;
+
+            frm.ShowDialog();
+
+            if (frm.ApproversText != _note.Approvers)
+            {
+                _note.Approvers = frm.ApproversText;
+                updateApproversButtonsVisible();
+            }
+        }
+
+        // TODO основная процедура отображающая состояние кнопок согласования в следующем порядке:
+        // Автор - Нач.АСУ - все остальные, кроме Директора - Директор
+        private void setApprButtonState()
+        {
+            // автор
+            if (_note.ApprAvtor == false)
+            {
+                btnApprAvtor.Enabled = true;
+                grpApprove.Enabled = false;
+                return;
+            }
+            grpApprove.Enabled = true;
+
+            // нач.АСУ
+            if (_note.ApprASU == false)
+            {
+                btnApprASU.Enabled = true;
+                // заглушить все кнопки, кроме нач.АСУ
+                foreach (Control item in grpApprove.Controls)
+                {
+                    if ((item is Button) && (item.Name.StartsWith("btnAppr")) && (item.Name != "btnApprASU")) item.Enabled = false;
+                }
+                return;
+            }
+
+        }
+
         #endregion
 
         private void btnHelp_Click(object sender, EventArgs e)
@@ -457,6 +519,5 @@ namespace FlyDoc.Forms
             MessageBox.Show("Ошибка ввода: " + e.Exception.Message, "Проверка ввода", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
         }
 
-        
     }  // class
 }

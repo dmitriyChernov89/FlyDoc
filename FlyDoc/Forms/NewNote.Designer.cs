@@ -57,12 +57,13 @@
             this.btnApprFin = new System.Windows.Forms.Button();
             this.btnPrint = new System.Windows.Forms.Button();
             this.btnHelp = new System.Windows.Forms.Button();
-            this.groupBox1 = new System.Windows.Forms.GroupBox();
+            this.grpApprove = new System.Windows.Forms.GroupBox();
             this.btnApprAvtor = new System.Windows.Forms.Button();
             this.labelApprAll = new System.Windows.Forms.Label();
             this.sendPrint = new System.Windows.Forms.PrintDialog();
+            this.btnEditApprovers = new System.Windows.Forms.Button();
             ((System.ComponentModel.ISupportInitialize)(this.dgvTable)).BeginInit();
-            this.groupBox1.SuspendLayout();
+            this.grpApprove.SuspendLayout();
             this.SuspendLayout();
             // 
             // tbNumber
@@ -375,26 +376,27 @@
             this.btnHelp.UseVisualStyleBackColor = true;
             this.btnHelp.Click += new System.EventHandler(this.btnHelp_Click);
             // 
-            // groupBox1
+            // grpApprove
             // 
-            this.groupBox1.Controls.Add(this.btnApprASU);
-            this.groupBox1.Controls.Add(this.btnApprBuh);
-            this.groupBox1.Controls.Add(this.btnApprSklad);
-            this.groupBox1.Controls.Add(this.btnApprEnerg);
-            this.groupBox1.Controls.Add(this.btnApprDostavka);
-            this.groupBox1.Controls.Add(this.btnApprFin);
-            this.groupBox1.Controls.Add(this.btnApprNach);
-            this.groupBox1.Controls.Add(this.btnApprKasa);
-            this.groupBox1.Controls.Add(this.btnApprSB);
-            this.groupBox1.Controls.Add(this.btnApprSBNach);
-            this.groupBox1.Controls.Add(this.btnApprComdir);
-            this.groupBox1.Controls.Add(this.btnApprDir);
-            this.groupBox1.Location = new System.Drawing.Point(8, 39);
-            this.groupBox1.Name = "groupBox1";
-            this.groupBox1.Size = new System.Drawing.Size(493, 78);
-            this.groupBox1.TabIndex = 32;
-            this.groupBox1.TabStop = false;
-            this.groupBox1.Text = "Затвердження";
+            this.grpApprove.Controls.Add(this.btnEditApprovers);
+            this.grpApprove.Controls.Add(this.btnApprASU);
+            this.grpApprove.Controls.Add(this.btnApprBuh);
+            this.grpApprove.Controls.Add(this.btnApprSklad);
+            this.grpApprove.Controls.Add(this.btnApprEnerg);
+            this.grpApprove.Controls.Add(this.btnApprDostavka);
+            this.grpApprove.Controls.Add(this.btnApprFin);
+            this.grpApprove.Controls.Add(this.btnApprNach);
+            this.grpApprove.Controls.Add(this.btnApprKasa);
+            this.grpApprove.Controls.Add(this.btnApprSB);
+            this.grpApprove.Controls.Add(this.btnApprSBNach);
+            this.grpApprove.Controls.Add(this.btnApprComdir);
+            this.grpApprove.Controls.Add(this.btnApprDir);
+            this.grpApprove.Location = new System.Drawing.Point(8, 39);
+            this.grpApprove.Name = "grpApprove";
+            this.grpApprove.Size = new System.Drawing.Size(493, 78);
+            this.grpApprove.TabIndex = 32;
+            this.grpApprove.TabStop = false;
+            this.grpApprove.Text = "Затвердження";
             // 
             // btnApprAvtor
             // 
@@ -424,6 +426,16 @@
             // 
             this.sendPrint.UseEXDialog = true;
             // 
+            // btnEditApprovers
+            // 
+            this.btnEditApprovers.Image = global::FlyDoc.Properties.Resources._3dot;
+            this.btnEditApprovers.Location = new System.Drawing.Point(466, -1);
+            this.btnEditApprovers.Name = "btnEditApprovers";
+            this.btnEditApprovers.Size = new System.Drawing.Size(27, 17);
+            this.btnEditApprovers.TabIndex = 30;
+            this.btnEditApprovers.UseVisualStyleBackColor = true;
+            this.btnEditApprovers.Click += new System.EventHandler(this.btnEditApprovers_Click);
+            // 
             // NewNote
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -432,7 +444,7 @@
             this.Controls.Add(this.labelApprAll);
             this.Controls.Add(this.tbBodyDown);
             this.Controls.Add(this.btnApprAvtor);
-            this.Controls.Add(this.groupBox1);
+            this.Controls.Add(this.grpApprove);
             this.Controls.Add(this.btnHelp);
             this.Controls.Add(this.btnPrint);
             this.Controls.Add(this.tbAvtor);
@@ -453,7 +465,7 @@
             this.Text = "Добавити новий рядок";
             this.Load += new System.EventHandler(this.NewNote_Load);
             ((System.ComponentModel.ISupportInitialize)(this.dgvTable)).EndInit();
-            this.groupBox1.ResumeLayout(false);
+            this.grpApprove.ResumeLayout(false);
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -489,9 +501,10 @@
         private System.Windows.Forms.Button btnApprFin;
         private System.Windows.Forms.Button btnPrint;
         private System.Windows.Forms.Button btnHelp;
-        private System.Windows.Forms.GroupBox groupBox1;
+        private System.Windows.Forms.GroupBox grpApprove;
         private System.Windows.Forms.Button btnApprAvtor;
         private System.Windows.Forms.Label labelApprAll;
         private System.Windows.Forms.PrintDialog sendPrint;
+        private System.Windows.Forms.Button btnEditApprovers;
     }
 }

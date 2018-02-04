@@ -8,6 +8,8 @@ using System.Data.SqlClient;
 using System.Diagnostics;
 using System.Collections;
 using System.Windows.Forms;
+using System.Reflection;
+using System.Text;
 
 namespace FlyDoc.Model
 {
@@ -151,26 +153,33 @@ namespace FlyDoc.Model
         }
 
         // получить поля таблицы из схемы
-        public static List<string> GetTableFieldNames(string tableName)
+        public static List<DBTableColumn> GetTableColumns(string tableName)
         {
             SqlConnection conn = getConnection();
             if (conn == null) return null;
 
-            List<string> retVal = new List<string>();
+            List<DBTableColumn> retVal = new List<DBTableColumn>();
             if (openDB(conn))
             {
                 try
                 {
                     // For the array, 0-member represents Catalog; 1-member represents Schema; 
                     // 2-member represents Table Name; 3-member represents Column Name. 
-                    string[] columnRestrictions = new string[4];
-                    columnRestrictions[2] = tableName;
-                    DataTable dt = conn.GetSchema("Columns", columnRestrictions);
+                    DataTable dt = conn.GetSchema("Columns", new string[4] { null, null, tableName, null });
+                    //printSchemaColumns(dt);
                     if (dt != null)
                     {
+                        DBTableColumn col;
                         foreach (DataRow row in dt.Rows)
                         {
-                            retVal.Add(row[3].ToString());
+                            col = new DBTableColumn()
+                            {
+                                Name = row["COLUMN_NAME"].ToString(),
+                                IsNullable = row["IS_NULLABLE"].ToBool(),
+                                TypeName = row["DATA_TYPE"].ToString(),
+                                MaxLenght = row["CHARACTER_MAXIMUM_LENGTH"].ToInt()
+                            };
+                            retVal.Add(col);
                         }
                     }
                 }
@@ -189,6 +198,46 @@ namespace FlyDoc.Model
             return retVal;
         }
 
+        #region schema
+        private static void printSchemaColumns(DataTable dt)
+        {
+            Debug.Print("index\tname\ttype");
+            int i = 0;
+            foreach (DataColumn col in dt.Columns)
+            {
+                Debug.Print("{0}\t{1}\t{2}", i++, col.ColumnName, col.DataType.Name);
+            }
+        }
+
+        /*
+TABLE COLUMNS
+    // For the array, 0-member represents Catalog; 1-member represents Schema; 
+    // 2-member represents Table Name; 3-member represents Column Name. 
+    DataTable dt = conn.GetSchema("Columns", new string[4] {null, null, tableName, null });
+index name              type
+0	TABLE_CATALOG       String
+1	TABLE_SCHEMA        String
+2	TABLE_NAME          String
+3	COLUMN_NAME         String
+4	ORDINAL_POSITION    Int32
+5	COLUMN_DEFAULT      String
+6	IS_NULLABLE         String
+7	DATA_TYPE           String
+8	CHARACTER_MAXIMUM_LENGTH Int32
+9	CHARACTER_OCTET_LENGTH  Int32
+10	NUMERIC_PRECISION       Byte
+11	NUMERIC_PRECISION_RADIX Int16
+12	NUMERIC_SCALE           Int32
+13	DATETIME_PRECISION      Int16
+14	CHARACTER_SET_CATALOG   String
+15	CHARACTER_SET_SCHEMA    String
+16	CHARACTER_SET_NAME      String
+17	COLLATION_CATALOG       String
+18	IS_SPARSE               Boolean
+19	IS_COLUMN_SET           Boolean
+20	IS_FILESTREAM           Boolean
+*/
+        #endregion
         #endregion
 
         public static int GetLastInsertedId()
@@ -345,7 +394,7 @@ namespace FlyDoc.Model
         
         public static bool InsertNotes(Note note, out int newId)
         {
-            string sqlText = $"INSERT INTO Notes (Templates, IdDepartment, [Date], NameAvtor, BodyUp, BodyDown, HeadNach, HeadDir) VALUES ({note.NoteTemplateId}, {note.DepartmentId}, {note.Date.ToSQLExpr()}, '{note.NameAvtor}', '{note.BodyUp}', '{note.BodyDown}', '{note.HeadNach}', '{note.HeadDir}'); SELECT @@IDENTITY";
+            string sqlText = $"INSERT INTO Notes (Templates, IdDepartment, [Date], NameAvtor, BodyUp, BodyDown, HeadNach, HeadDir, Approvers) VALUES ({note.NoteTemplateId}, {note.DepartmentId}, {note.Date.ToSQLExpr()}, '{note.NameAvtor}', '{note.BodyUp}', '{note.BodyDown}', '{note.HeadNach}', '{note.HeadDir}', '{note.Approvers}'); SELECT @@IDENTITY";
             DataTable dt = GetQueryTable(sqlText);
             newId = Convert.ToInt32(dt.Rows[0][0]);
             note.Id = newId;
@@ -460,25 +509,6 @@ namespace FlyDoc.Model
         {
             return GetQueryTable("SELECT * From vwPhonebook");
         }
-        public static bool InsertPhone(PhoneModel phone, out int newId)
-        {
-            string sqlText = $"INSERT INTO Phonebook ([Department], [Positions], [FIO], [Dect], [Phone], [Mobile], [Mail]) VALUES ({phone.DepartmentId}, '{phone.Positions}', '{phone.Name}', '{phone.Dect}', '{phone.PhoneNumber}', '{phone.Mobile}', '{phone.eMail}'); SELECT @@IDENTITY";
-            DataTable dt = GetQueryTable(sqlText);
-            newId = Convert.ToInt32(dt.Rows[0][0]);
-            return (newId > 0);
-        }
-
-        public static bool UpdatePhone(PhoneModel phone)
-        {
-            string sqlText = $"UPDATE Phonebook SET [Department] = {phone.DepartmentId}, [Positions] = '{phone.Positions}', [FIO] = '{phone.Name}', [Dect] = '{phone.Dect}', [Phone] = '{phone.PhoneNumber}', [Mobile] = '{phone.Mobile}', [Mail] = '{phone.eMail}' WHERE (Id = {phone.Id})";
-            return (Execute(sqlText) > 0);
-        }
-
-        public static bool DeletePhone(int Id)
-        {
-            string sqlText = string.Format("DELETE FROM Phonebook WHERE (Id = {0})", Id);
-            return (Execute(sqlText) > 0);
-        }
 
         #endregion
 
@@ -496,125 +526,184 @@ namespace FlyDoc.Model
             return ((dt == null) || (dt.Rows.Count == 0)) ? null : dt.Rows[0];
         }
 
-        internal static bool InsertNoteTemplate(NoteTemplate nt)
+        #endregion
+
+        public static bool InsertEntity<T>(T entity) where T: IDBInfo
         {
-            string sqlText = nt.GetSQLInsertString() + "; SELECT @@IDENTITY";
+            string insText = DBContext.GetSQLInsertText(entity);
+
+            string sqlText = insText + "; SELECT @@IDENTITY";
             DataTable dt = GetQueryTable(sqlText);
 
             if ((dt != null) && (dt.Rows.Count > 0))
             {
                 int newId = Convert.ToInt32(dt.Rows[0][0]);
-                nt.Id = newId;
+                entity.Id = newId;
                 return (newId > 0);
             }
             else
                 return false;
         }
 
-        public static bool UpdateNoteTemplate(NoteTemplate noteTemplate)
+        public static bool DeleteEntityById(string tableName, int id)
         {
-            string sqlText = string.Format("UPDATE Notes SET {0} WHERE (Id = {1})", noteTemplate.GetSQLUpdateString(), noteTemplate.Id);
-
+            string sqlText = $"DELETE FROM [{tableName}] WHERE (Id = {id.ToString()})";
             return (Execute(sqlText) > 0);
         }
 
-        public static bool DeleteNoteTemplate(int Id)
+        public static bool UpdateEntity<T>(T entity) where T: IDBInfo
         {
-            string sqlText = $"DELETE FROM [NoteTemplates] WHERE (Id = {Id.ToString()})";
+            string sqlText = DBContext.GetSQLUpdateText(entity);
             return (Execute(sqlText) > 0);
         }
 
-        #endregion
-
-        #region согласователи
-        // описание согласователей
-        private static Dictionary<string, string> _coordDescr = new Dictionary<string, string>()
+        public static string toSQLString(object value)
         {
-            {"ApprDir", "директор"},
-            {"ApprComdir", "ком.директор"},
-            {"ApprSBNach", "нач СБ"},
-            {"ApprSB", "инспектор СБ"},
-            {"ApprKasa", "ст кассир"},
-            {"ApprNach", "нач торг"},
-            {"ApprFin", "финик"},
-            {"ApprDostavka", "доставка"},
-            {"ApprEnerg", "енергетик"},
-            {"ApprSklad", "склад"},
-            {"ApprBuh", "бух"},
-            {"ApprASU", "АСУ"}
-        };
-
-        // получить набор объектов Coordinator с заполненными полями Title
-        public static List<Coordinator> GetCoordinatorsDescr()
-        {
-            // поля таблицы Notes
-            List<string> fldNames = GetTableFieldNames("Notes");
-            if (fldNames == null) return null;
-
-            List<Coordinator> retVal = new List<Coordinator>();
-            Coordinator newCoord;
-            foreach (string item in (from n in fldNames where n.StartsWith("Appr") select n))
-            {
-                newCoord = new Coordinator() { Key = item };
-                newCoord.Title = (_coordDescr.ContainsKey(item) ? _coordDescr[item] : item);
-                retVal.Add(newCoord);
-            }
-
-            return retVal;
+            if ((value == null) || (value.GetType().Equals(typeof(System.DBNull))))
+                return "NULL";
+            else if (value is string)
+                return string.Format("'{0}'", value.ToString());
+            else if (value is bool)
+                return string.Format("'{0}'", ((bool)value ? "True" : "False"));
+            else if (value is DateTime)
+                return ((DateTime)value).ToSQLExpr();
+            else if (value is float)
+                return ((float)value).ToString(System.Globalization.CultureInfo.InvariantCulture);
+            else if (value is double)
+                return ((double)value).ToString(System.Globalization.CultureInfo.InvariantCulture);
+            else if (value is decimal)
+                return ((decimal)value).ToString(System.Globalization.CultureInfo.InvariantCulture);
+            else
+                return value.ToString();
         }
 
-        public static DataTable GetCoordsTemplates()
-        {
-            return GetQueryTable("SELECT * FROM CoordsTemplates");
-        }
 
-        // получить шаблон Согласователей
-        public static DataRow GetCoordsTemplatesById(int Id)
+        public static void PopulateEntityById<T>(T entity, int id) where T: IDBInfo
         {
-            string sqlText = $"SELECT * FROM CoordsTemplates WHERE (Id='{Id}')";
+            string sqlText = $"SELECT * FROM [{entity.DBTableName}] WHERE ([Id] = '{id}')";
+
             DataTable dt = GetQueryTable(sqlText);
-            return ((dt == null) || (dt.Rows.Count == 0)) ? null : dt.Rows[0];
+            if ((dt == null) || (dt.Rows.Count == 0)) return;
+
+            DataRow dr = dt.Rows[0];
+            Type t = typeof(T);
+            PropertyInfo[] pInfo = t.GetProperties(BindingFlags.Public | BindingFlags.Instance);
+            foreach (PropertyInfo pi in pInfo)
+            {
+                if (dr.Table.Columns.Contains(pi.Name) && !dr.IsNull(pi.Name))
+                {
+                    pi.SetValue(entity, dr[pi.Name]);
+                }
+            }
         }
 
-        // вернуть Id новой записи
-        public static int InsertCoordsTemplate(string templateName, string templateEnabledKeys)
+        public static string GetSQLInsertText<T>(T instance) where T: IDBInfo
         {
-            int retVal = 0;
+            string retVal = null;
 
-            // templateName - обязательное
-            if (templateName.IsNull()) return retVal;
+            PropertyInfo[] pInfo = typeof(T).GetProperties(BindingFlags.Public | BindingFlags.Instance);
+            DBTableColumn col;
+            StringBuilder sbFields = new StringBuilder(), sbValues = new StringBuilder();
 
-            string sqlText = string.Format("INSERT INTO [CoordsTemplates] ([TemplateName], [CoordsList]) VALUES ('{0}', {1}); SELECT @@IDENTITY", templateName, (templateEnabledKeys.IsNull() ? "NULL" : "'" + templateEnabledKeys + "'"));
-            DataTable dt = DBContext.GetQueryTable(sqlText);
-            if ((dt != null) && (dt.Rows.Count > 0))
+            foreach (PropertyInfo pi in pInfo)
             {
-                retVal = System.Convert.ToInt32(dt.Rows[0][0]);
+                // поле Id пропускаем
+                if (pi.Name.ToLower() == "id") continue;
+
+                List<DBTableColumn> dbColumns = (instance as IDBInfo).DBColumns;
+                col = dbColumns.FirstOrDefault(c => c.Name.Equals(pi.Name, StringComparison.OrdinalIgnoreCase));
+                if (col != null)
+                {
+                    if (sbFields.Length > 0) sbFields.Append(", ");
+                    sbFields.Append(string.Format("[{0}]", col.Name));
+
+                    if (sbValues.Length > 0) sbValues.Append(", ");
+                    object value = pi.GetValue(instance);
+                    if (col.TypeName.EndsWith("char"))
+                    {
+                        if (value == null)
+                            sbValues.Append(col.IsNullable ? "Null" : "");
+                        else
+                        {
+                            string sVal = value.ToString();
+                            if ((col.MaxLenght > 0) && (sVal.Length > col.MaxLenght)) sVal = sVal.Substring(0, col.MaxLenght);
+                            sbValues.Append(string.Format("'{0}'", sVal));
+                        }
+                    }
+                    else
+                    {
+                        sbValues.Append(DBContext.toSQLString(value));
+                    }
+                }
             }
+            string fields = sbFields.ToString(), values = sbValues.ToString();
+
+            if (!string.IsNullOrEmpty(fields) && !string.IsNullOrEmpty(values))
+            {
+                string tableName = (instance as IDBInfo).DBTableName;
+                retVal = string.Format("INSERT INTO [{0}] ({1}) VALUES ({2})", tableName, fields, values);
+            }
+
             return retVal;
         }
 
-        public static bool UpdateCoordsTemplate(int id, string templateName = null, string templateEnabledKeys = null)
+        public static string GetSQLUpdateText<T>(T instance) where T: IDBInfo
         {
-            bool retVal = false;
-            _items.Clear();
-            if (!templateName.IsNull()) _items.Add(string.Format("[TemplateName] = '{0}'", templateName));
-            if (!templateEnabledKeys.IsNull()) _items.Add(string.Format("[CoordsList] = '{0}'", templateEnabledKeys));
-            if (_items.Count > 0)
+            string retVal = null;
+            int id = 0;
+
+            PropertyInfo[] pInfo = typeof(T).GetProperties(BindingFlags.Public | BindingFlags.Instance);
+            DBTableColumn col;
+            StringBuilder sbFields = new StringBuilder();
+
+            foreach (PropertyInfo pi in pInfo)
             {
-                string sqlText = string.Format("UPDATE [CoordsTemplates] SET {0} WHERE ([Id] = {1})", 
-                    string.Join(", ", _items), id.ToString());
-                retVal = (DBContext.Execute(sqlText) > 0);
+                // поле Id пропускаем
+                if (pi.Name.ToLower() == "id")
+                {
+                    id = (int)pi.GetValue(instance);
+                    continue;
+                }
+
+                List<DBTableColumn> dbColumns = (instance as IDBInfo).DBColumns;
+                col = dbColumns.FirstOrDefault(c => c.Name.Equals(pi.Name, StringComparison.OrdinalIgnoreCase));
+                if (col != null)
+                {
+                    object value = pi.GetValue(instance);
+                    string sVal = null;
+                    if (col.TypeName.EndsWith("char"))
+                    {
+                        if (value == null)
+                            sVal = (col.IsNullable ? "Null" : "");
+                        else
+                        {
+                            sVal = value.ToString();
+                            if ((col.MaxLenght > 0) && (sVal.Length > col.MaxLenght)) sVal = sVal.Substring(0, col.MaxLenght);
+                            sVal = string.Format("'{0}'", sVal);
+                        }
+                    }
+                    else
+                    {
+                        sVal = DBContext.toSQLString(value);
+                    }
+
+                    if (sVal != null)
+                    {
+                        if (sbFields.Length > 0) sbFields.Append(", ");
+                        sbFields.Append(string.Format("[{0}] = {1}", col.Name, sVal));
+                    }
+                }
             }
+            string fields = sbFields.ToString();
+
+            if ((id > 0) && !string.IsNullOrEmpty(fields))
+            {
+                string tableName = (instance as IDBInfo).DBTableName;
+                retVal = string.Format("UPDATE [{0}] SET {1} WHERE ([Id] = {2})", tableName, fields, id);
+            }
+
             return retVal;
         }
-
-        public static bool DeleteCoordsTemplate(int Id)
-        {
-            string sqlText = string.Format("DELETE FROM [CoordsTemplates] WHERE ([Id] = {0})", Id);
-            return (Execute(sqlText) > 0);
-        }
-
-        #endregion
 
         private static void showErrorBox(string tableName, string actionName, string errText)
         {
@@ -622,4 +711,14 @@ namespace FlyDoc.Model
         }
 
     }  // class DBContext
+
+    public class DBTableColumn
+    {
+        public string Name { get; set; }
+        public bool IsNullable { get; set; }
+        public string TypeName { get; set; }
+        public int MaxLenght { get; set; }
+        public bool MyProperty { get; set; }
+    }
+
 }
