@@ -17,6 +17,8 @@ namespace FlyDoc.ViewModel
         protected Form _viewForm;
         protected DataTable _dataTable;
         protected DataGridView _dataGrid;
+
+        protected DataGridViewCellFormattingEventHandler OnCellFormattingHandler;
         #endregion
 
         #region properties
@@ -27,6 +29,10 @@ namespace FlyDoc.ViewModel
                 _dataGrid = value;
                 _dataGrid.CellDoubleClick += _dataGrid_CellDoubleClick;
                 _dataGrid.KeyDown += _dataGrid_KeyDown;
+                if (OnCellFormattingHandler != null)
+                {
+                    _dataGrid.CellFormatting += OnCellFormattingHandler;
+                }
             }
         }
 

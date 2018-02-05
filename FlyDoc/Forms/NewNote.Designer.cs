@@ -58,10 +58,10 @@
             this.btnPrint = new System.Windows.Forms.Button();
             this.btnHelp = new System.Windows.Forms.Button();
             this.grpApprove = new System.Windows.Forms.GroupBox();
+            this.btnEditApprovers = new System.Windows.Forms.Button();
             this.btnApprAvtor = new System.Windows.Forms.Button();
             this.labelApprAll = new System.Windows.Forms.Label();
             this.sendPrint = new System.Windows.Forms.PrintDialog();
-            this.btnEditApprovers = new System.Windows.Forms.Button();
             ((System.ComponentModel.ISupportInitialize)(this.dgvTable)).BeginInit();
             this.grpApprove.SuspendLayout();
             this.SuspendLayout();
@@ -378,7 +378,6 @@
             // 
             // grpApprove
             // 
-            this.grpApprove.Controls.Add(this.btnEditApprovers);
             this.grpApprove.Controls.Add(this.btnApprASU);
             this.grpApprove.Controls.Add(this.btnApprBuh);
             this.grpApprove.Controls.Add(this.btnApprSklad);
@@ -397,6 +396,16 @@
             this.grpApprove.TabIndex = 32;
             this.grpApprove.TabStop = false;
             this.grpApprove.Text = "Затвердження";
+            // 
+            // btnEditApprovers
+            // 
+            this.btnEditApprovers.Image = global::FlyDoc.Properties.Resources._3dot;
+            this.btnEditApprovers.Location = new System.Drawing.Point(474, 34);
+            this.btnEditApprovers.Name = "btnEditApprovers";
+            this.btnEditApprovers.Size = new System.Drawing.Size(27, 17);
+            this.btnEditApprovers.TabIndex = 30;
+            this.btnEditApprovers.UseVisualStyleBackColor = true;
+            this.btnEditApprovers.Click += new System.EventHandler(this.btnEditApprovers_Click);
             // 
             // btnApprAvtor
             // 
@@ -426,21 +435,12 @@
             // 
             this.sendPrint.UseEXDialog = true;
             // 
-            // btnEditApprovers
-            // 
-            this.btnEditApprovers.Image = global::FlyDoc.Properties.Resources._3dot;
-            this.btnEditApprovers.Location = new System.Drawing.Point(466, -1);
-            this.btnEditApprovers.Name = "btnEditApprovers";
-            this.btnEditApprovers.Size = new System.Drawing.Size(27, 17);
-            this.btnEditApprovers.TabIndex = 30;
-            this.btnEditApprovers.UseVisualStyleBackColor = true;
-            this.btnEditApprovers.Click += new System.EventHandler(this.btnEditApprovers_Click);
-            // 
             // NewNote
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(914, 525);
+            this.Controls.Add(this.btnEditApprovers);
             this.Controls.Add(this.labelApprAll);
             this.Controls.Add(this.tbBodyDown);
             this.Controls.Add(this.btnApprAvtor);

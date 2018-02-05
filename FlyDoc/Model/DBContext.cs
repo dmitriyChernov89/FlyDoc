@@ -95,31 +95,34 @@ namespace FlyDoc.Model
         // получить DataTable из SELECT-запроса
         public static DataTable GetQueryTable(string queryString)
         {
-            SqlConnection conn = getConnection();
-            if (conn == null) return null;
-
-            DataTable retVal = null;
-            if (openDB(conn))
+            lock (new object())
             {
-                try
-                {
-                    SqlDataAdapter da = new SqlDataAdapter(queryString, conn);
-                    retVal = new DataTable();
-                    da.Fill(retVal);
-                }
-                catch (Exception ex)
-                {
-                    string errMsg = string.Format("Ошибка выполнения запроса MS SQL Server-у: запрос - {0}, ошибка - {1}", queryString, ex.Message);
-                    showMsg(errMsg);
-                    retVal = null;
-                }
-                finally
-                {
-                    closeDB(conn);
-                }
-            }
+                SqlConnection conn = getConnection();
+                if (conn == null) return null;
 
-            return retVal;
+                DataTable retVal = null;
+                if (openDB(conn))
+                {
+                    try
+                    {
+                        SqlDataAdapter da = new SqlDataAdapter(queryString, conn);
+                        retVal = new DataTable();
+                        da.Fill(retVal);
+                    }
+                    catch (Exception ex)
+                    {
+                        string errMsg = string.Format("Ошибка выполнения запроса MS SQL Server-у: запрос - {0}, ошибка - {1}", queryString, ex.Message);
+                        showMsg(errMsg);
+                        retVal = null;
+                    }
+                    finally
+                    {
+                        closeDB(conn);
+                    }
+                }
+
+                return retVal;
+            }
         }
 
 
@@ -286,20 +289,14 @@ index name              type
             return retVal;
         }
 
-        public static bool InsertDepartment(Department dep)
+        public static List<Tuple<int, string>> GetDepartmentNamesList()
         {
-            string sqlText = string.Format("INSERT INTO Department (Id, Name) VALUES ({0}, '{1}')", dep.Id, dep.Name);
-            return (Execute(sqlText) > 0);
+            return getIdNameList("SELECT [Id], [Name] FROM [Department] ORDER BY [Name]");
         }
-        public static bool UpdateDepartment(Department dep, int Id)
+
+        public static Dictionary<int, string> GetDepartmentNamesDict()
         {
-            string sqlText = string.Format("UPDATE Department SET Id = {0}, Name = '{1}' WHERE (Id = {2})", dep.Id, dep.Name, Id);
-            return (Execute(sqlText) > 0);
-        }
-        public static bool DeleteDepartment(int Id)
-        {
-            string sqlText = string.Format("DELETE FROM Department WHERE (Id = {0})", Id);
-            return (Execute(sqlText) > 0);
+            return getIdNameDict("SELECT [Id], [Name] FROM [Department] ORDER BY [Name]");
         }
         #endregion
 
@@ -311,31 +308,6 @@ index name              type
             return GetQueryTable(sqlText);
         }
 
-        // получить настройки пользователя
-        public static DataRow GetUserConfig(string PC, string UserName)
-        {
-            string sqlText = string.Format("SELECT * FROM Access WHERE (PC='{0}') AND (UserName='{1}')", PC, UserName);
-            DataTable dt = GetQueryTable(sqlText);
-            return ((dt == null) || (dt.Rows.Count == 0)) ? null : dt.Rows[0];
-        }
-
-        public static bool InsertUser(User user, out int newId)
-        {
-            string sqlText = $"INSERT INTO Access (PC, UserName, Department, Name, HeadNach, Notes, Schedule, Phone, Config, ApprAvtor, ApprDir, ApprComdir, ApprSBNach, ApprSB, ApprKasa, ApprNach, ApprFin, ApprDostavka, ApprEnerg, ApprSklad, ApprBuh, ApprASU, Mail) VALUES ('{user.PC}', '{user.UserName}', {user.DepartmentId}, '{user.Name}', '{user.HeadNach}', {((user.AllowNote) ? 1 : 0)}, {((user.AllowSchedule) ? 1 : 0)}, {((user.AllowPhonebook) ? 1 : 0)}, {((user.AllowConfig) ? 1 : 0)}, {((user.AllowApprAvtor) ? 1 : 0)}, {((user.AllowApproverDir) ? 1 : 0)}, {((user.AllowApprComdir) ? 1 : 0)}, {((user.AllowApprSBNach) ? 1 : 0)}, {((user.AllowApproverSB) ? 1 : 0)}, {((user.AllowApprKasa) ? 1 : 0)}, {((user.AllowApprovedNach) ? 1 : 0)}, {((user.AllowApprFin) ? 1 : 0)}, {((user.AllowApprDostavka) ? 1 : 0)}, {((user.AllowApprEnerg) ? 1 : 0)}, {((user.AllowApprSklad) ? 1 : 0)}, {((user.AllowApprBuh) ? 1 : 0)}, {((user.AllowApprASU) ? 1 : 0)},  '{user.enterMail}'); SELECT @@IDENTITY";
-            DataTable dt = GetQueryTable(sqlText);
-            newId = Convert.ToInt32(dt.Rows[0][0]);
-            return (newId > 0);
-        }
-        public static bool UpdateUser(User user)
-        {
-            string sqlText = $"UPDATE Access SET PC = '{user.PC}', UserName = '{user.UserName}', Department = {user.DepartmentId}, Name = '{user.Name}', HeadNach = '{user.HeadNach}', Notes = {((user.AllowNote) ? 1 : 0)}, Schedule = {((user.AllowSchedule) ? 1 : 0)}, Phone = {((user.AllowPhonebook) ? 1 : 0)}, Config = {((user.AllowConfig) ? 1 : 0)}, ApprAvtor = {((user.AllowApprAvtor) ? 1 : 0)}, ApprDir = {((user.AllowApproverDir) ? 1 : 0)}, ApprComdir = {((user.AllowApprComdir) ? 1 : 0)}, ApprSBNach = {((user.AllowApprSBNach) ? 1 : 0)}, ApprSB = {((user.AllowApproverSB) ? 1 : 0)}, ApprKasa = {((user.AllowApprKasa) ? 1 : 0)}, ApprNach = {((user.AllowApprovedNach) ? 1 : 0)}, ApprFin = {((user.AllowApprFin) ? 1 : 0)}, ApprDostavka = {((user.AllowApprDostavka) ? 1 : 0)}, ApprEnerg = {((user.AllowApprEnerg) ? 1 : 0)}, ApprSklad = {((user.AllowApprSklad) ? 1 : 0)}, ApprBuh = {((user.AllowApprBuh) ? 1 : 0)}, ApprASU = {((user.AllowApprASU) ? 1 : 0)}, Mail = '{user.enterMail}' WHERE (Id = {user.Id})";
-            return (Execute(sqlText) > 0);
-        }
-        public static bool DeleteUser(int Id)
-        {
-            string sqlText = string.Format("DELETE FROM Access WHERE (Id = {0})", Id);
-            return (Execute(sqlText) > 0);
-        }
         #endregion
 
         #region Schedule
@@ -375,7 +347,24 @@ index name              type
         // (сортировать здесь, т.к. SQL-представление не хочет сохранять запрос с ORDER BY (!!!!????)
         public static DataTable GetNotes()
         {
-            return GetQueryTable("SELECT * FROM vwNote");// ORDER BY Id DESC");
+            return GetQueryTable("SELECT * FROM Notes");  // ORDER BY Id DESC");
+        }
+
+        public static List<Note> GetNotesModelList()
+        {
+            DataTable dt = GetQueryTable("SELECT * FROM Notes");
+            if (dt != null)
+            {
+                List<Note> retVal = new List<Note>();
+                foreach (DataRow row in dt.Rows)
+                {
+                    Note note = getEntityFromDataRow<Note>(row);
+                    if (note != null) retVal.Add(note);
+                }
+                return retVal;
+            }
+            else
+                return null;
         }
 
         public static DataRow GetNote(int Id)
@@ -392,72 +381,65 @@ index name              type
             return dt;
         }
         
-        public static bool InsertNotes(Note note, out int newId)
+        public static bool InsertNotes(Note note)
         {
-            string sqlText = $"INSERT INTO Notes (Templates, IdDepartment, [Date], NameAvtor, BodyUp, BodyDown, HeadNach, HeadDir, Approvers) VALUES ({note.NoteTemplateId}, {note.DepartmentId}, {note.Date.ToSQLExpr()}, '{note.NameAvtor}', '{note.BodyUp}', '{note.BodyDown}', '{note.HeadNach}', '{note.HeadDir}', '{note.Approvers}'); SELECT @@IDENTITY";
-            DataTable dt = GetQueryTable(sqlText);
-            newId = Convert.ToInt32(dt.Rows[0][0]);
-            note.Id = newId;
-
-            // note.Include
-            if ((newId > 0) && (note.Include != null))
+            if (InsertEntity(note))
             {
-                foreach (NoteInclude incl in note.Include)
+                // note.Include
+                if ((note.Id > 0) && (note.Include != null))
                 {
-                    incl.IdNotes = newId;
-                    sqlText = incl.GetSQLInsertText(note.IncludeFields) + "; SELECT @@IDENTITY";
-                    dt = GetQueryTable(sqlText);
-                    incl.Id = Convert.ToInt32(dt.Rows[0][0]);
+                    DataTable dt;
+                    string sqlText;
+                    foreach (NoteInclude incl in note.Include)
+                    {
+                        incl.IdNotes = note.Id;
+                        sqlText = incl.GetSQLInsertText(note.IncludeFields) + "; SELECT @@IDENTITY";
+                        dt = GetQueryTable(sqlText);
+                        incl.Id = Convert.ToInt32(dt.Rows[0][0]);
+                    }
                 }
             }
 
-            return (newId > 0);
+            return (note.Id > 0);
         }
 
         public static bool UpdateNotes(Note note)
         {
-            string sqlText = string.Format("UPDATE Notes SET {0} WHERE (Id = {1})", note.GetSQLUpdateString(), note.Id);
-            bool result = false;
-            try
+            if (UpdateEntity(note))
             {
-                result = (Execute(sqlText) > 0);
-            }
-            catch (Exception ex)
-            {
-                showErrorBox("Notes", "обновления", ex.Message + ": " + sqlText);
-            }
-
-            // note.Include
-            if ((result) && (note.Include != null) && (note.Include.Count > 0))
-            {
-                // то, что лежит в БД
-                DataTable dtIncl = GetNoteIncludeByNoteId(note.Id);
-                List<int> dbInclIds = new List<int>();
-                foreach (DataRow item in dtIncl.Rows) dbInclIds.Add((int)item["Id"]);
-
-                // удалить из БД строки, отсутствующие в таблице
-                int[] delIds = dbInclIds.Except(note.Include.Select(i => i.Id)).ToArray();
-                if (delIds.Length > 0)
+                // note.Include
+                if ((note.Include != null) && (note.Include.Count > 0))
                 {
-                    string sDelIds = string.Join(",", delIds.Select(j => j.ToString()).ToArray());
-                    sqlText = string.Format("DELETE FROM NoteIncludeTable WHERE [Id] In ({0})", sDelIds);
-                    try
+                    // то, что лежит в БД
+                    DataTable dtIncl = GetNoteIncludeByNoteId(note.Id);
+                    List<int> dbInclIds = new List<int>();
+                    foreach (DataRow item in dtIncl.Rows) dbInclIds.Add((int)item["Id"]);
+
+                    // удалить из БД строки, отсутствующие в таблице
+                    int[] delIds = dbInclIds.Except(note.Include.Select(i => i.Id)).ToArray();
+                    if (delIds.Length > 0)
                     {
-                        Execute(sqlText);
+                        string sDelIds = string.Join(",", delIds.Select(j => j.ToString()).ToArray());
+                        string sqlText = string.Format("DELETE FROM [NoteIncludeTable] WHERE [Id] In ({0})", sDelIds);
+                        try
+                        {
+                            Execute(sqlText);
+                        }
+                        catch (Exception ex)
+                        {
+                            showErrorBox("NoteIncludeTable", "удаления", ex.Message + ": " + sqlText);
+                        }
                     }
-                    catch (Exception ex)
+                    // обновить или добавить
+                    foreach (NoteInclude incl in note.Include)
                     {
-                        showErrorBox("NoteIncludeTable", "удаления", ex.Message + ": " + sqlText);
+                        updNoteIncl(incl, note.Id, note);
                     }
                 }
-                // обновить или добавить
-                foreach (NoteInclude incl in note.Include)
-                {
-                    updNoteIncl(incl, note.Id, note);
-                }
+                return true;
             }
-
-            return result;
+            else
+                return false;
         }
 
         private static void updNoteIncl(NoteInclude incl, int noteId, Note note)
@@ -495,10 +477,13 @@ index name              type
             }
         }
 
-        public static bool DeleteNotes(int Id)
+        public static bool DeleteNotes(int id)
         {
-            string sqlText = string.Format("DELETE FROM Notes WHERE (Id = {0})", Id);
-            return (Execute(sqlText) > 0);
+            // удалить строки из NoteIncludeTable
+            string sqlText = string.Format("DELETE FROM [NoteIncludeTable] WHERE ([IdNotes] = {0})", id);
+            Execute(sqlText);
+
+            return (DBContext.DeleteEntityById(Note._dbTableName, id));
         }
 
         #endregion
@@ -526,7 +511,18 @@ index name              type
             return ((dt == null) || (dt.Rows.Count == 0)) ? null : dt.Rows[0];
         }
 
+        public static List<Tuple<int, string>> GetNoteTemplateNamesList()
+        {
+            return getIdNameList("SELECT [Id], [Name] FROM [NoteTemplates] ORDER BY [Name]");
+        }
+
+        public static Dictionary<int, string> GetNoteTemplateNamesDict()
+        {
+            return getIdNameDict("SELECT [Id], [Name] FROM [NoteTemplates] ORDER BY [Name]");
+        }
         #endregion
+
+        #region entity funcs
 
         public static bool InsertEntity<T>(T entity) where T: IDBInfo
         {
@@ -564,7 +560,7 @@ index name              type
             else if (value is string)
                 return string.Format("'{0}'", value.ToString());
             else if (value is bool)
-                return string.Format("'{0}'", ((bool)value ? "True" : "False"));
+                return string.Format("{0}", ((bool)value ? "1" : "0"));
             else if (value is DateTime)
                 return ((DateTime)value).ToSQLExpr();
             else if (value is float)
@@ -580,10 +576,22 @@ index name              type
 
         public static void PopulateEntityById<T>(T entity, int id) where T: IDBInfo
         {
-            string sqlText = $"SELECT * FROM [{entity.DBTableName}] WHERE ([Id] = '{id}')";
+            string sWhere = $"[Id] = '{id}'";
+
+            PopulateEntityByWhere(entity, sWhere);
+        }
+
+        public static void PopulateEntityByWhere<T>(T entity, string sWhere) where T : IDBInfo
+        {
+            string sqlText = $"SELECT * FROM [{entity.DBTableName}] WHERE ({sWhere})";
 
             DataTable dt = GetQueryTable(sqlText);
-            if ((dt == null) || (dt.Rows.Count == 0)) return;
+            // если записть не найдена, то в entity Id=0
+            if ((dt == null) || (dt.Rows.Count == 0))
+            {
+                entity.Id = 0;
+                return;
+            }
 
             DataRow dr = dt.Rows[0];
             Type t = typeof(T);
@@ -595,6 +603,20 @@ index name              type
                     pi.SetValue(entity, dr[pi.Name]);
                 }
             }
+        }
+
+        private static T getEntityFromDataRow<T>(DataRow row) where T: new()
+        {
+            T retVal = new T();
+            PropertyInfo[] pInfo = typeof(T).GetProperties(BindingFlags.Public | BindingFlags.Instance);
+            foreach (PropertyInfo pi in pInfo)
+            {
+                if (row.Table.Columns.Contains(pi.Name) && !row.IsNull(pi.Name))
+                {
+                    pi.SetValue(retVal, row[pi.Name]);
+                }
+            }
+            return retVal;
         }
 
         public static string GetSQLInsertText<T>(T instance) where T: IDBInfo
@@ -704,6 +726,40 @@ index name              type
 
             return retVal;
         }
+        #endregion
+
+        // получить список пар Id, Name из справочника
+        private static List<Tuple<int, string>> getIdNameList(string sqlText)
+        {
+            DataTable dt = GetQueryTable(sqlText);
+            if (dt != null)
+            {
+                List<Tuple<int, string>> retVal = new List<Tuple<int, string>>();
+                foreach (DataRow row in dt.Rows)
+                {
+                    retVal.Add(new Tuple<int, string>(Convert.ToInt32(row[0]), Convert.ToString(row[1])));
+                }
+                return retVal;
+            }
+            else
+                return null;
+        }
+
+        private static Dictionary<int, string> getIdNameDict(string sqlText)
+        {
+            DataTable dt = GetQueryTable(sqlText);
+            if (dt != null)
+            {
+                Dictionary<int, string> retVal = new Dictionary<int, string>();
+                foreach (DataRow row in dt.Rows)
+                {
+                    retVal.Add(Convert.ToInt32(row[0]), (row.IsNull(1) ? null : Convert.ToString(row[1])));
+                }
+                return retVal;
+            }
+            else
+                return null;
+        }
 
         private static void showErrorBox(string tableName, string actionName, string errText)
         {
@@ -718,7 +774,6 @@ index name              type
         public bool IsNullable { get; set; }
         public string TypeName { get; set; }
         public int MaxLenght { get; set; }
-        public bool MyProperty { get; set; }
     }
 
 }

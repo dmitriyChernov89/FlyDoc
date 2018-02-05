@@ -31,7 +31,7 @@ namespace FlyDoc.Model
         public List<DBTableColumn> DBColumns { get { return _dbColumns; } }
         #endregion
 
-
+        // CTORs
         public PhoneModel()
         {
         }

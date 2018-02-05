@@ -25,12 +25,20 @@ namespace FlyDoc.Lib
                     col.HeaderText = (curDescr.Header.IsNull()) ? col.Name : curDescr.Header;
 
                     col.Visible = curDescr.Visible;
+                    if (curDescr.FillWeight <= 0) col.Visible = false;
 
-                    if (col.Visible && (col.FillWeight > 0)) col.FillWeight = curDescr.FillWeight;
+                    if (col.Visible) col.FillWeight = curDescr.FillWeight;
 
-                    col.DefaultCellStyle.Alignment = curDescr.Alignment;
+                    if (curDescr.CellStyle != null)
+                    {
+                        col.DefaultCellStyle = curDescr.CellStyle;
+                    }
+                    else
+                    {
+                        col.DefaultCellStyle.Alignment = curDescr.Alignment;
+                    }
 
-                    col.HeaderCell.Style.Alignment = (curDescr.HeaderAlignment == DataGridViewContentAlignment.NotSet) 
+                    col.HeaderCell.Style.Alignment = (curDescr.HeaderAlignment == DataGridViewContentAlignment.NotSet)
                         ? curDescr.Alignment
                         : curDescr.HeaderAlignment;
 
@@ -38,6 +46,8 @@ namespace FlyDoc.Lib
                     if ((col is DataGridViewCheckBoxColumn) && curDescr.ThreeStates)
                         ((DataGridViewCheckBoxColumn)col).ThreeState = true;
                 }
+                else
+                    col.Visible = false;
             }
         }
 

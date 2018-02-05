@@ -56,7 +56,7 @@ namespace FlyDoc.ViewModel
                 DialogResult result = MessageBox.Show("Ви впевнені що хочете видалити поточний відділ?", "Видалення відділу", MessageBoxButtons.YesNoCancel, MessageBoxIcon.Question, MessageBoxDefaultButton.Button2);
                 if (result == DialogResult.Yes)
                 {
-                    if (DBContext.DeleteDepartment(id))
+                    if (DBContext.DeleteEntityById(Department._dbTableName, id))
                     {
                         base.DeleteObject();
                     }
@@ -74,7 +74,7 @@ namespace FlyDoc.ViewModel
             DialogResult result = frm.ShowDialog();
             if ((result == DialogResult.OK) && (frm.Department != null))
             {
-                if (DBContext.InsertDepartment(frm.Department))
+                if (DBContext.InsertEntity(frm.Department))
                 {
                     this.LoadDataToGrid();
                     base.selectGridRowById(frm.Department.Id);
@@ -98,7 +98,7 @@ namespace FlyDoc.ViewModel
                 DialogResult result = frm.ShowDialog();
                 if (result == DialogResult.OK)
                 {
-                    if (DBContext.UpdateDepartment(frm.Department, editId))
+                    if (DBContext.UpdateEntity(frm.Department))
                     {
                         this.LoadDataToGrid();
                         base.selectGridRowById(frm.Department.Id);

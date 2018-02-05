@@ -34,8 +34,6 @@ namespace FlyDoc.Forms
         private bool _isShowButtonTip;
        // private DecorForm _decorForm;
 
-        public string pc = System.Environment.MachineName;
-        public string userName = System.Environment.UserName;
         public static bool enableNotes = false;      //Доступ к служебкам
         public bool enableSchedule = false;   //Доступ к графику работы
         public bool enablePhone = false;      //Доступ на редактирование телефонного справочника
@@ -78,23 +76,17 @@ namespace FlyDoc.Forms
 
         public void FlyDoc_Load(object sender, EventArgs e)
         {
-            string argValue = AppArgsHelper.GetAppArgValue("machine");
-            if (!argValue.IsNull()) pc = argValue;
-            argValue = AppArgsHelper.GetAppArgValue("user");
-            if (!argValue.IsNull()) userName = argValue;
-
             // заголовок окна
-            String substring = pc.Substring(3, 3);
+            String substring = Program.MachineName.Substring(3, 3);
             _currentDepId = substring.ToInt();
-            this.Text = string.Format("FlyDoc (користувач - {0}, ПК - {1}, відділ - {2})", userName, pc, _currentDepId);
 
-            DataRow dr = _userModel.GetConfigRow(pc, userName);
+            DataRow dr = DBContext.GetQueryTable($"SELECT * FROM [Access] WHERE [PC]='{Program.MachineName}' AND [UserName]='{Program.UserName}'").Rows[0];
             // если нашли в таблице Access данного пользователя, т.е. вернули строку
             if (dr != null)
             {
                 _currentDepId = (int)dr["Department"];
                 _currentDepName = DBContext.GetDepartmentName(_currentDepId);
-                this.Text = string.Format("FlyDoc (користувач - {0}, ПК - {1}, відділ - {2})", userName, pc, _currentDepId);
+                this.Text = string.Format("FlyDoc (користувач - {0}, ПК - {1}, відділ - {2})", Program.UserName, Program.MachineName, _currentDepId);
 
                 enableNotes = (bool)dr["Notes"];
                 enableSchedule = (bool)dr["Schedule"];
@@ -121,6 +113,7 @@ namespace FlyDoc.Forms
                 enableApprASU = (bool)dr["ApprASU"];
                 Mail = (string)dr["Mail"];
             }
+
             // доступность кнопок режима работы
             setAppModeButtonEnable(btnotes, enableNotes);
             setAppModeButtonEnable(btschedule, enableSchedule); // графики доступны всем на чтение

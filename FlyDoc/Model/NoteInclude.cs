@@ -50,6 +50,8 @@ namespace FlyDoc.Model
         internal static string GetNameByHeader(string header)
         {
             string retVal = null;
+            if (string.IsNullOrEmpty(header)) return null;
+
             ColumnNameHeader cn = NoteInclude._headers.FirstOrDefault(c => (c.Header == header) || (header.StartsWith(c.Header)));
             if (cn != null) retVal = cn.Name;
 

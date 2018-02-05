@@ -8,11 +8,19 @@ using System.Text;
 
 namespace FlyDoc.Model
 {
-    public class Note
+    public class Note : IDBInfo
     {
+        public static string _dbTableName = "Notes";
+        private static List<DBTableColumn> _dbColumns;
+        static Note()
+        {
+            _dbColumns = DBContext.GetTableColumns(_dbTableName);
+        }
+
+        #region public DB fields
         public int Id { get; set; }
-        public int NoteTemplateId { get; set; }
-        public int DepartmentId { get; set; }
+        public int Templates { get; set; }
+        public int IdDepartment { get; set; }
         public DateTime Date { get; set; }
         public string NameAvtor { get; set; }
         public string NameDir { get; set; }
@@ -45,83 +53,41 @@ namespace FlyDoc.Model
         public string BodyDown { get; set; }
         public string HeadNach { get; set; }
         public string HeadDir { get; set; }
+        public int NoteType { get; set; }
         public string Approvers { get; set; }
+        #endregion
 
-
+        #region add props
         public List<NoteInclude> Include { get; set; }
         private List<string> _inclFields;
         public List<string> IncludeFields { get { return _inclFields; } }
 
+        private NoteTemplate _template;
+        public NoteTemplate Template { get { return _template; } }
 
+        private Department _dep;
+        public Department Department { get { return _dep; } }
+
+        #endregion
+
+        #region IDBInfo
+        public string DBTableName { get { return _dbTableName; } }
+        public List<DBTableColumn> DBColumns { get { return _dbColumns; } }
+        #endregion
+
+        // CTORs
         public Note()
         {
             _inclFields = new List<string>();
         }
 
-        public void ResetIncludeFields(DataRow drTemplate = null)
-        {
-            if (drTemplate == null) drTemplate = DBContext.GetNoteTemplateById(this.NoteTemplateId);
-
-            if (drTemplate["TableColums"].ToInt() == 0)
-            {
-                if (_inclFields.Count > 0) _inclFields.Clear();
-            }
-            else
-            {
-                _inclFields.Clear();
-                if (drTemplate != null)
-                    foreach (DataColumn col in drTemplate.Table.Columns)
-                    {
-                        if (col.ColumnName.StartsWith("ColumName") && (!drTemplate.IsNull(col)))
-                            _inclFields.Add(NoteInclude.GetNameByHeader((string)drTemplate[col]));
-                    }
-            }
-        }
-
         // объект, заполненный данными из БД
         public Note(int noteId) : this()
         {
-            DataRow dr = DBContext.GetNote(noteId);
-            if (dr != null)
-            {
-                Id = noteId;
-                DepartmentId = Convert.ToInt32(dr["IdDepartment"]);
-                NoteTemplateId = Convert.ToInt32(dr["Templates"]);
-                Date = (DateTime)(dr["Date"] ?? DateTime.MinValue);
-                NameAvtor = dr["NameAvtor"].ToString();
-                NameDir = dr["NameDir"].ToString();
-                NameComdir = dr["NameComdir"].ToString();
-                NameSBNach = dr["NameSBNach"].ToString();
-                NameSB = dr["NameSB"].ToString();
-                NameKasa = dr["NameKasa"].ToString();
-                NameNach = dr["NameNach"].ToString();
-                NameFin = dr["NameFin"].ToString();
-                NameDostavka = dr["NameDostavka"].ToString();
-                NameEnerg = dr["NameEnerg"].ToString();
-                NameSklad = dr["NameSklad"].ToString();
-                NameBuh = dr["NameBuh"].ToString();
-                NameASU = dr["NameASU"].ToString();
-                ApprAvtor = dr["ApprAvtor"].ToBool();
-                ApprDir = dr["ApprDir"].ToBool();
-                ApprComdir = dr["ApprComdir"].ToBool();
-                ApprSBNach = dr["ApprSBNach"].ToBool();
-                ApprSB = dr["ApprSB"].ToBool();
-                ApprKasa = dr["ApprKasa"].ToBool();
-                ApprNach = dr["ApprNach"].ToBool();
-                ApprFin = dr["ApprFin"].ToBool();
-                ApprDostavka = dr["ApprDostavka"].ToBool();
-                ApprEnerg = dr["ApprEnerg"].ToBool();
-                ApprSklad = dr["ApprSklad"].ToBool();
-                ApprBuh = dr["ApprBuh"].ToBool();
-                ApprASU = dr["ApprASU"].ToBool();
-                ApprAll = dr["ApprAll"].ToBool();
-                BodyUp = dr["BodyUp"].ToString();
-                BodyDown = dr["BodyDown"].ToString();
-                HeadNach = dr["HeadNach"].ToString();
-                HeadDir = dr["HeadDir"].ToString();
-                Approvers = dr["Approvers"].ToString().Trim();
-            }
+            DBContext.PopulateEntityById(this, noteId);
+            if (this.Id == 0) return;
 
+            // внутренняя таблица NoteInclude
             DataTable dt = DBContext.GetNoteIncludeByNoteId(noteId);
             if (dt != null)
             {
@@ -146,36 +112,59 @@ namespace FlyDoc.Model
                     this.Include.Add(noteIncl);
                 }
             }
+
+            // шаблон
+            _template = new NoteTemplate(Templates);
+
+            // отдел
+            _dep = new Department(IdDepartment);
         }
 
-        public string GetSQLUpdateString()
+
+        #region include table
+        public void ResetIncludeFields(DataRow drTemplate = null)
         {
-            string retVal = "", sVal, sName;
-            PropertyInfo[] fields = (typeof(Note)).GetProperties();
-            foreach (PropertyInfo item in fields)
+            if (drTemplate == null) drTemplate = DBContext.GetNoteTemplateById(this.Templates);
+
+            if (drTemplate["TableColums"].ToInt() == 0)
             {
-                if ((item.Name == "Id") || (item.Name == "Include") || (item.Name == "IncludeFields")) continue;
-                if (item.Name.StartsWith("Name") && (item.Name != "NameAvtor")) continue;
-
-                if (retVal.Length > 0) retVal += ", ";
-
-                sName = item.Name;
-                if (sName == "DepartmentId") sName = "IdDepartment";
-                if (sName == "NoteTemplateId") sName = "Templates";
-
-                sVal = item.GetValue(this, null).ToString();
-                if (item.PropertyType.Name == "DateTime")
-                    sVal = string.Format("CONVERT(datetime, '{0}', 20)", Convert.ToDateTime(item.GetValue(this, null)).ToString("yyyy-MM-dd HH:mm:ss"));
-                else if (item.PropertyType.Name == "String")
-                    sVal = "'" + sVal + "'";
-                else if (item.PropertyType.Name == "Boolean")
-                    sVal = (sVal.ToBool() ? "1" : "0");
-
-                retVal += "[" + sName + "] = " + sVal;
+                if (_inclFields.Count > 0) _inclFields.Clear();
             }
-
-            return retVal;
+            else
+            {
+                _inclFields.Clear();
+                if (drTemplate != null)
+                    foreach (DataColumn col in drTemplate.Table.Columns)
+                    {
+                        if (col.ColumnName.StartsWith("ColumName") && (!drTemplate.IsNull(col)))
+                            _inclFields.Add(NoteInclude.GetNameByHeader((string)drTemplate[col]));
+                    }
+            }
         }
+
+        public void ResetIncludeFields(NoteTemplate template)
+        {
+            if (template == null) { _inclFields.Clear(); return; }
+
+            _inclFields.Clear();
+            if (template.TableColums >= 0)
+            {
+                PropertyInfo[] pInfos = template.GetType().GetProperties(BindingFlags.Public | BindingFlags.Instance);
+                foreach (PropertyInfo pInfo in pInfos)
+                {
+                    if (pInfo.Name.StartsWith("ColumName"))
+                    {
+                        string colName = Convert.ToString(pInfo.GetValue(template));
+                        if (string.IsNullOrEmpty(colName) == false)
+                        {
+                            string sRet = NoteInclude.GetNameByHeader(colName);
+                            if (string.IsNullOrEmpty(sRet) == false) _inclFields.Add(sRet);
+                        }
+                    }
+                }
+            }
+        }
+        #endregion
 
     }  // class Note
 }
