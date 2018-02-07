@@ -36,10 +36,6 @@
             this.tpgNotes = new System.Windows.Forms.TabPage();
             this.dgvNotes = new System.Windows.Forms.DataGridView();
             this.contextMenuStrip1 = new System.Windows.Forms.ContextMenuStrip(this.components);
-            this.cmiGridCreate = new System.Windows.Forms.ToolStripMenuItem();
-            this.cmiGridCopy = new System.Windows.Forms.ToolStripMenuItem();
-            this.cmiGridEdit = new System.Windows.Forms.ToolStripMenuItem();
-            this.cmiGridDelete = new System.Windows.Forms.ToolStripMenuItem();
             this.panelFindNotes = new System.Windows.Forms.Panel();
             this.tpgSchedule = new System.Windows.Forms.TabPage();
             this.dgvSchedule = new System.Windows.Forms.DataGridView();
@@ -76,12 +72,6 @@
             this.label2 = new System.Windows.Forms.Label();
             this.btnDeleteDepartmentFilter = new System.Windows.Forms.Button();
             this.panelControl = new System.Windows.Forms.Panel();
-            this.btnotes = new System.Windows.Forms.Button();
-            this.btschedule = new System.Windows.Forms.Button();
-            this.btexit = new System.Windows.Forms.Button();
-            this.btconfig = new System.Windows.Forms.Button();
-            this.btwork = new System.Windows.Forms.Button();
-            this.btphone = new System.Windows.Forms.Button();
             this.toolTip1 = new System.Windows.Forms.ToolTip(this.components);
             this.btnNew = new System.Windows.Forms.Button();
             this.btnCopy = new System.Windows.Forms.Button();
@@ -93,6 +83,17 @@
             this.datePickerStart = new System.Windows.Forms.DateTimePicker();
             this.chkCFO = new System.Windows.Forms.CheckBox();
             this.refreshDBTimer = new System.Windows.Forms.Timer(this.components);
+            this.pictureBox1 = new System.Windows.Forms.PictureBox();
+            this.btnotes = new System.Windows.Forms.Button();
+            this.btschedule = new System.Windows.Forms.Button();
+            this.btexit = new System.Windows.Forms.Button();
+            this.btconfig = new System.Windows.Forms.Button();
+            this.btwork = new System.Windows.Forms.Button();
+            this.btphone = new System.Windows.Forms.Button();
+            this.cmiGridCreate = new System.Windows.Forms.ToolStripMenuItem();
+            this.cmiGridCopy = new System.Windows.Forms.ToolStripMenuItem();
+            this.cmiGridEdit = new System.Windows.Forms.ToolStripMenuItem();
+            this.cmiGridDelete = new System.Windows.Forms.ToolStripMenuItem();
             this.tabControlMain.SuspendLayout();
             this.tpgNotes.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.dgvNotes)).BeginInit();
@@ -116,6 +117,7 @@
             this.tpgDepartments.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.dgvDepartments)).BeginInit();
             this.panelControl.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
             this.SuspendLayout();
             // 
             // imageList1
@@ -178,34 +180,6 @@
             this.cmiGridDelete});
             this.contextMenuStrip1.Name = "contextMenuStrip1";
             resources.ApplyResources(this.contextMenuStrip1, "contextMenuStrip1");
-            // 
-            // cmiGridCreate
-            // 
-            this.cmiGridCreate.Image = global::FlyDoc.Properties.Resources.Add_Row_64;
-            this.cmiGridCreate.Name = "cmiGridCreate";
-            resources.ApplyResources(this.cmiGridCreate, "cmiGridCreate");
-            this.cmiGridCreate.Click += new System.EventHandler(this.cmiGridCreate_Click);
-            // 
-            // cmiGridCopy
-            // 
-            this.cmiGridCopy.Image = global::FlyDoc.Properties.Resources.Replicate_Rows_48;
-            this.cmiGridCopy.Name = "cmiGridCopy";
-            resources.ApplyResources(this.cmiGridCopy, "cmiGridCopy");
-            this.cmiGridCopy.Click += new System.EventHandler(this.cmiGridCopy_Click);
-            // 
-            // cmiGridEdit
-            // 
-            this.cmiGridEdit.Image = global::FlyDoc.Properties.Resources.Edit_Row_64;
-            this.cmiGridEdit.Name = "cmiGridEdit";
-            resources.ApplyResources(this.cmiGridEdit, "cmiGridEdit");
-            this.cmiGridEdit.Click += new System.EventHandler(this.cmiGridEdit_Click);
-            // 
-            // cmiGridDelete
-            // 
-            this.cmiGridDelete.Image = global::FlyDoc.Properties.Resources.Delete_Row_64;
-            this.cmiGridDelete.Name = "cmiGridDelete";
-            resources.ApplyResources(this.cmiGridDelete, "cmiGridDelete");
-            this.cmiGridDelete.Click += new System.EventHandler(this.cmiGridDelete_Click);
             // 
             // panelFindNotes
             // 
@@ -490,6 +464,7 @@
             // 
             // panelControl
             // 
+            this.panelControl.Controls.Add(this.pictureBox1);
             this.panelControl.Controls.Add(this.btnotes);
             this.panelControl.Controls.Add(this.btschedule);
             this.panelControl.Controls.Add(this.btexit);
@@ -499,55 +474,6 @@
             resources.ApplyResources(this.panelControl, "panelControl");
             this.panelControl.Name = "panelControl";
             this.panelControl.MouseMove += new System.Windows.Forms.MouseEventHandler(this.panelControl_MouseMove);
-            // 
-            // btnotes
-            // 
-            resources.ApplyResources(this.btnotes, "btnotes");
-            this.btnotes.ImageList = this.imageList1;
-            this.btnotes.Name = "btnotes";
-            this.btnotes.UseVisualStyleBackColor = true;
-            this.btnotes.Click += new System.EventHandler(this.btnotes_Click);
-            // 
-            // btschedule
-            // 
-            resources.ApplyResources(this.btschedule, "btschedule");
-            this.btschedule.ImageList = this.imageList1;
-            this.btschedule.Name = "btschedule";
-            this.btschedule.UseVisualStyleBackColor = true;
-            this.btschedule.Click += new System.EventHandler(this.btschedule_Click);
-            // 
-            // btexit
-            // 
-            resources.ApplyResources(this.btexit, "btexit");
-            this.btexit.DialogResult = System.Windows.Forms.DialogResult.Cancel;
-            this.btexit.ImageList = this.imageList1;
-            this.btexit.Name = "btexit";
-            this.btexit.UseVisualStyleBackColor = true;
-            this.btexit.Click += new System.EventHandler(this.btexit_Click);
-            // 
-            // btconfig
-            // 
-            resources.ApplyResources(this.btconfig, "btconfig");
-            this.btconfig.ImageList = this.imageList1;
-            this.btconfig.Name = "btconfig";
-            this.btconfig.UseVisualStyleBackColor = true;
-            this.btconfig.Click += new System.EventHandler(this.btconfig_Click);
-            // 
-            // btwork
-            // 
-            resources.ApplyResources(this.btwork, "btwork");
-            this.btwork.ImageList = this.imageList1;
-            this.btwork.Name = "btwork";
-            this.btwork.UseVisualStyleBackColor = true;
-            this.btwork.Click += new System.EventHandler(this.btwork_Click);
-            // 
-            // btphone
-            // 
-            resources.ApplyResources(this.btphone, "btphone");
-            this.btphone.ImageList = this.imageList1;
-            this.btphone.Name = "btphone";
-            this.btphone.UseVisualStyleBackColor = true;
-            this.btphone.Click += new System.EventHandler(this.btphone_Click);
             // 
             // btnNew
             // 
@@ -613,6 +539,93 @@
             this.chkCFO.ThreeState = true;
             this.chkCFO.UseVisualStyleBackColor = true;
             // 
+            // pictureBox1
+            // 
+            this.pictureBox1.BackColor = System.Drawing.Color.Transparent;
+            this.pictureBox1.Image = global::FlyDoc.Properties.Resources.icons8_about_32;
+            resources.ApplyResources(this.pictureBox1, "pictureBox1");
+            this.pictureBox1.Name = "pictureBox1";
+            this.pictureBox1.TabStop = false;
+            this.toolTip1.SetToolTip(this.pictureBox1, resources.GetString("pictureBox1.ToolTip"));
+            this.pictureBox1.Click += new System.EventHandler(this.pictureBox1_Click);
+            // 
+            // btnotes
+            // 
+            resources.ApplyResources(this.btnotes, "btnotes");
+            this.btnotes.ImageList = this.imageList1;
+            this.btnotes.Name = "btnotes";
+            this.btnotes.UseVisualStyleBackColor = true;
+            this.btnotes.Click += new System.EventHandler(this.btnotes_Click);
+            // 
+            // btschedule
+            // 
+            resources.ApplyResources(this.btschedule, "btschedule");
+            this.btschedule.ImageList = this.imageList1;
+            this.btschedule.Name = "btschedule";
+            this.btschedule.UseVisualStyleBackColor = true;
+            this.btschedule.Click += new System.EventHandler(this.btschedule_Click);
+            // 
+            // btexit
+            // 
+            resources.ApplyResources(this.btexit, "btexit");
+            this.btexit.DialogResult = System.Windows.Forms.DialogResult.Cancel;
+            this.btexit.ImageList = this.imageList1;
+            this.btexit.Name = "btexit";
+            this.btexit.UseVisualStyleBackColor = true;
+            this.btexit.Click += new System.EventHandler(this.btexit_Click);
+            // 
+            // btconfig
+            // 
+            resources.ApplyResources(this.btconfig, "btconfig");
+            this.btconfig.ImageList = this.imageList1;
+            this.btconfig.Name = "btconfig";
+            this.btconfig.UseVisualStyleBackColor = true;
+            this.btconfig.Click += new System.EventHandler(this.btconfig_Click);
+            // 
+            // btwork
+            // 
+            resources.ApplyResources(this.btwork, "btwork");
+            this.btwork.ImageList = this.imageList1;
+            this.btwork.Name = "btwork";
+            this.btwork.UseVisualStyleBackColor = true;
+            this.btwork.Click += new System.EventHandler(this.btwork_Click);
+            // 
+            // btphone
+            // 
+            resources.ApplyResources(this.btphone, "btphone");
+            this.btphone.ImageList = this.imageList1;
+            this.btphone.Name = "btphone";
+            this.btphone.UseVisualStyleBackColor = true;
+            this.btphone.Click += new System.EventHandler(this.btphone_Click);
+            // 
+            // cmiGridCreate
+            // 
+            this.cmiGridCreate.Image = global::FlyDoc.Properties.Resources.Add_Row_64;
+            this.cmiGridCreate.Name = "cmiGridCreate";
+            resources.ApplyResources(this.cmiGridCreate, "cmiGridCreate");
+            this.cmiGridCreate.Click += new System.EventHandler(this.cmiGridCreate_Click);
+            // 
+            // cmiGridCopy
+            // 
+            this.cmiGridCopy.Image = global::FlyDoc.Properties.Resources.Replicate_Rows_48;
+            this.cmiGridCopy.Name = "cmiGridCopy";
+            resources.ApplyResources(this.cmiGridCopy, "cmiGridCopy");
+            this.cmiGridCopy.Click += new System.EventHandler(this.cmiGridCopy_Click);
+            // 
+            // cmiGridEdit
+            // 
+            this.cmiGridEdit.Image = global::FlyDoc.Properties.Resources.Edit_Row_64;
+            this.cmiGridEdit.Name = "cmiGridEdit";
+            resources.ApplyResources(this.cmiGridEdit, "cmiGridEdit");
+            this.cmiGridEdit.Click += new System.EventHandler(this.cmiGridEdit_Click);
+            // 
+            // cmiGridDelete
+            // 
+            this.cmiGridDelete.Image = global::FlyDoc.Properties.Resources.Delete_Row_64;
+            this.cmiGridDelete.Name = "cmiGridDelete";
+            resources.ApplyResources(this.cmiGridDelete, "cmiGridDelete");
+            this.cmiGridDelete.Click += new System.EventHandler(this.cmiGridDelete_Click);
+            // 
             // MainForm
             // 
             resources.ApplyResources(this, "$this");
@@ -665,6 +678,7 @@
             this.tpgDepartments.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)(this.dgvDepartments)).EndInit();
             this.panelControl.ResumeLayout(false);
+            ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -734,6 +748,7 @@
         public System.Windows.Forms.TextBox textBox3;
         private System.Windows.Forms.Label label5;
         private System.Windows.Forms.Timer refreshDBTimer;
+        private System.Windows.Forms.PictureBox pictureBox1;
     }
 }
 

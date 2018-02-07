@@ -204,6 +204,7 @@
     </Compile>
   </ItemGroup>
   <ItemGroup>
+    <Content Include="Images\icons8-about-32.png" />
     <Content Include="Paper_Plane-96.ico" />
     <None Include="Resources\3dots.bmp" />
     <None Include="Resources\3dot.bmp" />

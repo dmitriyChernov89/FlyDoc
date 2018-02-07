@@ -660,6 +660,11 @@ namespace FlyDoc.Forms
 
         }
 
+        private void pictureBox1_Click(object sender, EventArgs e)
+        {
+            (new AboutForm()).ShowDialog();
+        }
+
         //private void refreshDBTimer_Tick(object sender, EventArgs e)
         //{
         //    Timer refresh = new Timer();
