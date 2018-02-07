@@ -27,35 +27,21 @@ namespace FlyDoc.Forms
         private AppDepartments _departmentModel;
         private AppPhone _phoneModel;
         private AppModelBase _currentModel;
-        public static int _currentDepId = 0;
-        public string _currentDepName;
+        private static int _currentDepId = 0;
+        private string _currentDepName;
         // view layer
         private const string AppModeClosingMessage = "Доступ до цієї опціЇ закритий! Зверніться в відділ АСУ";
         private bool _isShowButtonTip;
-       // private DecorForm _decorForm;
+        // private DecorForm _decorForm;
 
-        public static bool enableNotes = false;      //Доступ к служебкам
-        public bool enableSchedule = false;   //Доступ к графику работы
-        public bool enablePhone = false;      //Доступ на редактирование телефонного справочника
-        public bool enableConfig = false;     //Доступ в настройки
-        public static string headNach = ""; //Шапка служебки
-        public static string name = "";//имя автора или того кто утверждает документ
-        public bool enableApprAvtor = false;   //Право утверждения документов как автор
-        public bool enableApprDir = false;   //Право утверждения документов как директор
-        public bool enableApprComdir = false;   //Право утверждения документов как ком.директор
-        public bool enableSBNach = false;   //Право утверждения документов как нач СБ
-        public bool enableApprSB = false;   //Право утверждения документов как инспектор СБ
-        public bool enableApprKasa = false;   //Право утверждения документов как ст кассир
-        public bool enableApprNach = false;   //Право утверждения документов как нач торг
-        public bool enableApprFin = false;   //Право утверждения документов как финик
-        public bool enableApprDostavka = false;   //Право утверждения документов как доставка
-        public bool enableApprEnerg = false;   //Право утверждения документов как енергетик
-        public bool enableApprSklad = false;   //Право утверждения документов как склад
-        public bool enableApprBuh = false;   //Право утверждения документов как бух
-        public bool enableApprASU = false;   //Право утверждения документов как АСУ
-        public string Mail = ""; // Почта для писем при запросе на утвердение документа
-        public static int WhichSection = 0;  //Определяем в каком мы разделе(1-служебки,2-графики,3-кто на работе,4-телефонная книга)
-        public static int WhichBtnClick = 0; //Определяем параметры запуска новой формы 1-New, 2-Copy, 3-Edit,4 -Dell
+        private bool enableNotes = false;      //Доступ к служебкам
+        private bool enableSchedule = false;   //Доступ к графику работы
+        private bool enablePhone = false;      //Доступ на редактирование телефонного справочника
+        private bool enableConfig = false;     //Доступ в настройки
+
+        public int WhichSection = 0;  //Определяем в каком мы разделе(1-служебки,2-графики,3-кто на работе,4-телефонная книга)
+        public int WhichBtnClick = 0; //Определяем параметры запуска новой формы 1-New, 2-Copy, 3-Edit,4 -Dell
+        
         // ctor
         public MainForm()
         {
@@ -71,48 +57,20 @@ namespace FlyDoc.Forms
             _noteTemplateModel = new AppNoteTemplates() { ViewForm = this, DataGrid = this.dgvNoteTemplates };
             _userModel = new AppUsers() { ViewForm = this, DataGrid = this.dgvUsers };
             _departmentModel = new AppDepartments() { ViewForm = this, DataGrid = this.dgvDepartments };
-
         }
 
         public void FlyDoc_Load(object sender, EventArgs e)
         {
             // заголовок окна
-            String substring = Program.MachineName.Substring(3, 3);
-            _currentDepId = substring.ToInt();
+            _currentDepId = Program.User.Department;
+            _currentDepName = DBContext.GetDepartmentName(_currentDepId);
+            string ver = System.Reflection.Assembly.GetExecutingAssembly().GetName().Version.ToString();
+            this.Text = $"FlyDoc (користувач - {Program.UserName}, ПК - {Program.MachineName}, відділ - {_currentDepId}), ver.{ver}";
 
-            DataRow dr = DBContext.GetQueryTable($"SELECT * FROM [Access] WHERE [PC]='{Program.MachineName}' AND [UserName]='{Program.UserName}'").Rows[0];
-            // если нашли в таблице Access данного пользователя, т.е. вернули строку
-            if (dr != null)
-            {
-                _currentDepId = (int)dr["Department"];
-                _currentDepName = DBContext.GetDepartmentName(_currentDepId);
-                this.Text = string.Format("FlyDoc (користувач - {0}, ПК - {1}, відділ - {2})", Program.UserName, Program.MachineName, _currentDepId);
-
-                enableNotes = (bool)dr["Notes"];
-                enableSchedule = (bool)dr["Schedule"];
-                enablePhone = (bool)dr["Phone"];
-                enableConfig = (bool)dr["Config"];
-                if (dr["Name"] is System.DBNull)
-                { name = ""; }
-                else { name = (string)dr["Name"]; }
-                if (dr["HeadNach"] is System.DBNull)
-                { headNach = ""; }
-                else { headNach = (string)dr["HeadNach"]; }
-                enableApprAvtor = (bool)dr["ApprAvtor"];
-                enableApprDir = (bool)dr["ApprDir"];
-                enableApprComdir = (bool)dr["ApprComdir"];
-                enableSBNach = (bool)dr["ApprSBNach"];
-                enableApprSB = (bool)dr["ApprSB"];
-                enableApprKasa = (bool)dr["ApprKasa"];
-                enableApprNach = (bool)dr["ApprNach"];
-                enableApprFin = (bool)dr["ApprFin"];
-                enableApprDostavka = (bool)dr["ApprDostavka"];
-                enableApprEnerg = (bool)dr["ApprEnerg"];
-                enableApprSklad = (bool)dr["ApprSklad"];
-                enableApprBuh = (bool)dr["ApprBuh"];
-                enableApprASU = (bool)dr["ApprASU"];
-                Mail = (string)dr["Mail"];
-            }
+            enableNotes = Program.User.Notes;
+            enableSchedule = Program.User.Schedule;
+            enablePhone = Program.User.Phone;
+            enableConfig = Program.User.Config;
 
             // доступность кнопок режима работы
             setAppModeButtonEnable(btnotes, enableNotes);
@@ -168,6 +126,11 @@ namespace FlyDoc.Forms
             btphone_Click(null, null);
         }
 
+        protected override void OnHelpButtonClicked(CancelEventArgs e)
+        {
+            (new AboutForm()).ShowDialog();
+            e.Cancel = true;
+        }
 
 
         //private void setAppModeButtonEnableSchedule(Button btschedule, bool enableSchedule)
@@ -298,8 +261,6 @@ namespace FlyDoc.Forms
 
         #endregion
 
-        #region Public methods
-        #endregion
 
         #region Send mail
         /// <param name="mailto">Адрес получателя</param>
@@ -614,7 +575,7 @@ namespace FlyDoc.Forms
                     tbxFindDocNumber.Enabled = true;
                     chkCEO.Enabled = true;
                     // если дир то видим все отделы, или принудительный фильтр по отделу
-                    if (enableApprDir) { }
+                    if (Program.User.ApprDir) { }
                     else
                     {
                         cbDepartmentFilter.SelectedValue = _currentDepId.ToString();// придумать как вытянуть номер отдела без таблицы конфиг!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -634,7 +595,7 @@ namespace FlyDoc.Forms
                     tbxFindDocNumber.Enabled = false;
                     chkCEO.Enabled = true;
                     // если дир то видим все отделы, или принудительный фильтр по отделу
-                    if (enableApprDir) { }
+                    if (Program.User.ApprDir) { }
                     else
                     {
                         cbDepartmentFilter.SelectedValue = _currentDepId.ToString();// придумать как вытянуть номер отдела без таблицы конфиг!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!

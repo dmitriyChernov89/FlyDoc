@@ -125,11 +125,6 @@ namespace FlyDoc.Forms
             this.tbBodyDown.Text = _note.BodyDown;
             this.tbHeadDir.Text = _note.HeadDir;
             this.tbHeadNach.Text = _note.HeadNach;
-
-            // разобрать Approvers в массив
-            _approversList = (_note.Approvers ?? "").Split(';');
-            // статус кнопок согласователей
-            setApprButtonState();
         }
 
         private List<string> getDGVColNames()
@@ -216,16 +211,16 @@ namespace FlyDoc.Forms
         private void cbNoteTemplate_SelectedIndexChanged(object sender, EventArgs e)
         {
             dtpDateCreate.Value = DateTime.Now;
-            cbDepartment.SelectedValue = MainForm._currentDepId.ToString();
+            cbDepartment.SelectedValue = Program.User.Department;
 
             _note.Templates = cbNoteTemplate.SelectedValue.ToInt();
             _template = new NoteTemplate(_note.Templates);
 
             this.tbHeadDir.Text = _template.HeadDir;
-            this.tbHeadNach.Text = _template.HeadNach + MainForm.headNach;
+            this.tbHeadNach.Text = _template.HeadNach + Program.User.HeadNach;
             this.tbBodyUp.Text = _template.BodyUp;
             this.tbBodyDown.Text = _template.BodyDown;
-            this.tbAvtor.Text = MainForm.name;
+            this.tbAvtor.Text = Program.User.Name;
 
             setControlForTemplate();
         }
@@ -264,7 +259,7 @@ namespace FlyDoc.Forms
             // если в служебке поле Approvers пустое, то взять согласователей из шаблона
             if (_note.Approvers.IsNull()) setApproversFromTemplate();
             // и обновить кнопки
-            updateApproversButtonsVisible();
+            setApprButtonsVisible();
         }
 
         #region btn_approved_and_notApproved
@@ -283,41 +278,60 @@ namespace FlyDoc.Forms
             _note.Approvers = sBuf;
         }
 
-        private void updateApproversButtonsVisible()
+        private void setApprButtonsVisible()
         {
             // сначал скрыть все кнопки согласователей, кроме автора
             foreach (Control item in grpApprove.Controls)
             {
                 if ((item is Button) && (item.Name.StartsWith("btnAppr"))) item.Visible = false;
             }
-            // видимость кнопок согласователей брать из поля Approvers
-            string[] aStr = (_note.Approvers.IsNull() ? "" : _note.Approvers).Split(';');
+
+            // разобрать Approvers в массив
+            _approversList = (_note.Approvers ?? "").Split(';');
+            updateApprDependFields();
+
             string key;
-            foreach (string item in aStr)
+            foreach (string item in _approversList)
             {
                 key = "btn" + item;
                 if (grpApprove.Controls.ContainsKey(key)) grpApprove.Controls[key].Visible = true;
             }
+
+            // статус кнопок согласователей
+            setApprButtonState();
         }
 
+        private void setApprButtonsEnable(bool enable, params string[] exceptButtonNames)
+        {
+            foreach (string item in _approversList)
+            {
+                if ((exceptButtonNames != null) && (exceptButtonNames.Contains(item))) continue;
+
+                string btnName = "btn" + item;
+                if (grpApprove.Controls.ContainsKey(btnName)) grpApprove.Controls[btnName].Enabled = enable;
+            }
+
+        }
+
+        // клик по кнопке согласователя
         private void btnApprField_Click(object sender, EventArgs e)
         {
             setApprFieldByButton((Button)sender);
         }
-        
         private void setApprFieldByButton(Button button)
         {
             string apprFieldName = button.Tag.ToString();
-            PropertyInfo propInfo = _note.GetType().GetProperty(apprFieldName);
-            if (button.BackColor == Color.Lime)
+            bool apprValue = getNoteApprFieldValue(apprFieldName);
+            apprValue = !apprValue;
+            setNoteApprFieldValue(apprFieldName, apprValue);
+
+            updateApprDependFields();
+
+            // кнопки
+            setApprButtonState();
+            if (!apprValue)
             {
                 button.BackColor = Color.Magenta;
-                propInfo.SetValue(_note, false, null);
-            }
-            else
-            {
-                button.BackColor = Color.Lime;
-                propInfo.SetValue(_note, true, null);
             }
         }
 
@@ -330,11 +344,21 @@ namespace FlyDoc.Forms
 
             frm.ShowDialog();
 
+            // получить и распарсить новый список согласователей
             if (frm.ApproversText != _note.Approvers)
             {
                 _note.Approvers = frm.ApproversText;
-                updateApproversButtonsVisible();
+                // обновить кнопки
+                setApprButtonsVisible();
             }
+        }
+
+        // обновить зависимые поля согласователей
+        private void updateApprDependFields()
+        {
+            // поле ApprAll зависит от значения всех согласователей
+            bool bVal = isAllApproved();
+            if (_note.ApprAll != bVal) _note.ApprAll = bVal;
         }
 
         // основная процедура отображающая состояние кнопок согласования в следующем порядке:
@@ -346,104 +370,126 @@ namespace FlyDoc.Forms
             foreach (string item in _approversList)
             {
                 string btnName = "btn" + item;
-                if ((grpApprove.Controls.ContainsKey(btnName)) && getNoteApprValue(item))
+                if ((grpApprove.Controls.ContainsKey(btnName)) && getNoteApprFieldValue(item))
                 {
                     setBtnLime((Button)grpApprove.Controls[btnName]);
                 }
             }
+            // надпись, что служебка ВСЕМИ утверждена
+            labelApprAll.Visible = _note.ApprAll;
 
-            // автор
-            // кнопка автора активна, если ни один не согласовал и есть право Автора на согласование (глоб.переменная в Program)
-            btnApprAvtor.Enabled = allApprovState(false) && Program.User.ApprAvtor;
-            if (_note.ApprAvtor == false)
+            // проверка по нисходящей: Автор - Директор - Нач.АСУ
+            // настройка контролов: 
+            //      1. есть ли в согласователях; 
+            //      2. имеет ли право на согласование (доступность кнопки); 
+            //      3. доступность подчиненных согласователей
+
+            // АВТОР
+            // автор является согласователем по умолчанию
+            // доступность кнопки
+            if (Program.User.ApprAvtor)
             {
-                grpApprove.Enabled = false;
+                btnApprAvtor.Enabled = isAllNotApproved();
             }
             else
             {
+                btnApprAvtor.Enabled = false;
+            }
+            // доступность зависимых согласователей (все они находятся в группе grpApprove)
+            if (_note.ApprAvtor == false)
+            {
+                grpApprove.Enabled = false;
+                return;
+            }
+            else
+            {
+                grpApprove.Enabled = true;
                 setBtnLime(btnApprAvtor);
             }
 
-            grpApprove.Enabled = true;
+            // ДИРЕКТОР
+            if (_approversList.Contains("ApprDir"))
+            {
+                // доступность кнопки
+                if (Program.User.ApprDir)
+                {
+                    btnApprDir.Enabled = isAllApproved("ApprDir");
+                }
+                else
+                {
+                    btnApprDir.Enabled = false;
+                }
+                // доступность зависимых согласователей
+                bool dependApprEnable = !_note.ApprDir;
+                setApprButtonsEnable(dependApprEnable, "ApprDir");
+            }
+                
 
-            // нач.АСУ, есть ли в согласователях
+            // НАЧ.АСУ
             if (_approversList.Contains("ApprASU"))
             {
-                btnApprASU.Enabled = Program.User.ApprASU;
-                if (_note.ApprASU == false)
+                // доступность кнопки
+                if (Program.User.ApprASU)
                 {
-                    // заглушить все кнопки, кроме нач.АСУ
-                    foreach (string item in _approversList)
-                    {
-                        if (item.Equals("ApprASU") == false)
-                        {
-                            string btnName = "btn" + item;
-                            if (grpApprove.Controls.ContainsKey(btnName)) grpApprove.Controls[btnName].Enabled = false;
-                        }
-                    }
-                    return;
+                    btnApprASU.Enabled = isAllNotApproved("ApprASU");
                 }
-            }
-
-            // видимость прочих кнопок согласователей, кроме ApprASU, согласно прав
-            foreach (string item in _approversList)
-            {
-                if (item.Equals("ApprASU") == false)
+                else
                 {
-                    string btnName = "btn" + item;
-                    if (grpApprove.Controls.ContainsKey(btnName))
-                        grpApprove.Controls[btnName].Enabled = getAccessApprValue(item);
+                    btnApprASU.Enabled = false;
                 }
+                // доступность зависимых согласователей
+                bool dependApprEnable = _note.ApprASU;
+                setApprButtonsEnable(dependApprEnable, "ApprASU", "ApprDir");
             }
-
-            // уточнить доступность кнопки директора - доступна, если все согласовали
-            if ((btnApprDir.Visible) && (btnApprDir.Enabled))
-            {
-                bool bVal = true;
-                foreach (string item in _approversList)
-                {
-                    if (item.Equals("ApprDir") == false) bVal &= getNoteApprValue(item);
-                }
-                if (bVal == false) btnApprDir.Enabled = false;
-            }
-
-            // надпись, что служебка ВСЕМИ утверждена
-            labelApprAll.Visible = _note.ApprAll;
         }
 
-        // состояние ВСЕХ согласователей (из note.Approvers)
-        private bool allApprovState(bool state)
+        // возвращает true, если ВСЕ согласовали (кроме exceptionApprName)
+        private bool isAllApproved(string exceptionApprName = null)
         {
-            List<bool> states = getApproversStateList();
-            return states.All(s => state);
-        }
-
-        private List<bool> getApproversStateList()
-        {
-            List<bool> retVal = new List<bool>();
+            bool bVal = true;
             foreach (string item in _approversList)
             {
-                retVal.Add(getNoteApprValue(item));
+                if ((exceptionApprName.IsNull() == false) && item.Equals(exceptionApprName)) continue;
+                bVal &= getNoteApprFieldValue(item);
             }
 
-            return retVal;
+            return bVal;
+        }
+        // возвращает true, если никто еще не согласовал (кроме exceptionApprName)
+        private bool isAllNotApproved(string exceptionApprName = null)
+        {
+            bool bVal = false;
+            foreach (string item in _approversList)
+            {
+                if ((exceptionApprName.IsNull() == false) && item.Equals(exceptionApprName)) continue;
+                bVal |= getNoteApprFieldValue(item);
+            }
+
+            return (bVal == false);
         }
 
         // получить статус согласователя по имени поля из _note
-        private bool getNoteApprValue(string apprName)
+        private bool getNoteApprFieldValue(string apprFieldsName)
         {
-            PropertyInfo pi = _propInfoNote.FirstOrDefault(p => p.Name == apprName);
+            PropertyInfo pi = _propInfoNote.FirstOrDefault(p => p.Name == apprFieldsName);
             if (pi != null)
                 return System.Convert.ToBoolean(pi.GetValue(_note));
             else
                 return false;
         }
 
-        private bool getAccessApprValue(string apprName)
+        // установить значение поля согласователя в _note по названию поля
+        private void setNoteApprFieldValue(string apprFieldName, bool value)
         {
-            PropertyInfo pi = _propInfoAccess.FirstOrDefault(p => p.Name == apprName);
+            PropertyInfo pi = _propInfoNote.FirstOrDefault(p => p.Name == apprFieldName);
+            if (pi != null) pi.SetValue(_note, value);
+        }
+
+        private bool getAccessApprValue(string apprFieldsName)
+        {
+            PropertyInfo pi = _propInfoAccess.FirstOrDefault(p => p.Name == apprFieldsName);
             if (pi != null)
-                return System.Convert.ToBoolean(pi.GetValue(_note));
+                return System.Convert.ToBoolean(pi.GetValue(Program.User));
             else
                 return false;
         }
