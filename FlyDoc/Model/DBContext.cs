@@ -289,7 +289,7 @@ index name              type
             return retVal;
         }
 
-        public static List<Tuple<int, string>> GetDepartmentNamesList()
+        public static List<IdNameTuple> GetDepartmentNamesList()
         {
             return getIdNameList("SELECT [Id], [Name] FROM [Department] ORDER BY [Name]");
         }
@@ -511,7 +511,7 @@ index name              type
             return ((dt == null) || (dt.Rows.Count == 0)) ? null : dt.Rows[0];
         }
 
-        public static List<Tuple<int, string>> GetNoteTemplateNamesList()
+        public static List<IdNameTuple> GetNoteTemplateNamesList()
         {
             return getIdNameList("SELECT [Id], [Name] FROM [NoteTemplates] ORDER BY [Name]");
         }
@@ -600,7 +600,7 @@ index name              type
             {
                 if (dr.Table.Columns.Contains(pi.Name) && !dr.IsNull(pi.Name))
                 {
-                    pi.SetValue(entity, dr[pi.Name]);
+                    pi.SetValue(entity, dr[pi.Name], null);
                 }
             }
         }
@@ -613,7 +613,7 @@ index name              type
             {
                 if (row.Table.Columns.Contains(pi.Name) && !row.IsNull(pi.Name))
                 {
-                    pi.SetValue(retVal, row[pi.Name]);
+                    pi.SetValue(retVal, row[pi.Name], null);
                 }
             }
             return retVal;
@@ -640,7 +640,7 @@ index name              type
                     sbFields.Append(string.Format("[{0}]", col.Name));
 
                     if (sbValues.Length > 0) sbValues.Append(", ");
-                    object value = pi.GetValue(instance);
+                    object value = pi.GetValue(instance, null);
                     if (col.TypeName.EndsWith("char"))
                     {
                         if (value == null)
@@ -683,7 +683,7 @@ index name              type
                 // поле Id пропускаем
                 if (pi.Name.ToLower() == "id")
                 {
-                    id = (int)pi.GetValue(instance);
+                    id = (int)pi.GetValue(instance, null);
                     continue;
                 }
 
@@ -691,7 +691,7 @@ index name              type
                 col = dbColumns.FirstOrDefault(c => c.Name.Equals(pi.Name, StringComparison.OrdinalIgnoreCase));
                 if (col != null)
                 {
-                    object value = pi.GetValue(instance);
+                    object value = pi.GetValue(instance, null);
                     string sVal = null;
                     if (col.TypeName.EndsWith("char"))
                     {
@@ -729,15 +729,15 @@ index name              type
         #endregion
 
         // получить список пар Id, Name из справочника
-        private static List<Tuple<int, string>> getIdNameList(string sqlText)
+        private static List<IdNameTuple> getIdNameList(string sqlText)
         {
             DataTable dt = GetQueryTable(sqlText);
             if (dt != null)
             {
-                List<Tuple<int, string>> retVal = new List<Tuple<int, string>>();
+                List<IdNameTuple> retVal = new List<IdNameTuple>();
                 foreach (DataRow row in dt.Rows)
                 {
-                    retVal.Add(new Tuple<int, string>(Convert.ToInt32(row[0]), Convert.ToString(row[1])));
+                    retVal.Add(new IdNameTuple(Convert.ToInt32(row[0]), Convert.ToString(row[1])));
                 }
                 return retVal;
             }
@@ -774,6 +774,18 @@ index name              type
         public bool IsNullable { get; set; }
         public string TypeName { get; set; }
         public int MaxLenght { get; set; }
+    }
+
+    public class IdNameTuple
+    {
+        public int Id { get; set; }
+        public string Name { get; set; }
+
+        public IdNameTuple(int id, string name)
+        {
+            Id = id; Name = name;
+        }
+
     }
 
 }

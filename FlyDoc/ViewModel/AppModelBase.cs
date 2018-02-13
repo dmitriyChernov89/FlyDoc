@@ -21,14 +21,23 @@ namespace FlyDoc.ViewModel
         protected DataGridViewCellFormattingEventHandler OnCellFormattingHandler;
         #endregion
 
+        public bool AllowEdit;
+
+        public AppModelBase()
+        {
+            AllowEdit = false;
+        }
+
         #region properties
         public DataGridView DataGrid
         {
             get { return _dataGrid; }
             set {
                 _dataGrid = value;
+
                 _dataGrid.CellDoubleClick += _dataGrid_CellDoubleClick;
                 _dataGrid.KeyDown += _dataGrid_KeyDown;
+                // форматирование ячейки
                 if (OnCellFormattingHandler != null)
                 {
                     _dataGrid.CellFormatting += OnCellFormattingHandler;
@@ -85,6 +94,11 @@ namespace FlyDoc.ViewModel
                 retVal = _dataGrid.SelectedRows[0];
             }
             return retVal;
+        }
+
+        public DataGridViewRow GetSelectedDataRow()
+        {
+            return getSelectedDataRow();
         }
 
         protected void selectGridRowById(int Id)
@@ -163,6 +177,11 @@ namespace FlyDoc.ViewModel
         }
 
         #endregion
+
+        protected void notAllowEditAction()
+        {
+            MessageBox.Show("Редагування заборонено.", "Редагування", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
+        }
 
     }
 }

@@ -269,7 +269,7 @@ namespace FlyDoc.Forms
             PropertyInfo[] pInfos = typeof(NoteTemplate).GetProperties(BindingFlags.Instance | BindingFlags.Public);
             foreach (PropertyInfo item in pInfos)
             {
-                if ((item.Name.StartsWith("Appr")) && (Convert.ToBoolean(item.GetValue(_template))))
+                if ((item.Name.StartsWith("Appr")) && (Convert.ToBoolean(item.GetValue(_template, null))))
                 {
                     if (sBuf.Length > 0) sBuf += ";";
                     sBuf += item.Name;
@@ -473,7 +473,7 @@ namespace FlyDoc.Forms
         {
             PropertyInfo pi = _propInfoNote.FirstOrDefault(p => p.Name == apprFieldsName);
             if (pi != null)
-                return System.Convert.ToBoolean(pi.GetValue(_note));
+                return System.Convert.ToBoolean(pi.GetValue(_note, null));
             else
                 return false;
         }
@@ -482,14 +482,14 @@ namespace FlyDoc.Forms
         private void setNoteApprFieldValue(string apprFieldName, bool value)
         {
             PropertyInfo pi = _propInfoNote.FirstOrDefault(p => p.Name == apprFieldName);
-            if (pi != null) pi.SetValue(_note, value);
+            if (pi != null) pi.SetValue(_note, value, null);
         }
 
         private bool getAccessApprValue(string apprFieldsName)
         {
             PropertyInfo pi = _propInfoAccess.FirstOrDefault(p => p.Name == apprFieldsName);
             if (pi != null)
-                return System.Convert.ToBoolean(pi.GetValue(Program.User));
+                return System.Convert.ToBoolean(pi.GetValue(Program.User, null));
             else
                 return false;
         }

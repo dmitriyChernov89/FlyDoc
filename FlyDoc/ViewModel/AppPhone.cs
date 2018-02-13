@@ -16,6 +16,8 @@ namespace FlyDoc.ViewModel
         }
         public override void EditObject()
         {
+            if (base.AllowEdit == false) { base.notAllowEditAction(); return; }
+
             DataGridViewRow dgvRow = base.getSelectedDataRow();
             if (dgvRow != null)
             {
@@ -38,6 +40,8 @@ namespace FlyDoc.ViewModel
 
         public override void CreateNewObject()
         {
+            if (base.AllowEdit == false) { base.notAllowEditAction(); return; }
+
             NewPhone frm = new NewPhone(null);
             DialogResult result = frm.ShowDialog();
             if ((result == DialogResult.OK) && (frm.PhoneModel != null))
@@ -55,6 +59,8 @@ namespace FlyDoc.ViewModel
 
         public override void DeleteObject()
         {
+            if (base.AllowEdit == false) { base.notAllowEditAction(); return; }
+
             int id = getSelectedId();
             if (id != -1)
             {

@@ -48,6 +48,13 @@ namespace FlyDoc
                     System.Diagnostics.Debug.Print("  {0}. {1} = '{2}'", ++i, kvp.Key, kvp.Value);
                 }
             }
+            if (MachineName == "LENOVO-Z710")
+            {
+                // -machine KC-500-07 -user d.chernov
+                MachineName = "KC-500-07"; UserName = "d.chernov";
+                //MachineName = "KC-114-06"; UserName = "kc-asistdir";
+                _user = new User(MachineName, UserName);
+            }
 #endif
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);

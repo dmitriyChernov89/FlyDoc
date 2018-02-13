@@ -7,11 +7,13 @@ using System.Linq;
 using System.Text;
 using System.Windows.Forms;
 using FlyDoc.Forms;
+using System.Reflection;
 
 namespace FlyDoc.ViewModel
 {
     public class AppNotes : AppModelBase
     {
+        Note note = new Note();
         #region static members
         private static Dictionary<string, DGVColDescr> dgvColDescr;
         static AppNotes()
@@ -27,6 +29,7 @@ namespace FlyDoc.ViewModel
                 { "Id", new DGVColDescr() { Header="Id", Visible = false } },
                 { "TemplateName", new DGVColDescr() { Header="Тип", FillWeight=800 } },
                 { "DepartmentName", new DGVColDescr() { Header = "Відділ", FillWeight=200} },
+                { "DepartmentId", new DGVColDescr() { Visible = false} },
                 { "Date", new DGVColDescr() { Header="Дата", FillWeight=250} },
                 { "ApprAvtor", new DGVColDescr() { Header="Автор", FillWeight=80, CellStyle = apprCellStyle} },
                 { "ApprDir", new DGVColDescr() { Header="Директор", FillWeight=80, CellStyle = apprCellStyle} },
@@ -55,6 +58,7 @@ namespace FlyDoc.ViewModel
             _notesDataTable.Columns.Add(new DataColumn("Id", typeof(int)));
             _notesDataTable.Columns.Add(new DataColumn("TemplateName", typeof(string)));
             _notesDataTable.Columns.Add(new DataColumn("DepartmentName", typeof(string)));
+            _notesDataTable.Columns.Add(new DataColumn("DepartmentId", typeof(int)));
             _notesDataTable.Columns.Add(new DataColumn("Date", typeof(DateTime)));
             _notesDataTable.Columns.Add(new DataColumn("ApprAvtor", typeof(string)));
             _notesDataTable.Columns.Add(new DataColumn("ApprDir", typeof(string)));
@@ -72,6 +76,8 @@ namespace FlyDoc.ViewModel
             _notesDataTable.Columns.Add(new DataColumn("ApprAll", typeof(string)));
 
             _dataTable = _notesDataTable;
+
+
         }
 
         private void _dataGrid_CellFormatting(object sender, DataGridViewCellFormattingEventArgs e)
@@ -96,6 +102,8 @@ namespace FlyDoc.ViewModel
 
         public override void EditObject()
         {
+            if (base.AllowEdit == false) { base.notAllowEditAction(); return; }
+
             DataGridViewRow dgvRow = base.getSelectedDataRow();
             if (dgvRow != null)
             {
@@ -119,6 +127,8 @@ namespace FlyDoc.ViewModel
 
         public override void CreateNewObject()
         {
+            if (base.AllowEdit == false) { base.notAllowEditAction(); return; }
+
             NewNote frm = new NewNote(null);
             DialogResult result = frm.ShowDialog();
             if ((result == DialogResult.OK) && (frm.Note != null))
@@ -137,15 +147,25 @@ namespace FlyDoc.ViewModel
 
         public override void DeleteObject()
         {
+            if (base.AllowEdit == false) { base.notAllowEditAction(); return; }
+
             int id = getSelectedId();
             if (id != -1)
             {
                 DialogResult result = MessageBox.Show($"Ви впевнені що хочете видалити службову № {id.ToString()} ?", "Видалення службової", MessageBoxButtons.YesNoCancel, MessageBoxIcon.Question, MessageBoxDefaultButton.Button2);
                 if (result == DialogResult.Yes)
                 {
-                    if (DBContext.DeleteNotes(id))
+                    Note note = new Note(id);
+                    if (isAnyApproved(note))
                     {
-                        base.DeleteObject();
+                        MessageBox.Show($"Видалити службову не можна, так як вона вже затверджена", "Видалення службової", MessageBoxButtons.OK, MessageBoxIcon.Stop);
+                    }
+                    else
+                    {
+                        if (DBContext.DeleteNotes(id))
+                        {
+                            base.DeleteObject();
+                        }
                     }
                 }
             }
@@ -153,6 +173,23 @@ namespace FlyDoc.ViewModel
             {
                 MessageBox.Show("Виберіть рядок для видалення");
             }
+        }
+
+        private bool isAnyApproved(Note note)
+        {
+            bool retVal = false;
+            PropertyInfo[] aPI = typeof(Note).GetProperties(BindingFlags.Instance | BindingFlags.Public);
+            foreach (PropertyInfo item in aPI)
+            {
+                if (item.Name.StartsWith("Appr") && item.PropertyType.Equals(typeof(Boolean)))
+                {
+                    if ((bool)item.GetValue(note, null))
+                    {
+                        retVal = true; break;
+                    }
+                }
+            }
+            return retVal;
         }
 
         public override void LoadDataToGrid()
@@ -173,6 +210,7 @@ namespace FlyDoc.ViewModel
                 row["Id"] = note.Id;
                 row["TemplateName"] = (templates.ContainsKey(note.Templates) ? templates[note.Templates] : null);
                 row["DepartmentName"] = (deps.ContainsKey(note.IdDepartment) ? deps[note.IdDepartment] : null);
+                row["DepartmentId"] = note.IdDepartment;
                 row["Date"] = note.Date;
                 row["ApprAvtor"] = (note.ApprAvtor ? "З" : "О");
                 row["ApprDir"] = (apvs.Contains("ApprDir") ? (note.ApprDir ? "З" : "О") : "-");

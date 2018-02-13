@@ -154,7 +154,7 @@ namespace FlyDoc.Model
                 {
                     if (pInfo.Name.StartsWith("ColumName"))
                     {
-                        string colName = Convert.ToString(pInfo.GetValue(template));
+                        string colName = Convert.ToString(pInfo.GetValue(template, null));
                         if (string.IsNullOrEmpty(colName) == false)
                         {
                             string sRet = NoteInclude.GetNameByHeader(colName);
