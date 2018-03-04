@@ -63,6 +63,16 @@ namespace FlyDoc.Properties {
         /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Bitmap.
         /// </summary>
+        internal static System.Drawing.Bitmap _3dot {
+            get {
+                object obj = ResourceManager.GetObject("_3dot", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
         internal static System.Drawing.Bitmap Add_Row_64 {
             get {
                 object obj = ResourceManager.GetObject("Add Row-64", resourceCulture);
@@ -126,6 +136,16 @@ namespace FlyDoc.Properties {
         internal static System.Drawing.Bitmap exit {
             get {
                 object obj = ResourceManager.GetObject("exit", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
+        internal static System.Drawing.Bitmap icons8_about_32 {
+            get {
+                object obj = ResourceManager.GetObject("icons8-about-32", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
             }
         }

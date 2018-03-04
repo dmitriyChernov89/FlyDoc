@@ -10,6 +10,24 @@ namespace FlyDoc.ViewModel
 {
     public class AppSchedule : AppModelBase
     {
+        #region static members
+        private static Dictionary<string, DGVColDescr> dgvColDescr;
+        static AppSchedule()
+        {
+            // запрос vwSchedules
+            /*SELECT dbo.Schedules.Id, dbo.Schedules.IdDepartment AS DepartmentId, dbo.Department.Name AS Відділ, dbo.Schedules.Data AS Дата, dbo.Schedules.Approved AS Затверджений, dbo.Schedules.Manager AS Ким
+                FROM  dbo.Schedules INNER JOIN dbo.Department ON dbo.Schedules.IdDepartment = dbo.Department.Id*/
+            dgvColDescr = new Dictionary<string, DGVColDescr>()
+            {
+                { "Id", new DGVColDescr() { Header="Id", Visible = false } },
+                { "DepartmentId", new DGVColDescr() { Visible = false} },
+                { "Відділ", new DGVColDescr() { Header = "Відділ", FillWeight=50} },
+                { "Дата", new DGVColDescr() { Header = "Дата", FillWeight=20, Alignment= DataGridViewContentAlignment.MiddleCenter, HeaderAlignment = DataGridViewContentAlignment.MiddleCenter} },
+                { "Затверджений", new DGVColDescr() {FillWeight=15, Alignment= DataGridViewContentAlignment.MiddleCenter, HeaderAlignment = DataGridViewContentAlignment.MiddleCenter} },
+                { "Ким", new DGVColDescr() { FillWeight=15, Alignment= DataGridViewContentAlignment.MiddleCenter, HeaderAlignment = DataGridViewContentAlignment.MiddleCenter} }
+            };
+        }
+        #endregion
 
         public AppSchedule()
         {
@@ -34,13 +52,16 @@ namespace FlyDoc.ViewModel
                 };
                 Schedule frm = new Schedule(sched);
                 DialogResult result = frm.ShowDialog();
+                AppFuncs.dialogCloseResult(frm.GetType().Name, result);
                 if (result == DialogResult.OK)
                 {
-                    if (DBContext.UpdateSchedule(sched))
+                    bool dbResult = DBContext.UpdateSchedule(sched);
+                    if (dbResult)
                     {
                         this.LoadDataToGrid();
                         base.selectGridRowById(editId);
                     }
+                    AppFuncs.saveToDBResult(dbResult);
                 }
                 base.EditObject();
             }
@@ -50,14 +71,17 @@ namespace FlyDoc.ViewModel
         {
             Schedule frm = new Schedule(null);
             DialogResult result = frm.ShowDialog();
+            AppFuncs.dialogCloseResult(frm.GetType().Name, result);
             if ((result == DialogResult.OK) && (frm.ScheduleModel != null))
             {
                 int newId = 0;
-                if (DBContext.InsertSchedule(frm.ScheduleModel, out newId))
+                bool dbResult = DBContext.InsertSchedule(frm.ScheduleModel, out newId);
+                if (dbResult)
                 {
                     this.LoadDataToGrid();
                     base.selectGridRowById(newId);
                 }
+                AppFuncs.saveToDBResult(dbResult);
             }
             frm.Dispose();
 
@@ -72,10 +96,15 @@ namespace FlyDoc.ViewModel
                 DialogResult result = MessageBox.Show("Ви впевнені що хочете видалити поточний графік?", "Видалення графіка", MessageBoxButtons.YesNoCancel, MessageBoxIcon.Question, MessageBoxDefaultButton.Button2);
                 if (result == DialogResult.Yes)
                 {
-                    if (DBContext.DeleteSchedule(id))
+                    string logMsg = $"Видалення поточний графіку, id {id}";
+                    AppFuncs.WriteLogTraceMessage(logMsg + "...");
+
+                    bool dbResult = DBContext.DeleteSchedule(id);
+                    if (dbResult)
                     {
                         base.DeleteObject();
                     }
+                    AppFuncs.deleteFromDBResult(logMsg, dbResult);
                 }
             }
             else
@@ -85,13 +114,13 @@ namespace FlyDoc.ViewModel
         }
         public override void LoadDataToGrid()
         {
+            AppFuncs.WriteLogTraceMessage($" - {this.GetType().Name}.LoadDataToGrid()");
+
             _dataTable = DBContext.GetSchedule();  // чтение данных о сл.зап.
+
             base.LoadDataToGrid();
 
-           // _dataGrid.Columns[5].Visible = false;
-            // отн.ширина колонок
-            //            _dataGrid.Columns[1].FillWeight = 50;
-            //            _dataGrid.Columns[2].FillWeight = 50;
+            AppFuncs.SetDGVColumnsFromDescr(_dataGrid, AppSchedule.dgvColDescr);
         }
         #endregion
 

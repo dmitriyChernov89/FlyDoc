@@ -39,6 +39,7 @@ namespace FlyDoc.Lib
     {
         public static string ToSQLExpr(this DateTime source)
         {
+            //параметр 20 отвечает именно за этот формат - yyyy-MM-dd HH:mm:ss
             return string.Format("CONVERT(datetime, '{0}', 20)", source.ToString("yyyy-MM-dd HH:mm:ss"));
         }
     }

@@ -21,6 +21,9 @@ namespace FlyDoc.Forms
 
         public DepartmentForm(Department dep = null)
         {
+            _isNew = (dep == null);
+            AppFuncs.openEditForm(this.GetType().Name, _isNew);
+
             InitializeComponent();
 
             _backColor = getBackColor();
@@ -28,7 +31,6 @@ namespace FlyDoc.Forms
             // подписаться на события фокуса
             FormsHelper.SetFocusEventHandlers(this, Color.Yellow, _backColor);
 
-            _isNew = (dep == null);
             if (_isNew)
             {
                 this.Text = "Створення нового відділу";
@@ -43,8 +45,17 @@ namespace FlyDoc.Forms
 
         }
 
+        protected override void OnFormClosed(FormClosedEventArgs e)
+        {
+            AppFuncs.closeEditForm(this.GetType().Name, e.CloseReason);
+            base.OnFormClosed(e);
+        }
+
+
         private void btnOk_Click(object sender, EventArgs e)
         {
+            AppFuncs.WriteLogTraceMessage(" - press button 'Зберегти'");
+
             if (isValidInput())
             {
                 if (_isNew || isUpdate())

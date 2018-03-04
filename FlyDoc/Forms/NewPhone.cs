@@ -13,21 +13,23 @@ namespace FlyDoc.Forms
 {
     public partial class NewPhone : Form
     {
-        private bool _isNewPhone;
+        private bool _isNew;
         private PhoneModel _phone = null;
 
         public PhoneModel PhoneModel { get { return _phone; } }
 
         public NewPhone(PhoneModel phone)
         {
+            _isNew = (phone == null);
+            AppFuncs.openEditForm(this.GetType().Name, _isNew);
+
             InitializeComponent();
 
             FormsHelper.SetDepartmentsComboBox(cbxFormPhoneDepartment);
 
             FormsHelper.SetFocusEventHandlers(this, Color.Yellow, Color.White);
 
-            _isNewPhone = (phone == null);
-            if (_isNewPhone)
+            if (_isNew)
             {
                 this.Text = "Створення нового комнтакта";
             }
@@ -35,33 +37,41 @@ namespace FlyDoc.Forms
             {
                 this.Text = "Редагування контакта";
                 _phone = phone;
-                tbxFio.Text = _phone.Name;
+                tbxFio.Text = _phone.FIO;
                 tbxPosition.Text = _phone.Positions;
-                cbxFormPhoneDepartment.Text = _phone.DepName;
+                cbxFormPhoneDepartment.SelectedValue = _phone.Department;
                 tbxDect.Text = _phone.Dect;
                 tbxMobile.Text = _phone.Mobile;
-                tbxPhone.Text = _phone.PhoneNumber;
-                tbxFormPhoneMail.Text = _phone.eMail;
+                tbxPhone.Text = _phone.Phone;
+                tbxFormPhoneMail.Text = _phone.Mail;
 
             }
            // 
         }
 
+        protected override void OnFormClosed(FormClosedEventArgs e)
+        {
+            AppFuncs.closeEditForm(this.GetType().Name, e.CloseReason);
+            base.OnFormClosed(e);
+        }
+
         private void btnOk_Click(object sender, EventArgs e)
         {
+            AppFuncs.WriteLogTraceMessage(" - press button 'Зберегти'");
+
             if (isValidInput())
             {
-                if (_isNewPhone || isUpdate())
+                if (_isNew || isUpdate())
                 {
                     if (_phone == null) _phone = new PhoneModel();
-                    _phone.DepartmentId = Convert.ToInt32(cbxFormPhoneDepartment.SelectedValue);
-                    _phone.Name = tbxFio.Text;
+                    _phone.Department = Convert.ToInt32(cbxFormPhoneDepartment.SelectedValue);
+                    _phone.FIO = tbxFio.Text;
                     _phone.Positions = tbxPosition.Text;
                     _phone.DepName = cbxFormPhoneDepartment.Text;
                     _phone.Dect = tbxDect.Text;
-                    _phone.PhoneNumber = tbxPhone.Text;
+                    _phone.Phone = tbxPhone.Text;
                     _phone.Mobile = tbxMobile.Text;
-                    _phone.eMail = tbxFormPhoneMail.Text;
+                    _phone.Mail = tbxFormPhoneMail.Text;
 
                     this.DialogResult = DialogResult.OK;
                 }
@@ -126,13 +136,13 @@ namespace FlyDoc.Forms
             if (_phone == null)
                 return true;
             else
-                return (tbxFio.Text.Equals(_phone.Name) == false)
+                return (tbxFio.Text.Equals(_phone.FIO) == false)
                     || (tbxPosition.Text.Equals(_phone.Positions) == false)
-                    || (cbxFormPhoneDepartment.SelectedValue.Equals(_phone.Name) == false)
-                    || (tbxFormPhoneMail.Text.Equals(_phone.eMail) == false)
+                    || (cbxFormPhoneDepartment.SelectedValue.Equals(_phone.Department) == false)
+                    || (tbxFormPhoneMail.Text.Equals(_phone.Mail) == false)
                     || (tbxDect.Text.Equals(_phone.Dect) == false)
                     || (tbxMobile.Text.Equals(_phone.Mobile) == false)
-                    || (tbxPhone.Text.Equals(_phone.PhoneNumber) == false);
+                    || (tbxPhone.Text.Equals(_phone.Phone) == false);
 
         }
     }

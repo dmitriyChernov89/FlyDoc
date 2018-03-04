@@ -1,4 +1,6 @@
-﻿namespace FlyDoc.Forms
+﻿using System.Windows.Forms;
+
+namespace FlyDoc.Forms
 {
     partial class UserForm
     {

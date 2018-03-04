@@ -8,112 +8,126 @@ using System.Data.SqlClient;
 using System.Diagnostics;
 using System.Collections;
 using System.Windows.Forms;
+using System.Reflection;
+using System.Text;
 
 namespace FlyDoc.Model
 {
     // служебный класс для CRUD-методов к данным (Create-Read-Update-Delete)
-
-    public static class DBContext
+    public class DBContext : IDisposable
     {
-        private static readonly string _configConStringName = "FlyDoc";
+        #region static members
+        private static string _configConStringName = "FlyDoc";
 
-        #region private methods
+        public static Action<string> BeforeDBCallAction;
+        public static Action<string> DBErrorAction;
 
-        private static string getConnString()
+        public static string ConfigConnectionStringName
         {
-            string retVal = null;
-            try
-            {
-                retVal = ConfigurationManager.ConnectionStrings[_configConStringName].ConnectionString;
-            }
-            catch (Exception e)
-            {
-                showMsg("Ошибка получения строки подключения к БД из config-файла: " + e.Message);
-            }
-            return retVal;
-        }
-        private static SqlConnection getConnection()
-        {
-            string connString = getConnString();
-            if (connString == null) return null;
-
-            SqlConnection retVal = null;
-            try
-            {
-                retVal = new SqlConnection(connString);
-            }
-            catch (Exception e)
-            {
-                showMsg("Ошибка создания подключения к БД: " + e.Message);
-            }
-            return retVal;
+            get { return _configConStringName; }
+            set { _configConStringName = value; }
         }
 
-
-        // открыть подключение к БД
-        private static bool openDB(SqlConnection conn)
+        static DBContext()
         {
-            if (conn == null) return false;
-            try
-            {
-                conn.Open();
-                return true;
-            }
-            catch (Exception e)
-            {
-                showMsg("Ошибка открытия подключения к БД: " + e.Message);
-                return false;
-            }
-        }
-        // обертка для закрыть подключение
-        private static void closeDB(SqlConnection conn)
-        {
-            if ((conn == null) || (conn.State == ConnectionState.Closed)) return;
-
-            try
-            {
-                conn.Close();
-            }
-            catch (Exception e)
-            {
-                showMsg("Ошибка закрытия подключения к БД: " + e.Message);
-            }
-        }
-
-        private static void showMsg(string msg)
-        {
-            MessageBox.Show(msg, "Ошибка доступа к данным", MessageBoxButtons.OK, MessageBoxIcon.Error);
-            FlyDoc.Forms.MainForm.SendMail(@"asu@kc.epicentrk.com", "Error!", "Упс, помилка!\nНа комп'ютері: " + System.Environment.MachineName + " З користувачем: " + System.Environment.UserName + " сталася наступна помилка:\n\n" + msg);
         }
 
         #endregion
 
-        #region Public methods
 
-        // получить DataTable из SELECT-запроса
-        public static DataTable GetQueryTable(string queryString)
+        private string _connString;
+        public string ConnectionString
         {
-            SqlConnection conn = getConnection();
-            if (conn == null) return null;
+            get { return _connString; }
+            set { _connString = value; }
+        }
 
-            DataTable retVal = null;
-            if (openDB(conn))
+        private string _errMsg;
+        public string ErrMsg { get { return _errMsg; } }
+
+        private SqlConnection _conn;
+
+        public DBContext()
+        {
+            setConnection();
+        }
+
+        #region base funcs
+        private void setConnection()
+        {
+            try
             {
+                _connString = ConfigurationManager.ConnectionStrings[_configConStringName].ConnectionString;
+                // получить Connection
                 try
                 {
-                    SqlDataAdapter da = new SqlDataAdapter(queryString, conn);
-                    retVal = new DataTable();
+                    _conn = new SqlConnection(_connString);
+                }
+                catch (Exception e)
+                {
+                    errorAction("Ошибка создания подключения к БД: " + e.Message);
+                }
+            }
+            catch (Exception e)
+            {
+                errorAction("Ошибка получения строки подключения к БД из config-файла: " + e.Message);
+            }
+        }
+
+        // открыть подключение к БД
+        public bool Open()
+        {
+            if (_conn == null) return false;
+            try
+            {
+                if (_conn.State == ConnectionState.Broken) _conn.Close();
+                if (_conn.State == ConnectionState.Closed) _conn.Open();
+                return true;
+            }
+            catch (Exception e)
+            {
+                errorAction("Ошибка открытия подключения к БД: " + e.Message);
+                return false;
+            }
+        }
+        public bool Close()
+        {
+            if (_conn == null) return false;
+            try
+            {
+                if (_conn.State != ConnectionState.Closed) _conn.Close();
+                return true;
+            }
+            catch (Exception e)
+            {
+                errorAction("Ошибка закрытия подключения к БД: " + e.Message);
+                return false;
+            }
+        }
+
+        // получить DataTable из SELECT-запроса
+        public DataTable GetQueryTable(string sqlText)
+        {
+            BeforeDBCallAction?.Invoke(sqlText);
+
+            DataTable retVal = null;
+            if (Open())
+            {
+                SqlDataAdapter da = new SqlDataAdapter(sqlText, _conn);
+                retVal = new DataTable();
+                try
+                {
                     da.Fill(retVal);
                 }
                 catch (Exception ex)
                 {
-                    string errMsg = string.Format("Ошибка выполнения запроса MS SQL Server-у: запрос - {0}, ошибка - {1}", queryString, ex.Message);
-                    showMsg(errMsg);
+                    string errMsg = $"Ошибка выполнения запроса к MS SQL Server-у: ошибка - {ex.Message}\nзапрос: {sqlText}, ";
+                    errorAction(errMsg);
                     retVal = null;
                 }
                 finally
                 {
-                    closeDB(conn);
+                    da.Dispose();
                 }
             }
 
@@ -121,15 +135,15 @@ namespace FlyDoc.Model
         }
 
         // метод, который выполняет SQL-запрос, не возвращающий данные, напр. вставка или удаление строк
-        public static bool Execute(string sqlText)
+        public bool ExecuteCommand(string sqlText)
         {
-            SqlConnection conn = getConnection();
-            if (conn == null) return false;
+            BeforeDBCallAction?.Invoke(sqlText);
 
             bool retVal = true;
-            if (openDB(conn))
+            if (Open())
             {
-                SqlCommand sc = conn.CreateCommand();
+                SqlCommand sc = _conn.CreateCommand();
+                sc.CommandType = CommandType.Text;
                 sc.CommandText = sqlText;
                 try
                 {
@@ -137,24 +151,227 @@ namespace FlyDoc.Model
                 }
                 catch (Exception ex)
                 {
-                    showMsg("Ошибка выполнения команды в MS SQL Server: " + ex.Message);
+                    errorAction($"Ошибка выполнения команды в MS SQL Server: {ex.Message}\nкоманда: {sqlText}");
                     retVal = false;
                 }
                 finally
                 {
-                    closeDB(conn);
+                    sc.Dispose();
+                }
+            }
+            return retVal;
+        }
+
+        public object ExecuteScalar(string sqlText)
+        {
+            BeforeDBCallAction?.Invoke(sqlText);
+
+            object retVal = null;
+            if (Open())
+            {
+                SqlCommand sc = _conn.CreateCommand();
+                sc.CommandType = CommandType.Text;
+                sc.CommandText = sqlText;
+                try
+                {
+                    retVal = sc.ExecuteScalar();
+                }
+                catch (Exception ex)
+                {
+                    errorAction($"Ошибка выполнения команды в MS SQL Server: {ex.Message}\nкоманда: {sqlText}");
+                    retVal = false;
+                }
+                finally
+                {
+                    sc.Dispose();
                 }
             }
 
             return retVal;
         }
+
+        // получить поля таблицы из схемы
+        public List<DBTableColumn> GetTableColumns(string tableName)
+        {
+            BeforeDBCallAction?.Invoke($"Get schema for table '{tableName}'");
+
+            List<DBTableColumn> retVal = new List<DBTableColumn>();
+            if (Open())
+            {
+                try
+                {
+                    // For the array, 0-member represents Catalog; 1-member represents Schema; 
+                    // 2-member represents Table Name; 3-member represents Column Name. 
+                    DataTable dt = _conn.GetSchema("Columns", new string[4] { null, null, tableName, null });
+                    //printSchemaColumns(dt);
+                    if (dt != null)
+                    {
+                        DBTableColumn col;
+                        foreach (DataRow row in dt.Rows)
+                        {
+                            col = new DBTableColumn()
+                            {
+                                Name = row["COLUMN_NAME"].ToString(),
+                                IsNullable = row["IS_NULLABLE"].ToBool(),
+                                TypeName = row["DATA_TYPE"].ToString(),
+                                MaxLenght = row["CHARACTER_MAXIMUM_LENGTH"].ToInt()
+                            };
+                            retVal.Add(col);
+                        }
+                    }
+                }
+                catch (Exception ex)
+                {
+                    string errMsg = string.Format("Ошибка получения метаданных для таблицы [{0}]: {1}", tableName, ex.Message);
+                    errorAction(errMsg);
+                    retVal = null;
+                }
+                finally
+                {
+                }
+            }
+
+            return retVal;
+        }
+
+
+        private void errorAction(string msg)
+        {
+            _errMsg = msg;
+            DBErrorAction?.Invoke(msg);
+        }
+
+        public void ClearErrMsg()
+        {
+            _errMsg = null;
+        }
+
+        public void Dispose()
+        {
+            Close();
+            _conn.Dispose();
+        }
+
         #endregion
+
+        #region public static methods
+        // проверка доступа к БД
+        public static bool CheckDBConnection(string getCountTableName, out string outMsg)
+        {
+            outMsg = null;
+            bool retVal = false;
+            using (DBContext db = new DBContext())
+            {
+                if (db.Open())
+                {
+                    if (getCountTableName != null)
+                    {
+                        string sqlText = $"SELECT Count(*) FROM [{getCountTableName}]";
+                        int cnt = (int)db.ExecuteScalar(sqlText);
+                        outMsg = $"table [{getCountTableName}] has {cnt.ToString()} records.";
+                    }
+                    else
+                    {
+                        outMsg = "DB open was successful.";
+                    }
+                    retVal = true;
+                    db.Close();
+                }
+                else
+                {
+                    outMsg = db.ErrMsg;
+                }
+            }
+
+            return retVal;
+        }
+
+        // возвращает кол-во записей из таблицы tableName
+        public static int GetRowsCount(string tableName)
+        {
+            int retVal = 0;
+            string sqlText = $"SELECT Count(*) FROM [{tableName}]";
+            using (DBContext db = new DBContext())
+            {
+                if (db.Open())
+                {
+                    retVal = (int)db.ExecuteScalar(sqlText);
+                }
+            }
+            return retVal;
+        }
 
         public static int GetLastInsertedId()
         {
-            DataTable dt = GetQueryTable("SELECT @@IDENTITY");
-            var retVal = dt.Rows[0][0];
-            return (retVal == null) ? 0 : (int)retVal;
+            int retVal = 0;
+            string sqlText = "SELECT @@IDENTITY";
+            using (DBContext db = new DBContext())
+            {
+                if (db.Open())
+                {
+                    retVal = (int)db.ExecuteScalar(sqlText);
+                }
+            }
+            return retVal;
+        }
+
+        public static int GetLastAffectedRowCount()
+        {
+            int retVal = 0;
+            string sqlText = "SELECT @@ROWCOUNT";
+            using (DBContext db = new DBContext())
+            {
+                if (db.Open())
+                {
+                    retVal = (int)db.ExecuteScalar(sqlText);
+                }
+            }
+            return retVal;
+        }
+
+        // получить список пар Id, Name из справочника
+        public static List<IdNameTuple> GetPairIdNameList(string sqlText)
+        {
+            List<IdNameTuple> retVal = new List<IdNameTuple>();
+            using (DBContext db = new DBContext())
+            {
+                if (db.Open())
+                {
+                    using (DataTable dt = db.GetQueryTable(sqlText))
+                    {
+                        if (dt != null)
+                        {
+                            foreach (DataRow row in dt.Rows)
+                            {
+                                retVal.Add(new IdNameTuple(Convert.ToInt32(row[0]), Convert.ToString(row[1])));
+                            }
+                        }
+                    }
+                }
+            }
+            return ((retVal.Count == 0) ? null : retVal);
+        }
+
+        private static Dictionary<int, string> GetPairIdNameDict(string sqlText)
+        {
+            Dictionary<int, string> retVal = new Dictionary<int, string>();
+            using (DBContext db = new DBContext())
+            {
+                if (db.Open())
+                {
+                    using (DataTable dt = db.GetQueryTable(sqlText))
+                    {
+                        if (dt != null)
+                        {
+                            foreach (DataRow row in dt.Rows)
+                            {
+                                retVal.Add(Convert.ToInt32(row[0]), (row.IsNull(1) ? null : Convert.ToString(row[1])));
+                            }
+                        }
+                    }
+                }
+            }
+            return ((retVal.Count == 0) ? null : retVal);
         }
 
         public static List<string> GetColumnsNameList(DataTable dataTable)
@@ -169,19 +386,359 @@ namespace FlyDoc.Model
             return retVal;
         }
 
+        public static int ExecuteDMLAndGetAffectedRowCount(string dmlText)
+        {
+            int retVal = 0;
+            string sqlText = dmlText + "; SELECT @@ROWCOUNT";
+            using (DBContext db = new DBContext())
+            {
+                if (db.Open())
+                {
+                    retVal = (int)db.ExecuteScalar(sqlText);
+                }
+            }
+            return retVal;
+        }
+
+        public static int InsertRecordAndReturnNewId(string dmlText)
+        {
+            int retVal = 0;
+            string sqlText = dmlText + "; SELECT @@IDENTITY";
+            using (DBContext db = new DBContext())
+            {
+                if (db.Open())
+                {
+                    retVal = (int)db.ExecuteScalar(sqlText);
+                }
+            }
+            return retVal;
+        }
+
+        // ищет запись в таблице tableName по условию where и, если запись найдена, то возвращает значение поля Id из таблицы, иначе возвращает 0
+        public static int FindEntityByWhere(string tableName, string where)
+        {
+            int retVal = 0;
+
+            string sqlText = $"SELECT Id FROM [{tableName}] WHERE ({where})";
+            using (DBContext db = new DBContext())
+            {
+                if (db.Open())
+                {
+                    object oValue = db.ExecuteScalar(sqlText);
+                    if (oValue != null) retVal = Convert.ToInt32(oValue);
+                }
+            }
+
+            return retVal;
+        }
+
+        public static DataRow GetEntityRow(string tableName, int id)
+        {
+            DataRow retVal = null;
+            string sqlText = $"SELECT * FROM [{tableName}] WHERE ([Id]={id.ToString()})";
+            using (DBContext db = new DBContext())
+            {
+                if (db.Open())
+                {
+                    using (DataTable dt = db.GetQueryTable(sqlText))
+                    {
+                        if ((dt != null) && (dt.Rows.Count > 0)) retVal = dt.Rows[0];
+                    }
+                }
+            }
+            return retVal;
+        }
+
+        #region schema
+        private static void printSchemaColumns(DataTable dt)
+        {
+            Debug.Print("index\tname\ttype");
+            int i = 0;
+            foreach (DataColumn col in dt.Columns)
+            {
+                Debug.Print("{0}\t{1}\t{2}", i++, col.ColumnName, col.DataType.Name);
+            }
+        }
+
+        /*
+TABLE COLUMNS
+    // For the array, 0-member represents Catalog; 1-member represents Schema; 
+    // 2-member represents Table Name; 3-member represents Column Name. 
+    DataTable dt = conn.GetSchema("Columns", new string[4] {null, null, tableName, null });
+index name              type
+0	TABLE_CATALOG       String
+1	TABLE_SCHEMA        String
+2	TABLE_NAME          String
+3	COLUMN_NAME         String
+4	ORDINAL_POSITION    Int32
+5	COLUMN_DEFAULT      String
+6	IS_NULLABLE         String
+7	DATA_TYPE           String
+8	CHARACTER_MAXIMUM_LENGTH Int32
+9	CHARACTER_OCTET_LENGTH  Int32
+10	NUMERIC_PRECISION       Byte
+11	NUMERIC_PRECISION_RADIX Int16
+12	NUMERIC_SCALE           Int32
+13	DATETIME_PRECISION      Int16
+14	CHARACTER_SET_CATALOG   String
+15	CHARACTER_SET_SCHEMA    String
+16	CHARACTER_SET_NAME      String
+17	COLLATION_CATALOG       String
+18	IS_SPARSE               Boolean
+19	IS_COLUMN_SET           Boolean
+20	IS_FILESTREAM           Boolean
+*/
+        #endregion
+
+        #endregion
+
+        #region entity funcs
+
+        public static bool InsertEntity<T>(T entity) where T : IDBInfo
+        {
+            string insText = GetSQLInsertText(entity);
+
+            string sqlText = insText + "; SELECT @@IDENTITY";
+            DataTable dt = null;
+            using (DBContext db = new DBContext())
+            {
+                dt = db.GetQueryTable(sqlText);
+            }
+            if ((dt != null) && (dt.Rows.Count > 0))
+            {
+                int newId = Convert.ToInt32(dt.Rows[0][0]);
+                entity.Id = newId;
+                return (newId > 0);
+            }
+            else
+                return false;
+        }
+
+        public static bool DeleteEntityById(string tableName, int id)
+        {
+            string sqlText = $"DELETE FROM [{tableName}] WHERE (Id = {id.ToString()}); SELECT @@ROWCOUNT";
+            int iAffected = 0;
+            using (DBContext db = new DBContext())
+            {
+                iAffected = (int)db.ExecuteScalar(sqlText);
+            }
+            return (iAffected > 0);
+        }
+
+        public static bool UpdateEntity<T>(T entity) where T : IDBInfo
+        {
+            string sqlText = GetSQLUpdateText(entity) + "; SELECT @@ROWCOUNT";
+            int iAffected = 0;
+            using (DBContext db = new DBContext())
+            {
+                iAffected = (int)db.ExecuteScalar(sqlText);
+            }
+            return (iAffected > 0);
+        }
+
+        public static string toSQLString(object value)
+        {
+            if ((value == null) || (value.GetType().Equals(typeof(System.DBNull))))
+                return "NULL";
+            else if (value is string)
+                return string.Format("'{0}'", value.ToString());
+            else if (value is bool)
+                return string.Format("{0}", ((bool)value ? "1" : "0"));
+            else if (value is DateTime)
+                return ((DateTime)value).ToSQLExpr();
+            else if (value is float)
+                //преобразование числа с точкой
+                return ((float)value).ToString(System.Globalization.CultureInfo.InvariantCulture);
+            else if (value is double)
+                return ((double)value).ToString(System.Globalization.CultureInfo.InvariantCulture);
+            else if (value is decimal)
+                return ((decimal)value).ToString(System.Globalization.CultureInfo.InvariantCulture);
+            else
+                return value.ToString();
+        }
+
+
+        public static void PopulateEntityById<T>(T entity, int id) where T : IDBInfo
+        {
+            string sWhere = $"[Id] = '{id}'";
+
+            PopulateEntityByWhere(entity, sWhere);
+        }
+
+        public static void PopulateEntityByWhere<T>(T entity, string sWhere) where T : IDBInfo
+        {
+            string sqlText = $"SELECT * FROM [{entity.DBTableName}] WHERE ({sWhere})";
+
+            DataTable dt = null; 
+            using (DBContext db = new DBContext())
+            {
+                dt = db.GetQueryTable(sqlText);
+            }
+
+            // если записть не найдена, то в entity Id=0
+            if ((dt == null) || (dt.Rows.Count == 0))
+            {
+                entity.Id = 0;
+                return;
+            }
+
+            DataRow dr = dt.Rows[0];
+            Type t = typeof(T);
+            PropertyInfo[] pInfo = t.GetProperties(BindingFlags.Public | BindingFlags.Instance);
+            foreach (PropertyInfo pi in pInfo)
+            {
+                if (dr.Table.Columns.Contains(pi.Name) && !dr.IsNull(pi.Name))
+                {
+                    pi.SetValue(entity, dr[pi.Name], null);
+                }
+            }
+        }
+
+        private static T getEntityFromDataRow<T>(DataRow row) where T : new()
+        {
+            T retVal = new T();
+            PropertyInfo[] pInfo = typeof(T).GetProperties(BindingFlags.Public | BindingFlags.Instance);
+            foreach (PropertyInfo pi in pInfo)
+            {
+                if (row.Table.Columns.Contains(pi.Name) && !row.IsNull(pi.Name))
+                {
+                    pi.SetValue(retVal, row[pi.Name], null);
+                }
+            }
+            return retVal;
+        }
+
+        public static string GetSQLInsertText<T>(T instance) where T : IDBInfo
+        {
+            string retVal = null;
+
+            PropertyInfo[] pInfo = typeof(T).GetProperties(BindingFlags.Public | BindingFlags.Instance);
+            DBTableColumn col;
+            StringBuilder sbFields = new StringBuilder(), sbValues = new StringBuilder();
+
+            foreach (PropertyInfo pi in pInfo)
+            {
+                // поле Id пропускаем
+                if (pi.Name.ToLower() == "id") continue;
+
+                List<DBTableColumn> dbColumns = (instance as IDBInfo).DBColumns;
+
+                col = dbColumns.FirstOrDefault(c => c.Name.Equals(pi.Name, StringComparison.OrdinalIgnoreCase));
+                if (col != null)
+                {
+                    if (sbFields.Length > 0) sbFields.Append(", ");
+                    sbFields.Append(string.Format("[{0}]", col.Name));
+
+                    if (sbValues.Length > 0) sbValues.Append(", ");
+                    object value = pi.GetValue(instance, null);
+                    if (col.TypeName.EndsWith("char"))
+                    {
+                        if (value == null)
+                            sbValues.Append(col.IsNullable ? "Null" : "");
+                        else
+                        {
+                            string sVal = value.ToString();
+                            if ((col.MaxLenght > 0) && (sVal.Length > col.MaxLenght)) sVal = sVal.Substring(0, col.MaxLenght);
+                            sbValues.Append(string.Format("'{0}'", sVal));
+                        }
+                    }
+                    else
+                    {
+                        sbValues.Append(toSQLString(value));
+                    }
+                }
+            }
+            string fields = sbFields.ToString(), values = sbValues.ToString();
+
+            if (!string.IsNullOrEmpty(fields) && !string.IsNullOrEmpty(values))
+            {
+                string tableName = (instance as IDBInfo).DBTableName;
+                retVal = string.Format("INSERT INTO [{0}] ({1}) VALUES ({2})", tableName, fields, values);
+            }
+
+            return retVal;
+        }
+
+        public static string GetSQLUpdateText<T>(T instance) where T : IDBInfo
+        {
+            string retVal = null;
+            int id = 0;
+
+            PropertyInfo[] pInfo = typeof(T).GetProperties(BindingFlags.Public | BindingFlags.Instance);
+            DBTableColumn col;
+            StringBuilder sbFields = new StringBuilder();
+
+            foreach (PropertyInfo pi in pInfo)
+            {
+                // поле Id пропускаем
+                if (pi.Name.ToLower() == "id")
+                {
+                    id = (int)pi.GetValue(instance, null);
+                    continue;
+                }
+
+                List<DBTableColumn> dbColumns = (instance as IDBInfo).DBColumns;
+                col = dbColumns.FirstOrDefault(c => c.Name.Equals(pi.Name, StringComparison.OrdinalIgnoreCase));
+                if (col != null)
+                {
+                    object value = pi.GetValue(instance, null);
+                    string sVal = null;
+                    if (col.TypeName.EndsWith("char"))
+                    {
+                        if (value == null)
+                            sVal = (col.IsNullable ? "Null" : "");
+                        else
+                        {
+                            sVal = value.ToString();
+                            if ((col.MaxLenght > 0) && (sVal.Length > col.MaxLenght)) sVal = sVal.Substring(0, col.MaxLenght);
+                            sVal = string.Format("'{0}'", sVal);
+                        }
+                    }
+                    else
+                    {
+                        sVal = toSQLString(value);
+                    }
+
+                    if (sVal != null)
+                    {
+                        if (sbFields.Length > 0) sbFields.Append(", ");
+                        sbFields.Append(string.Format("[{0}] = {1}", col.Name, sVal));
+                    }
+                }
+            }
+            string fields = sbFields.ToString();
+
+            if ((id > 0) && !string.IsNullOrEmpty(fields))
+            {
+                string tableName = (instance as IDBInfo).DBTableName;
+                retVal = string.Format("UPDATE [{0}] SET {1} WHERE ([Id] = {2})", tableName, fields, id);
+            }
+
+            return retVal;
+        }
+        #endregion
+
+
+        //**********************************
+
         #region  Department
         // получить отделы из SQL-таблицы
         public static DataTable GetDepartments()
         {
-            return GetQueryTable("SELECT * FROM Department ORDER BY Name");
+            DataTable retVal = null;
+            using (DBContext db = new DBContext())
+            {
+                retVal = db.GetQueryTable("SELECT * FROM Department ORDER BY Name");
+            }
+            return retVal;
         }
         public static string GetDepartmentName(int Id)
         {
             string retVal = null;
             string sqlText = string.Format("SELECT Name FROM Department WHERE (Id = {0})", Id);
-            using (DataTable dt = GetQueryTable(sqlText))
+            using (DBContext db = new DBContext())
             {
-                retVal = (dt == null) || (dt.Rows.Count == 0) ? null : (string)dt.Rows[0][0];
+                retVal = (string)db.ExecuteScalar(sqlText);
             }
             return retVal;
         }
@@ -189,27 +746,21 @@ namespace FlyDoc.Model
         {
             int retVal = -1;
             string sqlText = string.Format("SELECT Id FROM Department WHERE (Name = '{0}')", depName);
-            using (DataTable dt = GetQueryTable(sqlText))
+            using (DBContext db = new DBContext())
             {
-                retVal = (dt == null) || (dt.Rows.Count == 0) ? -1 : (int)dt.Rows[0][0];
+                retVal = (int)db.ExecuteScalar(sqlText);
             }
             return retVal;
         }
 
-        public static bool InsertDepartment(Department dep)
+        public static List<IdNameTuple> GetDepartmentNamesList()
         {
-            string sqlText = string.Format("INSERT INTO Department (Id, Name) VALUES ({0}, '{1}')", dep.Id, dep.Name);
-            return Execute(sqlText);
+            return getIdNameList("SELECT [Id], [Name] FROM [Department] ORDER BY [Name]");
         }
-        public static bool UpdateDepartment(Department dep, int Id)
+
+        public static Dictionary<int, string> GetDepartmentNamesDict()
         {
-            string sqlText = string.Format("UPDATE Department SET Id = {0}, Name = '{1}' WHERE (Id = {2})", dep.Id, dep.Name, Id);
-            return Execute(sqlText);
-        }
-        public static bool DeleteDepartment(int Id)
-        {
-            string sqlText = string.Format("DELETE FROM Department WHERE (Id = {0})", Id);
-            return Execute(sqlText);
+            return getIdNameDict("SELECT [Id], [Name] FROM [Department] ORDER BY [Name]");
         }
         #endregion
 
@@ -217,65 +768,65 @@ namespace FlyDoc.Model
         // получить всех пользователей
         public static DataTable GetUsers()
         {
+            DataTable retVal = null;
             string sqlText = "SELECT * FROM vwUsers";
-            return GetQueryTable(sqlText);
+
+            using (DBContext db = new DBContext())
+            {
+                retVal = db.GetQueryTable(sqlText);
+            }
+
+            return retVal;
         }
 
-        // получить настройки пользователя
-        public static DataRow GetUserConfig(string PC, string UserName)
-        {
-            string sqlText = string.Format("SELECT * FROM Access WHERE (PC='{0}') AND (UserName='{1}')", PC, UserName);
-            DataTable dt = GetQueryTable(sqlText);
-            return ((dt == null) || (dt.Rows.Count == 0)) ? null : dt.Rows[0];
-        }
-
-        public static bool InsertUser(User user, out int newId)
-        {
-            string sqlText = $"INSERT INTO Access (PC, UserName, Department, Name, HeadNach, Notes, Schedule, Phone, Config, ApprAvtor, ApprDir, ApprComdir, ApprSBNach, ApprSB, ApprKasa, ApprNach, ApprFin, ApprDostavka, ApprEnerg, ApprSklad, ApprBuh, ApprASU, Mail) VALUES ('{user.PC}', '{user.UserName}', {user.DepartmentId}, '{user.Name}', '{user.HeadNach}', {((user.AllowNote) ? 1 : 0)}, {((user.AllowSchedule) ? 1 : 0)}, {((user.AllowPhonebook) ? 1 : 0)}, {((user.AllowConfig) ? 1 : 0)}, {((user.AllowApprAvtor) ? 1 : 0)}, {((user.AllowApproverDir) ? 1 : 0)}, {((user.AllowApprComdir) ? 1 : 0)}, {((user.AllowApprSBNach) ? 1 : 0)}, {((user.AllowApproverSB) ? 1 : 0)}, {((user.AllowApprKasa) ? 1 : 0)}, {((user.AllowApprovedNach) ? 1 : 0)}, {((user.AllowApprFin) ? 1 : 0)}, {((user.AllowApprDostavka) ? 1 : 0)}, {((user.AllowApprEnerg) ? 1 : 0)}, {((user.AllowApprSklad) ? 1 : 0)}, {((user.AllowApprBuh) ? 1 : 0)}, {((user.AllowApprASU) ? 1 : 0)},  '{user.enterMail}'); SELECT @@IDENTITY";
-            DataTable dt = GetQueryTable(sqlText);
-            newId = Convert.ToInt32(dt.Rows[0][0]);
-            return (newId > 0);
-        }
-        public static bool UpdateUser(User user)
-        {
-            string sqlText = $"UPDATE Access SET PC = '{user.PC}', UserName = '{user.UserName}', Department = {user.DepartmentId}, Name = '{user.Name}', HeadNach = '{user.HeadNach}', Notes = {((user.AllowNote) ? 1 : 0)}, Schedule = {((user.AllowSchedule) ? 1 : 0)}, Phone = {((user.AllowPhonebook) ? 1 : 0)}, Config = {((user.AllowConfig) ? 1 : 0)}, ApprAvtor = {((user.AllowApprAvtor) ? 1 : 0)}, ApprDir = {((user.AllowApproverDir) ? 1 : 0)}, ApprComdir = {((user.AllowApprComdir) ? 1 : 0)}, ApprSBNach = {((user.AllowApprSBNach) ? 1 : 0)}, ApprSB = {((user.AllowApproverSB) ? 1 : 0)}, ApprKasa = {((user.AllowApprKasa) ? 1 : 0)}, ApprNach = {((user.AllowApprovedNach) ? 1 : 0)}, ApprFin = {((user.AllowApprFin) ? 1 : 0)}, ApprDostavka = {((user.AllowApprDostavka) ? 1 : 0)}, ApprEnerg = {((user.AllowApprEnerg) ? 1 : 0)}, ApprSklad = {((user.AllowApprSklad) ? 1 : 0)}, ApprBuh = {((user.AllowApprBuh) ? 1 : 0)}, ApprASU = {((user.AllowApprASU) ? 1 : 0)}, Mail = '{user.enterMail}' WHERE (Id = {user.Id})";
-            return Execute(sqlText);
-        }
-        public static bool DeleteUser(int Id)
-        {
-            string sqlText = string.Format("DELETE FROM Access WHERE (Id = {0})", Id);
-            return Execute(sqlText);
-        }
         #endregion
 
         #region Schedule
         public static DataTable GetSchInclude()
         {
-            return GetQueryTable("SELECT * From vwSchInclude");
+            DataTable retVal = null;
+            using (DBContext db = new DBContext())
+            {
+                retVal = db.GetQueryTable("SELECT * From vwSchInclude");
+            }
+            return retVal;
         }
 
         public static DataTable GetSchedule()
         {
-            return GetQueryTable("SELECT * From vwSchedules");
+            DataTable retVal = null;
+            using (DBContext db = new DBContext())
+            {
+                retVal = db.GetQueryTable("SELECT * From vwSchedules");
+            }
+            return retVal;
         }
         public static bool InsertSchedule(ScheduleModel sched, out int newId)
         {
             string sqlText = $"INSERT INTO Schedules ([IdDepartment], [Data], [Approved]) VALUES ({sched.DepartmentId}, '{sched.Date}', {((sched.Approved) ? 1 : 0)}); SELECT @@IDENTITY";
-            DataTable dt = GetQueryTable(sqlText);
-            newId = Convert.ToInt32(dt.Rows[0][0]);
+
+            using (DBContext db = new DBContext())
+            {
+                newId = (int)db.ExecuteScalar(sqlText);
+            }
+
             return (newId > 0);
         }
 
         public static bool UpdateSchedule(ScheduleModel sched)
         {
             string sqlText = $"UPDATE Schedules SET [IdDepartment] = {sched.DepartmentId}, [Data] = '{sched.Date}', [Approved] = {((sched.Approved) ? 1 : 0)} WHERE (Id = {sched.Id})";
-            return Execute(sqlText);
+
+            int iAffected = ExecuteDMLAndGetAffectedRowCount(sqlText);
+            return (iAffected > 0);
         }
 
         public static bool DeleteSchedule(int Id)
         {
             string sqlText = string.Format("DELETE FROM Schedules WHERE (Id = {0})", Id);
-            return Execute(sqlText);
+
+            int iAffected = ExecuteDMLAndGetAffectedRowCount(sqlText);
+            return (iAffected > 0);
         }
         #endregion
 
@@ -285,102 +836,123 @@ namespace FlyDoc.Model
         // (сортировать здесь, т.к. SQL-представление не хочет сохранять запрос с ORDER BY (!!!!????)
         public static DataTable GetNotes()
         {
-            return GetQueryTable("SELECT * FROM vwNote");// ORDER BY Id DESC");
+            string sqlText = "SELECT * FROM Notes"; // ORDER BY Id DESC"); 
+
+            DataTable retVal = null;
+            using (DBContext db = new DBContext())
+            {
+                retVal = db.GetQueryTable(sqlText);
+            }
+            return retVal;
+        }
+
+        public static List<Note> GetNotesModelList()
+        {
+            DataTable dt = GetNotes();
+            if (dt != null)
+            {
+                List<Note> retVal = new List<Note>();
+                foreach (DataRow row in dt.Rows)
+                {
+                    Note note = getEntityFromDataRow<Note>(row);
+                    if (note != null) retVal.Add(note);
+                }
+                return retVal;
+            }
+            else
+                return null;
         }
 
         public static DataRow GetNote(int Id)
         {
             string sqlText = string.Format("SELECT * FROM Notes WHERE (Id = {0})", Id);
-            DataTable dt = GetQueryTable(sqlText);
-            return ((dt == null) || (dt.Rows.Count == 0)) ? null : dt.Rows[0];
-        }
 
-        public static DataTable GetNoteTemplates()
-        {
-            return GetQueryTable("SELECT * FROM NoteTemplates");
-        }
+            DataRow retVal = null;
+            using (DBContext db = new DBContext())
+            {
+                DataTable dt = db.GetQueryTable(sqlText);
+                retVal = ((dt == null) || (dt.Rows.Count == 0)) ? null : dt.Rows[0];
 
-        // получить настройки шаблона
-        public static DataRow GetNoteTemplatesConfig(int Id)
-        {
-            string sqlText = $"SELECT * FROM NoteTemplates WHERE (Id='{Id}')";
-            DataTable dt = GetQueryTable(sqlText);
-            return ((dt == null) || (dt.Rows.Count == 0)) ? null : dt.Rows[0];
+            }
+            return retVal;
         }
 
         public static DataTable GetNoteIncludeByNoteId(int noteId)
         {
             string sqlText = string.Format("SELECT * FROM NoteIncludeTable WHERE (IdNotes = {0})", noteId);
-            DataTable dt = GetQueryTable(sqlText);
+            DataTable dt = null; 
+            using (DBContext db = new DBContext())
+            {
+                dt = db.GetQueryTable(sqlText);
+            }
             return dt;
         }
         
-        public static bool InsertNotes(Note note, out int newId)
+        public static bool InsertNotes(Note note)
         {
-            string sqlText = $"INSERT INTO Notes (Templates, IdDepartment, [Date], NameAvtor, BodyUp, BodyDown, HeadNach, HeadDir) VALUES ({note.NoteTemplateId}, {note.DepartmentId}, {note.Date.ToSQLExpr()}, '{note.NameAvtor}', '{note.BodyUp}', '{note.BodyDown}', '{note.HeadNach}', '{note.HeadDir}'); SELECT @@IDENTITY";
-            DataTable dt = GetQueryTable(sqlText);
-            newId = Convert.ToInt32(dt.Rows[0][0]);
-            note.Id = newId;
-
-            // note.Include
-            if ((newId > 0) && (note.Include != null))
+            if (InsertEntity(note))
             {
-                foreach (NoteInclude incl in note.Include)
+                // note.Include
+                if ((note.Id > 0) && (note.Include != null))
                 {
-                    incl.IdNotes = newId;
-                    sqlText = incl.GetSQLInsertText(note.IncludeFields) + "; SELECT @@IDENTITY";
-                    dt = GetQueryTable(sqlText);
-                    incl.Id = Convert.ToInt32(dt.Rows[0][0]);
+                    DataTable dt;
+                    string sqlText;
+                    using (DBContext db = new DBContext())
+                    {
+                        foreach (NoteInclude incl in note.Include)
+                        {
+                            incl.IdNotes = note.Id;
+                            sqlText = incl.GetSQLInsertText(note.IncludeFields) + "; SELECT @@IDENTITY";
+                            dt = db.GetQueryTable(sqlText);
+                            incl.Id = Convert.ToInt32(dt.Rows[0][0]);
+                        }
+                    }
                 }
             }
 
-            return (newId > 0);
+            return (note.Id > 0);
         }
 
         public static bool UpdateNotes(Note note)
         {
-            string sqlText = string.Format("UPDATE Notes SET {0} WHERE (Id = {1})", note.GetSQLUpdateString(), note.Id);
-            bool result = false;
-            try
+            if (UpdateEntity(note))
             {
-                result = Execute(sqlText);
-            }
-            catch (Exception ex)
-            {
-                showErrorBox("Notes", "обновления", ex.Message + ": " + sqlText);
-            }
-
-            // note.Include
-            if ((result) && (note.Include != null) && (note.Include.Count > 0))
-            {
-                // то, что лежит в БД
-                DataTable dtIncl = GetNoteIncludeByNoteId(note.Id);
-                List<int> dbInclIds = new List<int>();
-                foreach (DataRow item in dtIncl.Rows) dbInclIds.Add((int)item["Id"]);
-
-                // удалить из БД строки, отсутствующие в таблице
-                int[] delIds = dbInclIds.Except(note.Include.Select(i => i.Id)).ToArray();
-                if (delIds.Length > 0)
+                // note.Include
+                if ((note.Include != null) && (note.Include.Count > 0))
                 {
-                    string sDelIds = string.Join(",", delIds.Select(j => j.ToString()).ToArray());
-                    sqlText = string.Format("DELETE FROM NoteIncludeTable WHERE [Id] In ({0})", sDelIds);
-                    try
+                    // то, что лежит в БД
+                    DataTable dtIncl = GetNoteIncludeByNoteId(note.Id);
+                    List<int> dbInclIds = new List<int>();
+                    foreach (DataRow item in dtIncl.Rows) dbInclIds.Add((int)item["Id"]);
+
+                    // удалить из БД строки, отсутствующие в таблице
+                    int[] delIds = dbInclIds.Except(note.Include.Select(i => i.Id)).ToArray();
+                    if (delIds.Length > 0)
                     {
-                        Execute(sqlText);
+                        string sDelIds = string.Join(",", delIds.Select(j => j.ToString()).ToArray());
+                        string sqlText = string.Format("DELETE FROM [NoteIncludeTable] WHERE [Id] In ({0})", sDelIds);
+                        try
+                        {
+                            using (DBContext db = new DBContext())
+                            {
+                                db.ExecuteCommand(sqlText);
+                            }
+                        }
+                        catch (Exception ex)
+                        {
+                            showErrorBox("NoteIncludeTable", "удаления", ex.Message + ": " + sqlText);
+                        }
                     }
-                    catch (Exception ex)
+                    // обновить или добавить
+                    foreach (NoteInclude incl in note.Include)
                     {
-                        showErrorBox("NoteIncludeTable", "удаления", ex.Message + ": " + sqlText);
+                        updNoteIncl(incl, note.Id, note);
                     }
                 }
-                // обновить или добавить
-                foreach (NoteInclude incl in note.Include)
-                {
-                    updNoteIncl(incl, note.Id, note);
-                }
+                return true;
             }
-
-            return result;
+            else
+                return false;
         }
 
         private static void updNoteIncl(NoteInclude incl, int noteId, Note note)
@@ -394,8 +966,10 @@ namespace FlyDoc.Model
                 try
                 {
                     sqlText = incl.GetSQLInsertText(note.IncludeFields) + "; SELECT @@IDENTITY";
-                    using (DataTable dtTmp = GetQueryTable(sqlText))
+
+                    using (DBContext db = new DBContext())
                     {
+                        DataTable dtTmp = db.GetQueryTable(sqlText);
                         incl.Id = Convert.ToInt32(dtTmp.Rows[0][0]);
                     }
                 }
@@ -409,7 +983,10 @@ namespace FlyDoc.Model
                 try
                 {
                     sqlText = incl.GetSQLUpdateText(note.IncludeFields);
-                    Execute(sqlText);
+                    using (DBContext db = new DBContext())
+                    {
+                        db.ExecuteCommand(sqlText);
+                    }
                 }
                 catch (Exception ex)
                 {
@@ -418,10 +995,19 @@ namespace FlyDoc.Model
             }
         }
 
-        public static bool DeleteNotes(int Id)
+        public static bool DeleteNotes(int id)
         {
-            string sqlText = string.Format("DELETE FROM Notes WHERE (Id = {0})", Id);
-            return Execute(sqlText);
+            int iAffected = 0;
+            using (DBContext db = new DBContext())
+            {
+                // удалить строки из NoteIncludeTable
+                string sqlText = string.Format("DELETE FROM [NoteIncludeTable] WHERE ([IdNotes] = {0})", id);
+                db.ExecuteCommand(sqlText);
+
+                sqlText = $"DELETE FROM [{Note._dbTableName}] WHERE (Id = {id.ToString()}); SELECT @@ROWCOUNT";
+                iAffected = (int)db.ExecuteScalar(sqlText);
+            }
+            return (iAffected > 0);
         }
 
         #endregion
@@ -430,29 +1016,93 @@ namespace FlyDoc.Model
         // получить телефонную книгу
         public static DataTable GetPhones()
         {
-            return GetQueryTable("SELECT * From vwPhonebook");
-        }
-        public static bool InsertPhone(PhoneModel phone, out int newId)
-        {
-            string sqlText = $"INSERT INTO Phonebook ([Department], [Positions], [FIO], [Dect], [Phone], [Mobile], [Mail]) VALUES ({phone.DepartmentId}, '{phone.Positions}', '{phone.Name}', '{phone.Dect}', '{phone.PhoneNumber}', '{phone.Mobile}', '{phone.eMail}'); SELECT @@IDENTITY";
-            DataTable dt = GetQueryTable(sqlText);
-            newId = Convert.ToInt32(dt.Rows[0][0]);
-            return (newId > 0);
-        }
-
-        public static bool UpdatePhone(PhoneModel phone)
-        {
-            string sqlText = $"UPDATE Phonebook SET [Department] = {phone.DepartmentId}, [Positions] = '{phone.Positions}', [FIO] = '{phone.Name}', [Dect] = '{phone.Dect}', [Phone] = '{phone.PhoneNumber}', [Mobile] = '{phone.Mobile}', [Mail] = '{phone.eMail}' WHERE (Id = {phone.Id})";
-            return Execute(sqlText);
-        }
-
-        public static bool DeletePhone(int Id)
-        {
-            string sqlText = string.Format("DELETE FROM Phonebook WHERE (Id = {0})", Id);
-            return Execute(sqlText);
+            DataTable retVal = null;
+            using (DBContext db = new DBContext())
+            {
+                retVal = db.GetQueryTable("SELECT * From vwPhonebook");
+            }
+            return retVal;
         }
 
         #endregion
+
+        #region шаблон службової
+        public static DataTable GetNoteTemplates()
+        {
+            DataTable retVal = null;
+            using (DBContext db = new DBContext())
+            {
+                retVal = db.GetQueryTable("SELECT * From NoteTemplates");
+            }
+            return retVal;
+        }
+
+        // получить настройки шаблона
+        public static DataRow GetNoteTemplateById(int Id)
+        {
+            string sqlText = $"SELECT * FROM [NoteTemplates] WHERE ([Id] = '{Id}')";
+
+            DataRow retVal = null;
+            using (DBContext db = new DBContext())
+            {
+                DataTable dt = db.GetQueryTable(sqlText);
+                retVal = ((dt == null) || (dt.Rows.Count == 0)) ? null : dt.Rows[0];
+
+            }
+            return retVal;
+        }
+
+        public static List<IdNameTuple> GetNoteTemplateNamesList()
+        {
+            return getIdNameList("SELECT [Id], [Name] FROM [NoteTemplates] ORDER BY [Name]");
+        }
+
+        public static Dictionary<int, string> GetNoteTemplateNamesDict()
+        {
+            return getIdNameDict("SELECT [Id], [Name] FROM [NoteTemplates] ORDER BY [Name]");
+        }
+        #endregion
+
+        // получить список пар Id, Name из справочника
+        private static List<IdNameTuple> getIdNameList(string sqlText)
+        {
+            DataTable dt = null;
+            using (DBContext db = new DBContext())
+            {
+                dt = db.GetQueryTable(sqlText);
+            }
+            if (dt != null)
+            {
+                List<IdNameTuple> retVal = new List<IdNameTuple>();
+                foreach (DataRow row in dt.Rows)
+                {
+                    retVal.Add(new IdNameTuple(Convert.ToInt32(row[0]), Convert.ToString(row[1])));
+                }
+                return retVal;
+            }
+            else
+                return null;
+        }
+
+        private static Dictionary<int, string> getIdNameDict(string sqlText)
+        {
+            DataTable dt = null;
+            using (DBContext db = new DBContext())
+            {
+                dt = db.GetQueryTable(sqlText);
+            }
+            if (dt != null)
+            {
+                Dictionary<int, string> retVal = new Dictionary<int, string>();
+                foreach (DataRow row in dt.Rows)
+                {
+                    retVal.Add(Convert.ToInt32(row[0]), (row.IsNull(1) ? null : Convert.ToString(row[1])));
+                }
+                return retVal;
+            }
+            else
+                return null;
+        }
 
         private static void showErrorBox(string tableName, string actionName, string errText)
         {
@@ -460,4 +1110,25 @@ namespace FlyDoc.Model
         }
 
     }  // class DBContext
+
+    public class DBTableColumn
+    {
+        public string Name { get; set; }
+        public bool IsNullable { get; set; }
+        public string TypeName { get; set; }
+        public int MaxLenght { get; set; }
+    }
+
+    public class IdNameTuple
+    {
+        public int Id { get; set; }
+        public string Name { get; set; }
+
+        public IdNameTuple(int id, string name)
+        {
+            Id = id; Name = name;
+        }
+
+    }
+
 }

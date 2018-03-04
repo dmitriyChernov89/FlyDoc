@@ -1,36 +1,43 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Linq;
+using System.Reflection;
 using System.Text;
+
 
 namespace FlyDoc.Model
 {
-    public class User : IDBInfo
+    public class NoteTemplate: IDBInfo
     {
-        public static string _dbTableName = "Access";
+        public static string _dbTableName = "NoteTemplates";
         private static List<DBTableColumn> _dbColumns;
-        static User()
+        static NoteTemplate()
         {
             using (DBContext db = new DBContext())
             {
                 _dbColumns = db.GetTableColumns(_dbTableName);
             }
-
         }
 
         #region public fields
         public int Id { get; set; }
-        public string PC { get; set; }
-        public string UserName { get; set; }
-        public int Department { get; set; }
-        public bool Notes { get; set; }
-        public bool Schedule { get; set; }
-        public bool Phone { get; set; }
-        public bool Config { get; set; }
-        public string HeadNach { get; set; }
         public string Name { get; set; }
-
-        public bool ApprAvtor { get; set; }
+        public string HeadDir { get; set; }
+        public string HeadNach { get; set; }
+        public string BodyUp { get; set; }
+        public int TableColums { get; set; }
+        public string ColumName1 { get; set; }
+        public string ColumName2 { get; set; }
+        public string ColumName3 { get; set; }
+        public string ColumName4 { get; set; }
+        public string ColumName5 { get; set; }
+        public string ColumName6 { get; set; }
+        public string ColumName7 { get; set; }
+        public string ColumName8 { get; set; }
+        public string ColumName9 { get; set; }
+        public string ColumName10 { get; set; }
+        public string BodyDown { get; set; }
         public bool ApprDir { get; set; }
         public bool ApprComdir { get; set; }
         public bool ApprSBNach { get; set; }
@@ -43,7 +50,7 @@ namespace FlyDoc.Model
         public bool ApprSklad { get; set; }
         public bool ApprBuh { get; set; }
         public bool ApprASU { get; set; }
-        public string Mail { get; set; }
+        public string Help { get; set; }
         #endregion
 
         #region IDBInfo
@@ -51,20 +58,13 @@ namespace FlyDoc.Model
         public List<DBTableColumn> DBColumns { get { return _dbColumns; } }
         #endregion
 
-
-        // CTORs
-        public User()
+        public NoteTemplate()
         {
         }
-        public User(int id) : this()
+
+        public NoteTemplate(int id) : this()
         {
             DBContext.PopulateEntityById(this, id);
-        }
-        public User(string machineName, string userName) : this()
-        {
-            string sWhere = $"([PC] = '{machineName}') AND ([UserName] = '{userName}')";
-
-            DBContext.PopulateEntityByWhere(this, sWhere);
         }
 
     }  // class

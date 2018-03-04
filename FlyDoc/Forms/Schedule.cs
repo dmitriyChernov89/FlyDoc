@@ -18,6 +18,7 @@ namespace FlyDoc
 {
     public partial class Schedule : Form
     {
+        private bool _isNew;
         private ScheduleModel _schedule;
         private bool _isChanged;
 
@@ -25,6 +26,9 @@ namespace FlyDoc
 
         public Schedule(ScheduleModel sched)
         {
+            _isNew = (sched == null);
+            AppFuncs.openEditForm(this.GetType().Name, _isNew);
+
             InitializeComponent();
 
             _schedule = sched;
@@ -32,6 +36,12 @@ namespace FlyDoc
 
             this.FormClosing += Schedule_FormClosing;
 
+        }
+
+        protected override void OnFormClosed(FormClosedEventArgs e)
+        {
+            AppFuncs.closeEditForm(this.GetType().Name, e.CloseReason);
+            base.OnFormClosed(e);
         }
 
         private void Schedule_FormClosing(object sender, FormClosingEventArgs e)
@@ -122,6 +132,8 @@ namespace FlyDoc
 
         private void btnWrite_Click(object sender, EventArgs e)
         {
+            AppFuncs.WriteLogTraceMessage(" - press button 'Зберегти'");
+
             DateTime dt = dateTimePicker.Value.Date;
             
             MessageBox.Show(dt.ToString());

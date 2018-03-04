@@ -26,6 +26,12 @@ namespace FlyDoc.Forms
         private Note _note;
         public Note Note { get { return _note; } }
 
+        private NoteTemplate _template;
+        private string[] _approversList;
+
+        private PropertyInfo[] _propInfoNote;
+        private PropertyInfo[] _propInfoUser;
+
         private bool _isNew;
 
 
@@ -35,6 +41,12 @@ namespace FlyDoc.Forms
 
             _isNew = (note == null);
             if (_isNew) _note = new Note(); else _note = note;
+
+            AppFuncs.openEditForm(this.GetType().Name, _isNew);
+
+            // держать в поле PropertyInfo[] для быстрого доступа к значениям через рефлексию
+            _propInfoNote = typeof(Note).GetProperties(BindingFlags.Instance | BindingFlags.Public);
+            _propInfoUser = typeof(User).GetProperties(BindingFlags.Instance | BindingFlags.Public);
         }
 
         private void NewNote_Load(object sender, EventArgs e)
@@ -59,6 +71,12 @@ namespace FlyDoc.Forms
             {
                 setControlsForEdit();
             }
+        }
+
+        protected override void OnFormClosed(FormClosedEventArgs e)
+        {
+            AppFuncs.closeEditForm(this.GetType().Name, e.CloseReason);
+            base.OnFormClosed(e);
         }
 
         private void setNoteIncludeTable()
@@ -92,45 +110,38 @@ namespace FlyDoc.Forms
             if (isNoRows) dgvSource.Clear();
         }
 
+        // настройка контролов для редактирования
         private void setControlsForEdit()
         {
             this.Text = "Редагувати рядок";
 
-            // настроить контролы для данного шаблона
-            cbNoteTemplate.Enabled = false;
-            DataRow drTemplate = DBContext.GetNoteTemplatesConfig(_note.NoteTemplateId);
-            if (drTemplate != null) setControlForTemplate(drTemplate);
-
-            this.tbNumber.Text = _note.Id.ToString();
-            cbNoteTemplate.SelectedValue = _note.NoteTemplateId;
-            cbDepartment.SelectedValue = _note.DepartmentId;
+            // установить значения контролов
+            cbNoteTemplate.SelectedValue = _note.Templates;
+            cbDepartment.SelectedValue = _note.IdDepartment;
             dtpDateCreate.Value = _note.Date;
-
-            this.tbAvtor.Text = _note.NameAvtor;
-
-            //Имена утвердивших в журнале, тут хз куда лепить и надо ли
-
-            // цветность кнопок утверждения
-            if (_note.ApprAvtor) setBtnLime(btnApprAvtor);
-            if (_note.ApprDir) setBtnLime(btnApprDir);
-            if (_note.ApprComdir) setBtnLime(btnApprComdir);
-            if (_note.ApprSBNach) setBtnLime(btnApprSBNach);
-            if (_note.ApprSB) setBtnLime(btnApprSB);
-            if (_note.ApprKasa) setBtnLime(btnApprKasa);
-            if (_note.ApprNach) setBtnLime(btnApprNach);
-            if (_note.ApprFin) setBtnLime(btnApprFin);
-            if (_note.ApprDostavka) setBtnLime(btnApprDostavka);
-            if (_note.ApprEnerg) setBtnLime(btnApprEnerg);
-            if (_note.ApprSklad) setBtnLime(btnApprSklad);
-            if (_note.ApprBuh) setBtnLime(btnApprBuh);
-            if (_note.ApprASU) setBtnLime(btnApprASU);
-
-            labelApprAll.Visible = _note.ApprAll;
-
-            this.tbBodyUp.Text = _note.BodyUp;
-            this.tbBodyDown.Text = _note.BodyDown;
             this.tbHeadDir.Text = _note.HeadDir;
             this.tbHeadNach.Text = _note.HeadNach;
+            this.tbNumber.Text = _note.Id.ToString();
+            this.tbBodyUp.Text = _note.BodyUp;
+            this.tbBodyDown.Text = _note.BodyDown;
+            this.tbAvtor.Text = _note.NameAvtor;
+
+            // закрыть для доступа все TextBox/ComboBox контролы
+            bool isEnable = (Program.User.ApprAvtor && (Program.User.Department == _note.IdDepartment));
+            // если это автор, проверить, утвердил ли он служебку
+            if (isEnable) isEnable = !_note.ApprAvtor;
+            foreach (Control ctl in this.Controls)
+            {
+                if ((ctl is TextBox) && (ctl is ComboBox)) ctl.Enabled = isEnable;
+            }
+            // текст служебки
+            setBodyControlsEnable(isEnable);
+
+            // группа кнопок согласователей
+            this.grpApprove.Enabled = true;
+
+            _template = _note.Template;
+            setControlForTemplate();
         }
 
         private List<string> getDGVColNames()
@@ -143,16 +154,14 @@ namespace FlyDoc.Forms
             return names;
         }
 
-        private void setBtnLime(Button btn)
-        {
-            btn.BackColor = Color.FromName("Lime");
-        }
-
         // обработчик кнопки по умолчанию - Ок
         private void btnSaveToDB_Click(object sender, EventArgs e)
         {
+            AppFuncs.WriteLogTraceMessage("   - press button 'Записати'");
             if (checkInput() == false)
             {
+                AppFuncs.WriteLogTraceMessage("   - check input not passed, no action");
+
                 this.DialogResult = DialogResult.None;
                 return;
             }
@@ -160,8 +169,8 @@ namespace FlyDoc.Forms
             // передать в вызывающий модуль значения полей в объекте Note
             if (_isNew)
             {
-                _note.NoteTemplateId = (int)cbNoteTemplate.SelectedValue;
-                _note.DepartmentId = (int)cbDepartment.SelectedValue;
+                _note.Templates = (int)cbNoteTemplate.SelectedValue;
+                _note.IdDepartment = (int)cbDepartment.SelectedValue;
                 _note.Date = dtpDateCreate.Value;
                 _note.HeadDir = this.tbHeadDir.Text;
                 _note.HeadNach = this.tbHeadNach.Text;
@@ -222,30 +231,29 @@ namespace FlyDoc.Forms
         private void cbNoteTemplate_SelectedIndexChanged(object sender, EventArgs e)
         {
             dtpDateCreate.Value = DateTime.Now;
-            cbDepartment.SelectedValue = MainForm._currentDepId.ToString();
+            cbDepartment.SelectedValue = Program.User.Department;
 
-            int tplId = cbNoteTemplate.SelectedValue.ToInt();
-            DataRow dr = DBContext.GetNoteTemplatesConfig(tplId);
-            if (dr != null)
-            {
-                this.tbHeadDir.Text = dr["HeadDir"].ToStringNull();
-                this.tbHeadNach.Text = dr["HeadNach"].ToStringNull() + MainForm.headNach;
-                this.tbBodyUp.Text = dr["BodyUp"].ToStringNull();
-                this.tbBodyDown.Text = dr["BodyDown"].ToStringNull();
-                this.tbAvtor.Text = MainForm.name;
+            _note.Templates = cbNoteTemplate.SelectedValue.ToInt();
+            _note.Approvers = null;
+            _template = new NoteTemplate(_note.Templates);
 
-                setControlForTemplate(dr);
-            }
+            this.tbHeadDir.Text = _template.HeadDir;
+            this.tbHeadNach.Text = _template.HeadNach + Program.User.HeadNach;
+            this.tbBodyUp.Text = _template.BodyUp;
+            this.tbBodyDown.Text = _template.BodyDown;
+            this.tbAvtor.Text = Program.User.Name;
+
+            setControlForTemplate();
         }
 
         // контролы, зависящие от шаблона
         // row - строка из NoteTemplates
-        private void setControlForTemplate(DataRow dr)
+        private void setControlForTemplate()
         {
-            this.Help = dr["Help"].ToStringNull();
+            this.Help = _template.Help;
 
             // дополнительные табличные данные
-            if (dr["TableColums"].ToInt() == 0)
+            if (_template.TableColums == 0)
             {
                 dgvTable.Visible = false;
                 tbBodyDown.Visible = false;
@@ -260,53 +268,287 @@ namespace FlyDoc.Forms
                 // скрыть все столбцы
                 foreach (DataGridViewColumn item in dgvTable.Columns) item.Visible = false;
                 // заполнить коллекцию полей
-                _note.ResetIncludeFields(dr);
+                _note.ResetIncludeFields(_template);
                 // отобразить только те, которые есть в шаблоне
                 foreach (string colName in _note.IncludeFields)
                 {
+                    if (colName.IsNull()) continue;
                     dgvTable.Columns[colName].Visible = true;
                 }
             }
 
-            btnApprDir.Visible = dr["ApprDir"].ToBool();
-            btnApprComdir.Visible = dr["ApprComdir"].ToBool();
-            btnApprSBNach.Visible = dr["ApprSBNach"].ToBool();
-            btnApprSB.Visible = dr["ApprSB"].ToBool();
-            btnApprKasa.Visible = dr["ApprKasa"].ToBool();
-            btnApprNach.Visible = dr["ApprNach"].ToBool();
-            btnApprFin.Visible = dr["ApprFin"].ToBool();
-            btnApprDostavka.Visible = dr["ApprDostavka"].ToBool();
-            btnApprEnerg.Visible = dr["ApprEnerg"].ToBool();
-            btnApprSklad.Visible = dr["ApprSklad"].ToBool();
-            btnApprBuh.Visible = dr["ApprBuh"].ToBool();
-            btnApprASU.Visible = dr["ApprASU"].ToBool();
+            // если в служебке поле Approvers пустое, то взять согласователей из шаблона
+            if (_note.Approvers.IsNull()) setApproversFromTemplate();
+            // и обновить кнопки
+            setApprButtonsVisible();
         }
 
         #region btn_approved_and_notApproved
+        private void setApproversFromTemplate()
+        {
+            string sBuf = "";
+            PropertyInfo[] pInfos = typeof(NoteTemplate).GetProperties(BindingFlags.Instance | BindingFlags.Public);
+            foreach (PropertyInfo item in pInfos)
+            {
+                if ((item.Name.StartsWith("Appr")) && (Convert.ToBoolean(item.GetValue(_template, null))))
+                {
+                    if (sBuf.Length > 0) sBuf += ";";
+                    sBuf += item.Name;
+                }
+            }
+            _note.Approvers = sBuf;
+        }
+
+        private void setApprButtonsVisible()
+        {
+            // сначал скрыть все кнопки согласователей, кроме автора
+            foreach (Control item in grpApprove.Controls)
+            {
+                if ((item is Button) && (item.Name.StartsWith("btnAppr"))) item.Visible = false;
+            }
+
+            // разобрать Approvers в массив
+            _approversList = (_note.Approvers ?? "").Split(';');
+            updateApprDependFields();
+
+            string key;
+            foreach (string item in _approversList)
+            {
+                key = "btn" + item;
+                if (grpApprove.Controls.ContainsKey(key)) grpApprove.Controls[key].Visible = true;
+            }
+
+            // статус кнопок согласователей
+            setApprButtonState();
+        }
+
+        private void setApprButtonsEnable(bool enable, params string[] exceptButtonNames)
+        {
+            foreach (string item in _approversList)
+            {
+                if ((exceptButtonNames != null) && (exceptButtonNames.Contains(item))) continue;
+
+                string btnName = "btn" + item;
+                PropertyInfo pi = _propInfoUser.FirstOrDefault(p => p.Name == item);
+                bool itemValue = (bool)pi.GetValue(Program.User, null);
+                grpApprove.Controls[btnName].Enabled = enable && itemValue;
+            }
+
+        }
+
+        // клик по кнопке согласователя
         private void btnApprField_Click(object sender, EventArgs e)
         {
             setApprFieldByButton((Button)sender);
         }
-        
+
         private void setApprFieldByButton(Button button)
         {
             string apprFieldName = button.Tag.ToString();
-            PropertyInfo propInfo = _note.GetType().GetProperty(apprFieldName);
-            if (button.BackColor == Color.Lime)
+            bool apprValue = getNoteApprFieldValue(apprFieldName);
+            apprValue = !apprValue;
+            setNoteApprFieldValue(apprFieldName, apprValue);
+
+            updateApprDependFields();
+
+            // кнопки
+            setApprButtonState();
+            if (!apprValue)
             {
                 button.BackColor = Color.Magenta;
-                propInfo.SetValue(_note, false, null);
+            }
+        }
+
+        private void btnEditApprovers_Click(object sender, EventArgs e)
+        {
+            string preValue = _note.Approvers;
+
+            NoteApproversEdit frm = new NoteApproversEdit();
+            frm.ApproversText = _note.Approvers;
+
+            frm.ShowDialog();
+
+            // получить и распарсить новый список согласователей
+            if (frm.ApproversText != _note.Approvers)
+            {
+                _note.Approvers = frm.ApproversText;
+                // обновить кнопки
+                setApprButtonsVisible();
+            }
+        }
+
+        // обновить зависимые поля согласователей
+        private void updateApprDependFields()
+        {
+            // поле ApprAll зависит от значения всех согласователей
+            bool bVal = isAllApproved();
+            if (_note.ApprAll != bVal) _note.ApprAll = bVal;
+        }
+
+        // основная процедура отображающая состояние кнопок согласования в следующем порядке:
+        // Автор - Нач.АСУ - все остальные, кроме Директора - Директор
+        // с учетом прав доступа из Access
+        private void setApprButtonState()
+        {
+            // цветность кнопок согласователей
+            foreach (string item in _approversList)
+            {
+                string btnName = "btn" + item;
+                if ((grpApprove.Controls.ContainsKey(btnName)) && getNoteApprFieldValue(item))
+                {
+                    setBtnLime((Button)grpApprove.Controls[btnName]);
+                }
+            }
+            // надпись, что служебка ВСЕМИ утверждена
+            labelApprAll.Visible = _note.ApprAll;
+
+            // проверка по нисходящей: Автор - Директор - Нач.АСУ
+            // настройка контролов: 
+            //      1. есть ли в согласователях; 
+            //      2. имеет ли право на согласование (доступность кнопки); 
+            //      3. доступность подчиненных согласователей
+
+            // АВТОР
+            // доступность кнопки
+            if (Program.User.ApprAvtor)
+            {
+                btnApprAvtor.Enabled = isAllNotApproved();
             }
             else
             {
-                button.BackColor = Color.Lime;
-                propInfo.SetValue(_note, true, null);
+                btnApprAvtor.Enabled = false;
+            }
+            // контролы, зависимые от согласования автором - тело служебки, кнопки всех остальных согласователей (все они находятся в группе grpApprove)
+            if (_note.ApprAvtor == false)
+            {
+                grpApprove.Enabled = false;
+                setBodyControlsEnable(true);
+                return;
+            }
+            else
+            {
+                grpApprove.Enabled = true;
+                setBodyControlsEnable(false);
+                setBtnLime(btnApprAvtor);
+            }
+
+            // ДИРЕКТОР
+            if (_approversList.Contains("ApprDir"))
+            {
+                // доступность кнопки
+                if (Program.User.ApprDir)
+                {
+                    btnApprDir.Enabled = isAllApproved("ApprDir");
+                }
+                else
+                {
+                    btnApprDir.Enabled = false;
+                }
+                // доступность зависимых согласователей
+                bool dependApprEnable = !_note.ApprDir;
+                setApprButtonsEnable(dependApprEnable, "ApprDir");
+            }
+                
+
+            // НАЧ.АСУ
+            if (_approversList.Contains("ApprASU"))
+            {
+                // доступность кнопки
+                if (Program.User.ApprASU)
+                {
+                    btnApprASU.Enabled = isAllNotApproved("ApprASU");
+                }
+                else
+                {
+                    btnApprASU.Enabled = false;
+                }
+                // доступность зависимых согласователей
+                bool dependApprEnable = _note.ApprASU;
+                setApprButtonsEnable(dependApprEnable, "ApprASU", "ApprDir");
+            }
+
+            // есть в согласователях кто-то еще, кроме Дир и НачАСУ
+            List<string> apprRest = _approversList.Except(new string[] { "ApprASU", "ApprDir" }).ToList();
+            if (apprRest.Count > 0) 
+            {
+                foreach (string item in apprRest)
+                {
+                    string btnName = "btn" + item;
+                    PropertyInfo pi = _propInfoUser.FirstOrDefault(p => p.Name == item);
+                    bool itemValue = (bool)pi.GetValue(Program.User, null);
+                    grpApprove.Controls[btnName].Enabled = itemValue;
+                }
             }
         }
+
+        // возвращает true, если ВСЕ согласовали (кроме exceptionApprName)
+        private bool isAllApproved(string exceptionApprName = null)
+        {
+            bool bVal = true;
+            foreach (string item in _approversList)
+            {
+                if ((exceptionApprName.IsNull() == false) && item.Equals(exceptionApprName)) continue;
+                bVal &= getNoteApprFieldValue(item);
+            }
+
+            return bVal;
+        }
+        // возвращает true, если никто еще не согласовал (кроме exceptionApprName)
+        private bool isAllNotApproved(string exceptionApprName = null)
+        {
+            bool bVal = false;
+            foreach (string item in _approversList)
+            {
+                if ((exceptionApprName.IsNull() == false) && item.Equals(exceptionApprName)) continue;
+                bVal |= getNoteApprFieldValue(item);
+            }
+
+            return (bVal == false);
+        }
+
+        // получить статус согласователя по имени поля из _note
+        private bool getNoteApprFieldValue(string apprFieldsName)
+        {
+            PropertyInfo pi = _propInfoNote.FirstOrDefault(p => p.Name == apprFieldsName);
+            if (pi != null)
+                return System.Convert.ToBoolean(pi.GetValue(_note, null));
+            else
+                return false;
+        }
+
+        // установить значение поля согласователя в _note по названию поля
+        private void setNoteApprFieldValue(string apprFieldName, bool value)
+        {
+            PropertyInfo pi = _propInfoNote.FirstOrDefault(p => p.Name == apprFieldName);
+            if (pi != null) pi.SetValue(_note, value, null);
+        }
+
+        private bool getAccessApprValue(string apprFieldsName)
+        {
+            PropertyInfo pi = _propInfoUser.FirstOrDefault(p => p.Name == apprFieldsName);
+            if (pi != null)
+                return System.Convert.ToBoolean(pi.GetValue(Program.User, null));
+            else
+                return false;
+        }
+
+        private void setBtnLime(Button btn)
+        {
+            btn.BackColor = Color.FromName("Lime");
+        }
+
+        private void setBodyControlsEnable(bool isEnable)
+        {
+            tbBodyUp.Enabled = isEnable;
+            dgvTable.Enabled = isEnable;
+            tbBodyDown.Enabled = isEnable;
+        }
+
         #endregion
 
         private void btnHelp_Click(object sender, EventArgs e)
         {
+            AppFuncs.WriteLogTraceMessage(" - press button 'Довiдка'");
             MessageBox.Show(Help, "Повідомлення", MessageBoxButtons.OK, MessageBoxIcon.Information);
         }
 
@@ -315,6 +557,8 @@ namespace FlyDoc.Forms
 
         private void btnPrint_Click(object sender, EventArgs e)
             {
+            AppFuncs.WriteLogTraceMessage(" - press button 'Друк'");
+
             string mydocu = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
             string fileName = string.Format(@"{0}\doc_{1}.pdf", mydocu, _note.Id);
             string sText;
@@ -367,7 +611,6 @@ namespace FlyDoc.Forms
                     if (dgvTable.Visible == true)
                     {
                         List<PropertyInfo> propInfos = typeof(NoteInclude).GetProperties().ToList();
-                        PropertyInfo propInfo;
 
                         int colVisCount = 0;
                         foreach (DataGridViewColumn col in dgvTable.Columns) if (col.Visible) colVisCount++;
@@ -436,14 +679,17 @@ namespace FlyDoc.Forms
                     }
 
                     document.Close();
+                    AppFuncs.WriteLogTraceMessage($"file '{fileName}' created success");
                 }
             }
             catch (DocumentException ex)
             {
+                AppFuncs.WriteLogErrorMessage(ex.ToString());
                 Console.WriteLine(ex.Message);
             }
             catch (IOException ex)
             {
+                AppFuncs.WriteLogErrorMessage(ex.ToString());
                 Console.WriteLine(ex.Message);
             }
            
@@ -454,9 +700,14 @@ namespace FlyDoc.Forms
 
         private void dgvTable_DataError(object sender, DataGridViewDataErrorEventArgs e)
         {
+            AppFuncs.WriteLogErrorMessage("Ошибка ввода: " + e.Exception.Message);
+
             MessageBox.Show("Ошибка ввода: " + e.Exception.Message, "Проверка ввода", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
         }
 
-        
+        private void btnCancel_Click(object sender, EventArgs e)
+        {
+
+        }
     }  // class
 }

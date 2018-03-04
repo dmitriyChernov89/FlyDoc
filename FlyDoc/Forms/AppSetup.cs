@@ -7,6 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Windows.Forms;
 using FlyDoc.Model;
+using FlyDoc.Lib;
 
 namespace FlyDoc.Views
 {

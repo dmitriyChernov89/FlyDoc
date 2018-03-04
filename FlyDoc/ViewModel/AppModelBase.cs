@@ -5,11 +5,13 @@ using System.Linq;
 using System.Text;
 using System.Windows.Forms;
 using FlyDoc;
-
+using FlyDoc.Lib;
+using FlyDoc.Model;
+using System.Reflection;
 
 namespace FlyDoc.ViewModel
 {
-    public abstract class AppModelBase 
+    public abstract class AppModelBase
     {
         #region fields
         private bool isExistIdColumn = false;
@@ -17,7 +19,16 @@ namespace FlyDoc.ViewModel
         protected Form _viewForm;
         protected DataTable _dataTable;
         protected DataGridView _dataGrid;
+
+        protected DataGridViewCellFormattingEventHandler OnCellFormattingHandler;
         #endregion
+
+        public bool AllowEdit;
+
+        public AppModelBase()
+        {
+            AllowEdit = false;
+        }
 
         #region properties
         public DataGridView DataGrid
@@ -25,8 +36,14 @@ namespace FlyDoc.ViewModel
             get { return _dataGrid; }
             set {
                 _dataGrid = value;
+
                 _dataGrid.CellDoubleClick += _dataGrid_CellDoubleClick;
                 _dataGrid.KeyDown += _dataGrid_KeyDown;
+                // форматирование ячейки
+                if (OnCellFormattingHandler != null)
+                {
+                    _dataGrid.CellFormatting += OnCellFormattingHandler;
+                }
             }
         }
 
@@ -49,7 +66,7 @@ namespace FlyDoc.ViewModel
 
         private void _dataGrid_CellDoubleClick(object sender, DataGridViewCellEventArgs e)
         {
-            EditObject();
+            if (e.RowIndex > -1) EditObject();
         }
 
         public Form ViewForm
@@ -74,11 +91,16 @@ namespace FlyDoc.ViewModel
         protected DataGridViewRow getSelectedDataRow()
         {
             DataGridViewRow retVal = null;
-            if ((_dataGrid != null) && ((_dataGrid.SelectedRows.Count > 0)))
+            if ((_dataGrid != null) && (_dataGrid.Rows.Count > 0) && ((_dataGrid.SelectedRows.Count > 0)))
             {
                 retVal = _dataGrid.SelectedRows[0];
             }
             return retVal;
+        }
+
+        public DataGridViewRow GetSelectedDataRow()
+        {
+            return getSelectedDataRow();
         }
 
         protected void selectGridRowById(int Id)
@@ -157,6 +179,103 @@ namespace FlyDoc.ViewModel
         }
 
         #endregion
+
+        #region сравнение наборов сущностей модели приложения
+        protected virtual void onRemoveFunc(int id) { }
+        protected virtual void onAddFunc(object addEntity) { }
+        protected virtual void onUpdateFunc(object updateEntity) { }
+
+        // поиск различия между двумя наборами элементов
+        // keepItems - набор, хранящийся в модели
+        // dbItems - набор, получаемый из БД по таймеру
+        internal bool GetItemsListDifference<T>(List<T> keepItems, List<T> dbItems) where T : IDBInfo
+        {
+            bool retVal = false;
+            // 1. удалить из keepItems записи, которых уже нет в БД
+            //    собрать из dbItems все Id
+            List<int> dbIds = new List<int>();
+            foreach (T dbi in dbItems) { dbIds.Add(dbi.Id); }
+            int[] notExistIds = keepItems.Select(e => e.Id).Except(dbIds).ToArray();
+            if (notExistIds.Length > 0)
+            {
+                keepItems.RemoveAll(e =>
+                {
+                    if (notExistIds.Contains(e.Id))
+                    {
+                        onRemoveFunc(e.Id);
+                        return true;
+                    }
+                    else
+                        return false;
+                });
+                retVal = true;
+            }
+
+            // обновить набор keepItems
+            T item; int id;
+            foreach (T dbItem in dbItems)
+            {
+                id = dbItem.Id;
+                item = keepItems.FirstOrDefault(e => e.Id == id);
+                // добавить
+                if (item == null)
+                {
+                    keepItems.Add(dbItem);
+                    onAddFunc(item);
+                    retVal = true;
+                }
+                // обновить
+                else
+                {
+                    if (updateItemFromOtherOne(item, dbItem))
+                    {
+                        onUpdateFunc(item);
+                        retVal = true;
+                    }
+                }
+            }
+
+            return retVal;
+        }
+        // сравнение двух сущностей по полям
+        private bool updateItemFromOtherOne<T>(T itemTo, T itemFrom)
+        {
+            if ((itemTo == null) || (itemFrom == null) || !(itemTo.GetType().Equals(itemFrom.GetType()))) return false;
+
+            bool retVal = false;
+            List<string> updFields = new List<string>();
+            Type tItem = typeof(T), tField;
+            PropertyInfo[] pInfo = tItem.GetProperties(BindingFlags.Public | BindingFlags.Instance);
+            foreach (PropertyInfo pi in pInfo)
+            {
+                var v1 = pi.GetValue(itemTo, null);
+                var v2 = pi.GetValue(itemFrom, null);
+                tField = pi.PropertyType;
+                if ((tField.IsValueType) || (tField.Name=="String"))
+                {
+                    if ((tField.Name == "String") && (v1 == null) && (v2 == null)) continue;
+
+                    if (((v1 == null) && (v2 != null))
+                        || ((v1 != null) && (v2 == null))
+                        || !v1.Equals(v2))
+                    {
+                        updFields.Add(pi.Name);
+                        pi.SetValue(itemTo, v2, null);
+                        retVal = true;
+                    }
+                }
+            }
+            return retVal;
+        }
+
+        #endregion
+
+
+        protected void notAllowEditAction()
+        {
+            AppFuncs.WriteLogTraceMessage(" - редагування заборонено !!");
+            MessageBox.Show("Редагування заборонено.", "Редагування", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
+        }
 
     }
 }

@@ -30,13 +30,8 @@
         {
             this.components = new System.ComponentModel.Container();
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(MainForm));
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle1 = new System.Windows.Forms.DataGridViewCellStyle();
-            this.btexit = new System.Windows.Forms.Button();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle2 = new System.Windows.Forms.DataGridViewCellStyle();
             this.imageList1 = new System.Windows.Forms.ImageList(this.components);
-            this.btphone = new System.Windows.Forms.Button();
-            this.btwork = new System.Windows.Forms.Button();
-            this.btschedule = new System.Windows.Forms.Button();
-            this.btnotes = new System.Windows.Forms.Button();
             this.tabControlMain = new System.Windows.Forms.TabControl();
             this.tpgNotes = new System.Windows.Forms.TabPage();
             this.dgvNotes = new System.Windows.Forms.DataGridView();
@@ -81,7 +76,13 @@
             this.label2 = new System.Windows.Forms.Label();
             this.btnDeleteDepartmentFilter = new System.Windows.Forms.Button();
             this.panelControl = new System.Windows.Forms.Panel();
+            this.pictureBox1 = new System.Windows.Forms.PictureBox();
+            this.btnotes = new System.Windows.Forms.Button();
+            this.btschedule = new System.Windows.Forms.Button();
+            this.btexit = new System.Windows.Forms.Button();
             this.btconfig = new System.Windows.Forms.Button();
+            this.btwork = new System.Windows.Forms.Button();
+            this.btphone = new System.Windows.Forms.Button();
             this.toolTip1 = new System.Windows.Forms.ToolTip(this.components);
             this.btnNew = new System.Windows.Forms.Button();
             this.btnCopy = new System.Windows.Forms.Button();
@@ -116,16 +117,8 @@
             this.tpgDepartments.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.dgvDepartments)).BeginInit();
             this.panelControl.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
             this.SuspendLayout();
-            // 
-            // btexit
-            // 
-            resources.ApplyResources(this.btexit, "btexit");
-            this.btexit.DialogResult = System.Windows.Forms.DialogResult.Cancel;
-            this.btexit.ImageList = this.imageList1;
-            this.btexit.Name = "btexit";
-            this.btexit.UseVisualStyleBackColor = true;
-            this.btexit.Click += new System.EventHandler(this.btexit_Click);
             // 
             // imageList1
             // 
@@ -141,38 +134,6 @@
             this.imageList1.Images.SetKeyName(7, "Overtime-50.ico");
             this.imageList1.Images.SetKeyName(8, "PDF-50.ico");
             this.imageList1.Images.SetKeyName(9, "Print-50.ico");
-            // 
-            // btphone
-            // 
-            resources.ApplyResources(this.btphone, "btphone");
-            this.btphone.ImageList = this.imageList1;
-            this.btphone.Name = "btphone";
-            this.btphone.UseVisualStyleBackColor = true;
-            this.btphone.Click += new System.EventHandler(this.btphone_Click);
-            // 
-            // btwork
-            // 
-            resources.ApplyResources(this.btwork, "btwork");
-            this.btwork.ImageList = this.imageList1;
-            this.btwork.Name = "btwork";
-            this.btwork.UseVisualStyleBackColor = true;
-            this.btwork.Click += new System.EventHandler(this.btwork_Click);
-            // 
-            // btschedule
-            // 
-            resources.ApplyResources(this.btschedule, "btschedule");
-            this.btschedule.ImageList = this.imageList1;
-            this.btschedule.Name = "btschedule";
-            this.btschedule.UseVisualStyleBackColor = true;
-            this.btschedule.Click += new System.EventHandler(this.btschedule_Click);
-            // 
-            // btnotes
-            // 
-            resources.ApplyResources(this.btnotes, "btnotes");
-            this.btnotes.ImageList = this.imageList1;
-            this.btnotes.Name = "btnotes";
-            this.btnotes.UseVisualStyleBackColor = true;
-            this.btnotes.Click += new System.EventHandler(this.btnotes_Click);
             // 
             // tabControlMain
             // 
@@ -199,6 +160,7 @@
             this.dgvNotes.AllowUserToAddRows = false;
             this.dgvNotes.AllowUserToDeleteRows = false;
             this.dgvNotes.AllowUserToOrderColumns = true;
+            this.dgvNotes.AllowUserToResizeRows = false;
             this.dgvNotes.AutoSizeColumnsMode = System.Windows.Forms.DataGridViewAutoSizeColumnsMode.Fill;
             this.dgvNotes.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
             this.dgvNotes.ContextMenuStrip = this.contextMenuStrip1;
@@ -208,7 +170,7 @@
             this.dgvNotes.ReadOnly = true;
             this.dgvNotes.RowHeadersVisible = false;
             this.dgvNotes.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.FullRowSelect;
-            this.dgvNotes.CellContentClick += new System.Windows.Forms.DataGridViewCellEventHandler(this.dgvNotes_CellContentClick);
+            this.dgvNotes.SelectionChanged += new System.EventHandler(this.dgvNotes_SelectionChanged);
             // 
             // contextMenuStrip1
             // 
@@ -267,6 +229,7 @@
             // 
             this.dgvSchedule.AllowUserToAddRows = false;
             this.dgvSchedule.AllowUserToDeleteRows = false;
+            this.dgvSchedule.AllowUserToResizeRows = false;
             this.dgvSchedule.AutoSizeColumnsMode = System.Windows.Forms.DataGridViewAutoSizeColumnsMode.Fill;
             this.dgvSchedule.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
             this.dgvSchedule.ContextMenuStrip = this.contextMenuStrip1;
@@ -321,14 +284,18 @@
             // 
             this.dgvPhonebook.AllowUserToAddRows = false;
             this.dgvPhonebook.AllowUserToDeleteRows = false;
+            this.dgvPhonebook.AllowUserToOrderColumns = true;
+            this.dgvPhonebook.AllowUserToResizeRows = false;
             this.dgvPhonebook.AutoSizeColumnsMode = System.Windows.Forms.DataGridViewAutoSizeColumnsMode.Fill;
+            this.dgvPhonebook.ClipboardCopyMode = System.Windows.Forms.DataGridViewClipboardCopyMode.EnableWithoutHeaderText;
             this.dgvPhonebook.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
             resources.ApplyResources(this.dgvPhonebook, "dgvPhonebook");
             this.dgvPhonebook.MultiSelect = false;
             this.dgvPhonebook.Name = "dgvPhonebook";
             this.dgvPhonebook.ReadOnly = true;
             this.dgvPhonebook.RowHeadersVisible = false;
-            this.dgvPhonebook.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.FullRowSelect;
+            this.dgvPhonebook.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.CellSelect;
+            this.dgvPhonebook.PreviewKeyDown += new System.Windows.Forms.PreviewKeyDownEventHandler(this.dgvPhonebook_PreviewKeyDown);
             // 
             // panel2
             // 
@@ -425,16 +392,17 @@
             // 
             this.dgvUsers.AllowUserToAddRows = false;
             this.dgvUsers.AllowUserToDeleteRows = false;
+            this.dgvUsers.AllowUserToResizeRows = false;
             resources.ApplyResources(this.dgvUsers, "dgvUsers");
             this.dgvUsers.AutoSizeColumnsMode = System.Windows.Forms.DataGridViewAutoSizeColumnsMode.Fill;
-            dataGridViewCellStyle1.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleCenter;
-            dataGridViewCellStyle1.BackColor = System.Drawing.SystemColors.Control;
-            dataGridViewCellStyle1.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-            dataGridViewCellStyle1.ForeColor = System.Drawing.SystemColors.WindowText;
-            dataGridViewCellStyle1.SelectionBackColor = System.Drawing.SystemColors.Highlight;
-            dataGridViewCellStyle1.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
-            dataGridViewCellStyle1.WrapMode = System.Windows.Forms.DataGridViewTriState.True;
-            this.dgvUsers.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle1;
+            dataGridViewCellStyle2.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleCenter;
+            dataGridViewCellStyle2.BackColor = System.Drawing.SystemColors.Control;
+            dataGridViewCellStyle2.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
+            dataGridViewCellStyle2.ForeColor = System.Drawing.SystemColors.WindowText;
+            dataGridViewCellStyle2.SelectionBackColor = System.Drawing.SystemColors.Highlight;
+            dataGridViewCellStyle2.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
+            dataGridViewCellStyle2.WrapMode = System.Windows.Forms.DataGridViewTriState.True;
+            this.dgvUsers.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle2;
             this.dgvUsers.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
             this.dgvUsers.ContextMenuStrip = this.contextMenuStrip1;
             this.dgvUsers.MultiSelect = false;
@@ -531,6 +499,7 @@
             // 
             // panelControl
             // 
+            this.panelControl.Controls.Add(this.pictureBox1);
             this.panelControl.Controls.Add(this.btnotes);
             this.panelControl.Controls.Add(this.btschedule);
             this.panelControl.Controls.Add(this.btexit);
@@ -541,6 +510,41 @@
             this.panelControl.Name = "panelControl";
             this.panelControl.MouseMove += new System.Windows.Forms.MouseEventHandler(this.panelControl_MouseMove);
             // 
+            // pictureBox1
+            // 
+            this.pictureBox1.BackColor = System.Drawing.Color.Transparent;
+            this.pictureBox1.Image = global::FlyDoc.Properties.Resources.icons8_about_32;
+            resources.ApplyResources(this.pictureBox1, "pictureBox1");
+            this.pictureBox1.Name = "pictureBox1";
+            this.pictureBox1.TabStop = false;
+            this.toolTip1.SetToolTip(this.pictureBox1, resources.GetString("pictureBox1.ToolTip"));
+            this.pictureBox1.Click += new System.EventHandler(this.pictureBox1_Click);
+            // 
+            // btnotes
+            // 
+            resources.ApplyResources(this.btnotes, "btnotes");
+            this.btnotes.ImageList = this.imageList1;
+            this.btnotes.Name = "btnotes";
+            this.btnotes.UseVisualStyleBackColor = true;
+            this.btnotes.Click += new System.EventHandler(this.btnotes_Click);
+            // 
+            // btschedule
+            // 
+            resources.ApplyResources(this.btschedule, "btschedule");
+            this.btschedule.ImageList = this.imageList1;
+            this.btschedule.Name = "btschedule";
+            this.btschedule.UseVisualStyleBackColor = true;
+            this.btschedule.Click += new System.EventHandler(this.btschedule_Click);
+            // 
+            // btexit
+            // 
+            resources.ApplyResources(this.btexit, "btexit");
+            this.btexit.DialogResult = System.Windows.Forms.DialogResult.Cancel;
+            this.btexit.ImageList = this.imageList1;
+            this.btexit.Name = "btexit";
+            this.btexit.UseVisualStyleBackColor = true;
+            this.btexit.Click += new System.EventHandler(this.btexit_Click);
+            // 
             // btconfig
             // 
             resources.ApplyResources(this.btconfig, "btconfig");
@@ -548,6 +552,22 @@
             this.btconfig.Name = "btconfig";
             this.btconfig.UseVisualStyleBackColor = true;
             this.btconfig.Click += new System.EventHandler(this.btconfig_Click);
+            // 
+            // btwork
+            // 
+            resources.ApplyResources(this.btwork, "btwork");
+            this.btwork.ImageList = this.imageList1;
+            this.btwork.Name = "btwork";
+            this.btwork.UseVisualStyleBackColor = true;
+            this.btwork.Click += new System.EventHandler(this.btwork_Click);
+            // 
+            // btphone
+            // 
+            resources.ApplyResources(this.btphone, "btphone");
+            this.btphone.ImageList = this.imageList1;
+            this.btphone.Name = "btphone";
+            this.btphone.UseVisualStyleBackColor = true;
+            this.btphone.Click += new System.EventHandler(this.btphone_Click);
             // 
             // btnNew
             // 
@@ -615,8 +635,7 @@
             // 
             // refreshDBTimer
             // 
-            //this.refreshDBTimer.Interval = 5000;
-            //this.refreshDBTimer.Tick += new System.EventHandler(this.refreshDBTimer_Tick);
+            this.refreshDBTimer.Tick += new System.EventHandler(this.refreshDBTimer_Tick);
             // 
             // MainForm
             // 
@@ -641,6 +660,7 @@
             this.Controls.Add(this.btnNew);
             this.Controls.Add(this.panelControl);
             this.Controls.Add(this.tabControlMain);
+            this.HelpButton = true;
             this.Name = "MainForm";
             this.Load += new System.EventHandler(this.FlyDoc_Load);
             this.tabControlMain.ResumeLayout(false);
@@ -669,6 +689,7 @@
             this.tpgDepartments.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)(this.dgvDepartments)).EndInit();
             this.panelControl.ResumeLayout(false);
+            ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -738,6 +759,7 @@
         public System.Windows.Forms.TextBox textBox3;
         private System.Windows.Forms.Label label5;
         private System.Windows.Forms.Timer refreshDBTimer;
+        private System.Windows.Forms.PictureBox pictureBox1;
     }
 }
 

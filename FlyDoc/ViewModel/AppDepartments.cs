@@ -1,4 +1,5 @@
 ﻿using FlyDoc.Forms;
+using FlyDoc.Lib;
 using FlyDoc.Model;
 using System;
 using System.Collections.Generic;
@@ -24,22 +25,25 @@ namespace FlyDoc.ViewModel
             int id = getSelectedId();
             if (id != -1)
             {
-                sqlText = string.Format("SELECT * FROM Department WHERE (Id = {0})",id);
-                DataTable dtFrom = DBContext.GetQueryTable(sqlText);
-                if ((dtFrom != null) && (dtFrom.Rows.Count > 0))
+                using (DBContext db = new DBContext())
                 {
-                    DataTable dt = DBContext.GetQueryTable("SELECT Max(Id) FROM Department");
-                    DataRow dr = dtFrom.Rows[0];
-                    int newId = (int)dt.Rows[0][0] + 1;
-
-                    sqlText = string.Format("INSERT INTO Department (Id, Name) VALUES ({0}, '{1}')", newId, dr["Name"]);
-
-                    if (DBContext.Execute(sqlText))
+                    sqlText = string.Format("SELECT * FROM Department WHERE (Id = {0})", id);
+                    DataTable dtFrom = db.GetQueryTable(sqlText);
+                    if ((dtFrom != null) && (dtFrom.Rows.Count > 0))
                     {
-                        this.LoadDataToGrid();
-                        base.selectGridRowById(newId);
+                        DataTable dt = db.GetQueryTable("SELECT Max(Id) FROM Department");
+                        DataRow dr = dtFrom.Rows[0];
+                        int newId = (int)dt.Rows[0][0] + 1;
+
+                        sqlText = $"INSERT INTO Department (Id, Name) VALUES ({newId}, '{dr["Name"]}'); SELECT @@IDENTITY";
+
+                        if ((int)db.ExecuteScalar(sqlText) > 0)
+                        {
+                            this.LoadDataToGrid();
+                            base.selectGridRowById(newId);
+                        }
+                        base.CopyToNewObject();
                     }
-                    base.CopyToNewObject();
                 }
             }
             else
@@ -56,10 +60,17 @@ namespace FlyDoc.ViewModel
                 DialogResult result = MessageBox.Show("Ви впевнені що хочете видалити поточний відділ?", "Видалення відділу", MessageBoxButtons.YesNoCancel, MessageBoxIcon.Question, MessageBoxDefaultButton.Button2);
                 if (result == DialogResult.Yes)
                 {
-                    if (DBContext.DeleteDepartment(id))
+                    DataGridViewRow dgvRow = base.getSelectedDataRow();
+                    string name = dgvRow.Cells["Name"].ToString();
+                    string logMsg = $"Видалення вiддiлу {id}";
+                    AppFuncs.WriteLogTraceMessage(logMsg + "...");
+
+                    bool dbResult = DBContext.DeleteEntityById(Department._dbTableName, id);
+                    if (dbResult)
                     {
                         base.DeleteObject();
                     }
+                    AppFuncs.deleteFromDBResult(logMsg, dbResult);
                 }
             }
             else
@@ -72,13 +83,16 @@ namespace FlyDoc.ViewModel
         {
             DepartmentForm frm = new DepartmentForm();
             DialogResult result = frm.ShowDialog();
+            AppFuncs.dialogCloseResult(frm.GetType().Name, result);
             if ((result == DialogResult.OK) && (frm.Department != null))
             {
-                if (DBContext.InsertDepartment(frm.Department))
+                bool dbResult = DBContext.InsertEntity(frm.Department);
+                if (dbResult)
                 {
                     this.LoadDataToGrid();
                     base.selectGridRowById(frm.Department.Id);
                 }
+                AppFuncs.saveToDBResult(dbResult);
             }
             frm.Dispose();
 
@@ -96,13 +110,16 @@ namespace FlyDoc.ViewModel
                 };
                 DepartmentForm frm = new DepartmentForm(dep);
                 DialogResult result = frm.ShowDialog();
+                AppFuncs.dialogCloseResult(frm.GetType().Name, result);
                 if (result == DialogResult.OK)
                 {
-                    if (DBContext.UpdateDepartment(frm.Department, editId))
+                    bool dbResult = DBContext.UpdateEntity(frm.Department);
+                    if (dbResult)
                     {
                         this.LoadDataToGrid();
                         base.selectGridRowById(frm.Department.Id);
                     }
+                    AppFuncs.saveToDBResult(dbResult);
                 }
                 base.EditObject();
             }
@@ -110,6 +127,8 @@ namespace FlyDoc.ViewModel
 
         public override void LoadDataToGrid()
         {
+            AppFuncs.WriteLogTraceMessage($" - {this.GetType().Name}.LoadDataToGrid()");
+
             _dataTable = DBContext.GetDepartments();
             base.LoadDataToGrid();
 
