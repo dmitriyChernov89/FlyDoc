@@ -537,7 +537,7 @@ namespace FlyDoc.Forms
             btn.BackColor = Color.FromName("Lime");
         }
 
-        private void setBodyControlsEnable(bool isEnable)
+        private void setBodyControlsEnable(bool isEnable)  
         {
             tbBodyUp.Enabled = isEnable;
             dgvTable.Enabled = isEnable;
