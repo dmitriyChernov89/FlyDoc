@@ -203,6 +203,7 @@ namespace FlyDoc.ViewModel
                         bool dbResult = DBContext.DeleteNotes(id);
                         if (dbResult)
                         {
+                            // TODO сохранение удаленной служебки в таблице NotesDeleted
                             base.DeleteObject();
                         }
                         AppFuncs.deleteFromDBResult(logMsg, dbResult);

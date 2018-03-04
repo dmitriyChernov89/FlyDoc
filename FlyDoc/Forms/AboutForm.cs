@@ -104,7 +104,7 @@ namespace FlyDoc.Forms
 
         private void linkLabelHistory_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
         {
-            // TODO
+            // TODO сделать вывод истории в отдельной форме
             MessageBox.Show("Under construction", $"History of '{AssemblyProduct}'", MessageBoxButtons.OK, MessageBoxIcon.Information);
         }
     }
