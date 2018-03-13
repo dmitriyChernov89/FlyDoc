@@ -69,10 +69,11 @@ namespace FlyDoc
             {
                 // -machine KC-500-07 -user d.chernov
                 //MachineName = "KC-106-31"; UserName = "kasir-kc";
-                MachineName = "KC-500-07"; UserName = "d.chernov";
+               // MachineName = "KC-500-07"; UserName = "d.chernov";
                 //MachineName = "KC-127-01"; UserName = "nachsb";
                 //  MachineName = "KC-114-06"; UserName = "kc-asistdir";
                 //MachineName = "KC-114-06"; UserName = "kc-komdir";
+                MachineName = "KC-500-01"; UserName = "v.basenko";
                 _user = new User(MachineName, UserName);
             }
 #endif

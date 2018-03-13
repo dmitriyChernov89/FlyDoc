@@ -9,7 +9,7 @@ using FlyDoc.Lib;
 using FlyDoc.Model;
 using System.Reflection;
 
-namespace FlyDoc.ViewModel
+namespace FlyDoc.Presenter
 {
     public abstract class AppModelBase
     {

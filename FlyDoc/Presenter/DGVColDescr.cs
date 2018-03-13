@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Windows.Forms;
 
-namespace FlyDoc.ViewModel
+namespace FlyDoc.Presenter
 {
     public class DGVColDescr
     {

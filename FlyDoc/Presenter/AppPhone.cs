@@ -7,7 +7,7 @@ using FlyDoc.Forms;
 using FlyDoc.Lib;
 using System.Windows.Forms;
 
-namespace FlyDoc.ViewModel
+namespace FlyDoc.Presenter
 {
     public class AppPhone : AppModelBase
     {

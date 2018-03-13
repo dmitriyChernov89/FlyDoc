@@ -131,13 +131,13 @@
     <Compile Include="Model\Phone.cs" />
     <Compile Include="Model\Schedule.cs" />
     <Compile Include="Model\User.cs" />
-    <Compile Include="ViewModel\AppDepartments.cs" />
-    <Compile Include="ViewModel\AppPhone.cs" />
-    <Compile Include="ViewModel\AppSchedule.cs" />
-    <Compile Include="ViewModel\AppUsers.cs" />
-    <Compile Include="ViewModel\AppModelBase.cs" />
-    <Compile Include="ViewModel\AppNotes.cs" />
-    <Compile Include="ViewModel\AppNoteTemplates.cs" />
+    <Compile Include="Presenter\AppDepartments.cs" />
+    <Compile Include="Presenter\AppPhone.cs" />
+    <Compile Include="Presenter\AppSchedule.cs" />
+    <Compile Include="Presenter\AppUsers.cs" />
+    <Compile Include="Presenter\AppModelBase.cs" />
+    <Compile Include="Presenter\AppNotes.cs" />
+    <Compile Include="Presenter\AppNoteTemplates.cs" />
     <Compile Include="Model\DBContext.cs" />
     <Compile Include="Forms\NewNote.cs">
       <SubType>Form</SubType>
@@ -148,7 +148,7 @@
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Lib\TypeExtensions.cs" />
-    <Compile Include="ViewModel\DGVColDescr.cs" />
+    <Compile Include="Presenter\DGVColDescr.cs" />
     <EmbeddedResource Include="Forms\AboutForm.resx">
       <DependentUpon>AboutForm.cs</DependentUpon>
     </EmbeddedResource>

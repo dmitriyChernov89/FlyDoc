@@ -10,7 +10,7 @@ using FlyDoc.Forms;
 using System.Reflection;
 using System.Diagnostics;
 
-namespace FlyDoc.ViewModel
+namespace FlyDoc.Presenter
 {
     public class AppNotes : AppModelBase, IDisposable
     {
