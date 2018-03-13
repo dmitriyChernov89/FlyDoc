@@ -426,6 +426,16 @@ namespace FlyDoc.Forms
                     setEditButtonEnable(false, false, true, false);
                 }
             }
+
+            // настройки пользователей
+            else if (_currentModel is AppUsers)
+            {
+                if (Program.User.Department == 500)
+                {
+                    setEditButtonEnable(true, false, true, true);
+                }
+            }
+
             #endregion
 
             if (btnEditOnly) return;
