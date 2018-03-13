@@ -65,13 +65,13 @@ namespace FlyDoc
                     System.Diagnostics.Debug.Print("  {0}. {1} = '{2}'", ++i, kvp.Key, kvp.Value);
                 }
             }
-            if (MachineName == "KC-500-07")
+            if ((MachineName.ToUpper() == "KC-500-07") || (MachineName.ToUpper() == "LENOVO-Z710"))
             {
                 // -machine KC-500-07 -user d.chernov
                 //MachineName = "KC-106-31"; UserName = "kasir-kc";
                 MachineName = "KC-500-07"; UserName = "d.chernov";
                 //MachineName = "KC-127-01"; UserName = "nachsb";
-                //  MachineName = "KC-114-06"; UserName = "kc-asistdir";
+                //MachineName = "KC-114-06"; UserName = "kc-asistdir";
                 //MachineName = "KC-114-06"; UserName = "kc-komdir";
                 _user = new User(MachineName, UserName);
             }
