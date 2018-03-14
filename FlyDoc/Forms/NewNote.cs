@@ -447,6 +447,7 @@ namespace FlyDoc.Forms
                 // доступность зависимых согласователей
                 bool dependApprEnable = !_note.ApprDir;
                 setApprButtonsEnable(dependApprEnable, "ApprDir");
+                if (_note.ApprDir) return;
             }
                 
 
