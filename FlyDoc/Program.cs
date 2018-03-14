@@ -38,6 +38,10 @@ namespace FlyDoc
             AppFuncs.WriteLogInfoMessage("**** НАЧАЛО работы FlyDoc ****");
             AppFuncs.WriteLogInfoMessage($"{AppFuncs.GetFullName()}, ver. {AppFuncs.GetVersion()}");
 
+            // делегаты для DBContext-а
+            DBContext.BeforeDBCallAction = new Action<string>(dbBeforeCallAction);
+            DBContext.DBErrorAction = new Action<string>(dbErrorAction);
+
             // загрузить аргументы приложения и получить имя компьютера и пользователя
             AppArgsHelper.LoadAppArgs(args);
             string argValue = AppArgsHelper.GetAppArgValue("machine");
@@ -45,6 +49,10 @@ namespace FlyDoc
             argValue = AppArgsHelper.GetAppArgValue("user");
             UserName = (argValue.IsNull() ? System.Environment.UserName : argValue);
             AppFuncs.WriteLogInfoMessage($"Авторизация: компьютер '{MachineName}', юзер '{UserName}'");
+            if (MachineName.ToUpper() == "LENOVO-Z710")
+            {
+                DBContext.ConfigConnectionStringName = "FlyDocOnCAV";
+            }
 
             _user = new User(MachineName, UserName);
             // если не найдено в табл.Access, то доступ только к телефонному справочнику
@@ -77,10 +85,6 @@ namespace FlyDoc
                 _user = new User(MachineName, UserName);
             }
 #endif
-
-            // делегаты для DBContext-а
-            DBContext.BeforeDBCallAction = new Action<string>(dbBeforeCallAction);
-            DBContext.DBErrorAction = new Action<string>(dbErrorAction);
 
             // открытие главного окна приложения
             FlyDoc.Forms.MainForm mainForm = new FlyDoc.Forms.MainForm();

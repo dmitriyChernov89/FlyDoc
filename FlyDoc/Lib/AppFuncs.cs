@@ -135,10 +135,12 @@ namespace FlyDoc.Lib
             try
             {
                 AppLogger = LogManager.GetLogger("fileLogger");
+                LogEnable = true;
             }
             catch (Exception ex)
             {
                 retVal = ex.Message;
+                LogEnable = false;
             }
             return retVal;
         }
