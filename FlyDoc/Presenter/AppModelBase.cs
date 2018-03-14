@@ -16,7 +16,7 @@ namespace FlyDoc.Presenter
         #region fields
         private bool isExistIdColumn = false;
 
-        protected Form _viewForm;
+        protected Form _presenter;
         protected DataTable _dataTable;
         protected DataGridView _dataGrid;
 
@@ -69,10 +69,10 @@ namespace FlyDoc.Presenter
             if (e.RowIndex > -1) EditObject();
         }
 
-        public Form ViewForm
+        public Form Presenter
         {
-            get { return _viewForm; }
-            set { _viewForm = value; }
+            get { return _presenter; }
+            set { _presenter = value; }
         }
         #endregion
 

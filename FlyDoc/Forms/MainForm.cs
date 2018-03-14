@@ -56,15 +56,15 @@ namespace FlyDoc.Forms
             _propInfoUser = typeof(User).GetProperties(BindingFlags.Instance | BindingFlags.Public);
 
             // режимы работы
-            _noteModel = new AppNotes() { ViewForm = this, DataGrid = this.dgvNotes };
-            _scheduleModel = new AppSchedule() { ViewForm = this, DataGrid = this.dgvSchedule };
-            _phoneModel = new AppPhone() { ViewForm = this, DataGrid = this.dgvPhonebook };
+            _noteModel = new AppNotes() { Presenter = this, DataGrid = this.dgvNotes };
+            _scheduleModel = new AppSchedule() { Presenter = this, DataGrid = this.dgvSchedule };
+            _phoneModel = new AppPhone() { Presenter = this, DataGrid = this.dgvPhonebook };
             _phoneModel.LoadDataToGrid();
 
             // настройка
-            _noteTemplateModel = new AppNoteTemplates() { ViewForm = this, DataGrid = this.dgvNoteTemplates };
-            _userModel = new AppUsers() { ViewForm = this, DataGrid = this.dgvUsers };
-            _departmentModel = new AppDepartments() { ViewForm = this, DataGrid = this.dgvDepartments };
+            _noteTemplateModel = new AppNoteTemplates() { Presenter = this, DataGrid = this.dgvNoteTemplates };
+            _userModel = new AppUsers() { Presenter = this, DataGrid = this.dgvUsers };
+            _departmentModel = new AppDepartments() { Presenter = this, DataGrid = this.dgvDepartments };
         }
 
         public void FlyDoc_Load(object sender, EventArgs e)
